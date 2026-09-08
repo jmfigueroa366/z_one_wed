@@ -1,0 +1,153 @@
+:root {
+    --bg: #eef4ff;
+    --panel: #ffffff;
+    --primary: #1f63ff;
+    --primary-dark: #1149d6;
+    --text: #121826;
+    --muted: #5d6470;
+    --line: #e6eaf2;
+    --shadow: rgba(17, 24, 38, 0.08);
+}
+
+* {
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    min-height: 100vh;
+    font-family: 'Segoe UI', Arial, sans-serif;
+    background: linear-gradient(135deg, #ecf1ff 0%, #edf7ff 100%);
+    color: var(--text);
+}
+
+.register-body {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 32px 16px;
+}
+
+.register-shell {
+    width: 100%;
+    max-width: 500px;
+}
+
+.register-card {
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: 24px;
+    box-shadow: 0 24px 42px var(--shadow);
+    padding: 30px 28px;
+}
+
+.register-brand {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-weight: 800;
+    font-size: 2rem;
+    letter-spacing: -0.06em;
+    margin-bottom: 16px;
+}
+
+.brand-mark {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--primary), #6ca2ff);
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 13px;
+}
+
+.register-header {
+    margin-bottom: 22px;
+}
+
+.eyebrow {
+    margin: 0 0 10px;
+    color: var(--primary);
+    font-size: 0.78rem;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    font-weight: 800;
+}
+
+.register-header h1 {
+    margin: 0;
+    font-size: clamp(2.2rem, 4vw, 3.2rem);
+    letter-spacing: -0.07em;
+}
+
+.subtitle {
+    margin: 8px 0 0;
+    color: var(--muted);
+}
+
+.register-form {
+    display: grid;
+    gap: 18px;
+}
+
+.field-row {
+    display: grid;
+    gap: 8px;
+}
+
+.field-row label {
+    font-size: 0.9rem;
+    font-weight: 700;
+    color: var(--muted);
+}
+
+.field-row input {
+    width: 100%;
+    height: 48px;
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    padding: 0 14px;
+    font-size: 1rem;
+    background: #fafbfd;
+}
+
+.btn-primary {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    min-height: 50px;
+    border: none;
+    border-radius: 12px;
+    background: linear-gradient(135deg, var(--primary), #5b8fff);
+    color: white;
+    font-size: 1rem;
+    font-weight: 700;
+    cursor: pointer;
+    box-shadow: 0 16px 24px rgba(31, 99, 255, 0.2);
+}
+
+.login-link {
+    text-align: center;
+    margin: 18px 0 0;
+    color: var(--muted);
+    font-size: 0.95rem;
+}
+
+.login-link a {
+    color: var(--primary);
+    font-weight: 700;
+    text-decoration: none;
+}
+
+@media (max-width: 480px) {
+    .register-card {
+        padding: 24px 18px;
+    }
+
+    .register-brand {
+        font-size: 1.7rem;
+    }
+}
