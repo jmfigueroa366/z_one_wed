@@ -1,0 +1,268 @@
+/* Dashboard layout and components */
+.dashboard-shell {
+	display: flex;
+	min-height: 100vh;
+	background: linear-gradient(135deg, #050b18 0%, #0f172a 100%);
+}
+
+.sidebar {
+	width: 260px;
+	flex: 0 0 260px;
+	background: rgba(7, 11, 23, 0.88);
+	color: var(--text);
+	border-right: 1px solid var(--line);
+	padding: 24px 18px;
+	display: flex;
+	flex-direction: column;
+	gap: 22px;
+}
+
+.sidebar-brand {
+	display: flex;
+	align-items: center;
+	gap: 2px;
+	font-size: 2rem;
+	font-weight: 800;
+	letter-spacing: -0.08em;
+}
+
+.brand-mark {
+	color: var(--primary);
+}
+
+.sidebar-nav {
+	display: grid;
+	gap: 8px;
+}
+
+.nav-item {
+	color: var(--muted);
+	padding: 10px 12px;
+	border-radius: 8px;
+	font-weight: 600;
+	transition: background .2s ease, color .2s ease;
+}
+
+.nav-item:hover,
+.nav-item.active {
+	background: rgba(109, 139, 255, 0.14);
+	color: var(--text);
+}
+
+.sidebar-card {
+	margin-top: auto;
+	padding: 16px 14px;
+	background: rgba(255, 255, 255, 0.04);
+	border: 1px solid var(--line);
+	border-radius: 12px;
+}
+
+.sidebar-card small,
+.mini-list small {
+	display: block;
+	color: var(--muted);
+	margin-bottom: 6px;
+}
+
+.main-panel {
+	flex: 1;
+	min-width: 0;
+	padding: 26px 30px 36px;
+}
+
+.main-panel .topbar {
+	max-width: none;
+	padding: 0 0 20px;
+}
+
+.main-panel .topbar h2 {
+	margin: 0;
+	font-size: clamp(1.8rem, 3vw, 2.8rem);
+	letter-spacing: -0.06em;
+}
+
+.main-panel .topbar h2 span {
+	color: var(--primary);
+}
+
+.user-badge {
+	color: var(--muted);
+	font-weight: 700;
+}
+
+.btn-logout {
+	min-height: 40px;
+	padding: 0 16px;
+	background: transparent;
+	color: var(--text);
+}
+
+.hero-panel,
+.panel-card,
+.summary-card {
+	background: rgba(15, 23, 42, 0.78);
+	border: 1px solid var(--line);
+	box-shadow: 0 18px 36px rgba(3, 7, 18, 0.2);
+}
+
+.hero-panel {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 16px;
+	padding: 24px;
+	border-radius: 18px;
+	margin-bottom: 22px;
+}
+
+.hero-panel h3 {
+	margin: 8px 0 0;
+	font-size: clamp(1.5rem, 2vw, 2.3rem);
+	letter-spacing: -0.05em;
+}
+
+.eyebrow.small {
+	font-size: 12px;
+	letter-spacing: 0.12em;
+	margin: 0;
+}
+
+.summary-grid {
+	display: grid;
+	grid-template-columns: 1.25fr 1fr 1fr;
+	gap: 14px;
+	margin: 0 0 22px;
+}
+
+.summary-card {
+	min-height: 170px;
+	padding: 22px;
+	border-radius: 16px;
+}
+
+.summary-card-primary {
+	background: linear-gradient(135deg, #4f70ff, #0ea5e9);
+}
+
+.card-icon {
+	display: block;
+	margin-bottom: 22px;
+	font-size: 24px;
+}
+
+.summary-card p,
+.card-note,
+.status {
+	margin: 0 0 7px;
+	color: var(--muted);
+	font-size: 12px;
+}
+
+.summary-card-primary p,
+.summary-card-primary .card-note,
+.summary-card-primary .status {
+	color: rgba(255, 255, 255, 0.82);
+}
+
+.summary-card strong {
+	display: block;
+	margin-bottom: 14px;
+	font-size: 22px;
+}
+
+.status i {
+	display: inline-block;
+	width: 7px;
+	height: 7px;
+	margin-right: 6px;
+	border-radius: 50%;
+	background: var(--success);
+}
+
+.panel-grid {
+	display: grid;
+	grid-template-columns: 1.2fr 0.8fr;
+	gap: 18px;
+}
+
+.panel-card {
+	padding: 22px;
+	border-radius: 16px;
+}
+
+.section-heading h3 {
+	margin: 0 0 22px;
+	font-size: 1.5rem;
+}
+
+.user-form,
+.form-row {
+	display: grid;
+	gap: 8px;
+}
+
+.user-form {
+	gap: 16px;
+}
+
+.form-row label {
+	color: var(--muted);
+	font-size: 0.9rem;
+	font-weight: 700;
+}
+
+.form-row input,
+.form-row select {
+	width: 100%;
+	height: 42px;
+	padding: 0 12px;
+	border: 1px solid var(--line);
+	border-radius: 10px;
+	background: rgba(255, 255, 255, 0.04);
+	color: var(--text);
+}
+
+.form-button {
+	width: fit-content;
+	margin-top: 8px;
+}
+
+.mini-list {
+	display: grid;
+	gap: 18px;
+}
+
+.mini-list div {
+	padding-bottom: 10px;
+	border-bottom: 1px solid rgba(148, 163, 184, 0.18);
+}
+
+@media (max-width: 700px) {
+	.dashboard-shell {
+		flex-direction: column;
+	}
+
+	.sidebar {
+		width: 100%;
+		flex-basis: auto;
+	}
+
+	.main-panel {
+		padding: 18px 16px 30px;
+	}
+
+	.hero-panel,
+	.main-panel .topbar {
+		flex-direction: column;
+		align-items: flex-start;
+	}
+
+	.summary-grid,
+	.panel-grid {
+		grid-template-columns: 1fr;
+	}
+
+	.topbar-actions {
+		gap: 10px;
+	}
+}
