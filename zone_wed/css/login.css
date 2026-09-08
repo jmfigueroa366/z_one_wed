@@ -1,12 +1,12 @@
 :root {
-    --login-bg: #070b17;
-    --login-panel: rgba(15, 23, 42, 0.82);
-    --login-text: #edf4ff;
-    --login-muted: #9ca9c4;
-    --login-line: rgba(148, 163, 184, 0.25);
-    --login-primary: #6d8bff;
-    --login-secondary: #0ea5e9;
-    --login-danger: #fca5a5;
+    --login-bg: #f5f7fc;
+    --login-panel: rgba(255, 255, 255, 0.92);
+    --login-text: #18233d;
+    --login-muted: #667085;
+    --login-line: #dce3f0;
+    --login-primary: #536dfe;
+    --login-secondary: #16a6c9;
+    --login-danger: #c2415c;
 }
 
 * {
@@ -18,8 +18,8 @@ body {
     min-height: 100vh;
     font-family: 'Segoe UI', Arial, sans-serif;
     color: var(--login-text);
-    background: radial-gradient(circle at top left, rgba(109, 139, 255, 0.24), transparent 34%),
-                linear-gradient(135deg, #050b18 0%, #0f172a 100%);
+    background: radial-gradient(circle at top left, rgba(83, 109, 254, 0.14), transparent 34%),
+                linear-gradient(135deg, #f8faff 0%, #edf4fb 100%);
 }
 
 button,
@@ -46,6 +46,7 @@ a {
     border: 1px solid var(--login-line);
     border-radius: 24px;
     box-shadow: 0 24px 50px rgba(3, 7, 18, 0.36);
+    animation: login-reveal 0.6s ease both;
 }
 
 .login-brand {
@@ -148,6 +149,11 @@ a {
 .register-link a {
     color: #b4c5ff;
     font-weight: 700;
+}
+
+@keyframes login-reveal {
+    from { opacity: 0; transform: translateY(18px) scale(0.98); }
+    to { opacity: 1; transform: translateY(0) scale(1); }
 }
 
 @media (max-width: 480px) {
