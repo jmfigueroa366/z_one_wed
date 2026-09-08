@@ -205,6 +205,53 @@
 	padding: 22px;
 }
 
+.production-panel {
+	margin-bottom: 18px;
+}
+
+.production-list {
+	display: grid;
+	gap: 12px;
+}
+
+.production-item {
+	display: grid;
+	grid-template-columns: 42px 1fr auto;
+	align-items: center;
+	gap: 12px;
+	padding: 12px;
+	background: rgba(83, 109, 254, 0.06);
+	border: 1px solid rgba(83, 109, 254, 0.12);
+	border-radius: 12px;
+}
+
+.production-icon {
+	display: grid;
+	place-items: center;
+	width: 38px;
+	height: 38px;
+	color: var(--menu-primary);
+	background: rgba(83, 109, 254, 0.12);
+	border-radius: 10px;
+	font-size: 1.2rem;
+}
+
+.production-item strong,
+.production-item small {
+	display: block;
+}
+
+.production-item small {
+	margin-top: 4px;
+	color: var(--menu-muted);
+	font-size: 0.8rem;
+}
+
+.production-progress {
+	color: var(--menu-primary);
+	font-weight: 800;
+}
+
 .sidebar,
 .hero-panel,
 .summary-card,
