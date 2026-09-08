@@ -21,7 +21,7 @@ body {
     color: var(--text);
 }
 
-.register-body {
+.register-page {
     display: flex;
     align-items: center;
     justify-content: center;
