@@ -2,6 +2,72 @@ import { animate, stagger } from 'https://cdn.jsdelivr.net/npm/animejs@4.2.2/+es
 
 const movimiento_reducido = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
+function prepararCampoAmbiental() {
+    const campo = document.querySelector('.ambient-field');
+    if (!campo) return;
+
+    campo.innerHTML = Array.from({ length: 16 }, (_, indice) =>
+        `<i style="--particle-x:${(indice * 37) % 100}%;--particle-y:${(indice * 61) % 100}%;--particle-delay:${indice * -0.35}s"></i>`
+    ).join('');
+}
+
+function prepararWaveform() {
+    const waveform = document.querySelector('.waveform');
+    if (!waveform) return;
+
+    waveform.innerHTML = Array.from({ length: 28 }, (_, indice) => {
+        const altura = 18 + ((indice * 17) % 34);
+        return `<i style="--wave-height:${altura}px;--wave-delay:${indice * -0.06}s"></i>`;
+    }).join('');
+}
+
+function prepararTitulo() {
+    const titulo = document.querySelector('[data-split-text]');
+    if (!titulo) return;
+
+    titulo.setAttribute('aria-label', titulo.textContent.trim());
+    titulo.innerHTML = titulo.textContent.trim().split(' ').map((palabra) =>
+        `<span class="word"><span>${palabra}</span>&nbsp;</span>`
+    ).join('');
+}
+
+function animarContadores() {
+    document.querySelectorAll('.stat-value').forEach((element, indice) => {
+        const inicio = performance.now() + 650 + indice * 120;
+        const duracion = 1100;
+        const destino = Number(element.dataset.value);
+
+        function actualizarContador(ahora) {
+            const progreso = Math.min(1, Math.max(0, (ahora - inicio) / duracion));
+            const suavizado = 1 - Math.pow(1 - progreso, 3);
+            element.textContent = Math.round(destino * suavizado) + (element.dataset.suffix || '');
+            if (progreso < 1) requestAnimationFrame(actualizarContador);
+        }
+
+        requestAnimationFrame(actualizarContador);
+    });
+}
+
+function activarParallax() {
+    const panel = document.querySelector('.visual-panel');
+    if (!panel || movimiento_reducido) return;
+
+    panel.addEventListener('pointermove', (evento) => {
+        const bounds = panel.getBoundingClientRect();
+        const x = (evento.clientX - bounds.left) / bounds.width - 0.5;
+        const y = (evento.clientY - bounds.top) / bounds.height - 0.5;
+        panel.style.transform = `perspective(900px) rotateX(${y * -4}deg) rotateY(${x * 5}deg) translateY(-4px)`;
+        panel.style.setProperty('--pointer-x', `${(x + 0.5) * 100}%`);
+        panel.style.setProperty('--pointer-y', `${(y + 0.5) * 100}%`);
+    });
+
+    panel.addEventListener('pointerleave', () => {
+        panel.style.transform = '';
+        panel.style.setProperty('--pointer-x', '50%');
+        panel.style.setProperty('--pointer-y', '50%');
+    });
+}
+
 function animarEntrada() {
     animate('.brand', {
         opacity: [0, 1],
@@ -71,17 +137,7 @@ function animarEntrada() {
         ease: 'outElastic(1, .55)'
     });
 
-    animate('.stat-value', {
-        innerHTML: (element) => element.dataset.value,
-        round: 1,
-        delay: stagger(120, { start: 650 }),
-        duration: 1100,
-        ease: 'out(3)',
-        onUpdate: (animation) => {
-            const element = animation.animatables[0].target;
-            element.textContent = Math.round(Number(element.textContent)) + (element.dataset.suffix || '');
-        }
-    });
+    animarContadores();
 }
 
 function animarRevelado(elementos) {
@@ -94,7 +150,12 @@ function animarRevelado(elementos) {
     });
 }
 
-if (!movimiento_reducido) {
+if (!movimiento_reducido)
+{
+    prepararCampoAmbiental();
+    prepararWaveform();
+    prepararTitulo();
+    activarParallax();
     animarEntrada();
 
     const observador = new IntersectionObserver((entradas, observer) => {
