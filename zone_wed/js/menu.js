@@ -9,6 +9,12 @@ const user_form = document.getElementById('userForm');
 const resumen_usuario = document.getElementById('resumenUsuario');
 const menu_buttons = document.querySelectorAll('.btn-primary, .btn-logout');
 const sidebar_items = document.querySelectorAll('.nav-item');
+const dashboard_shell = document.querySelector('.dashboard-shell');
+const sidebar_toggle = document.getElementById('sidebarToggle');
+const drawer_toggle = document.getElementById('drawerToggle');
+const drawer_backdrop = document.getElementById('drawerBackdrop');
+const dashboard_views = document.querySelectorAll('.dashboard-view');
+const field_toggles = document.querySelectorAll('.field-toggle');
 
 if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
     animate(sidebar_items, {
@@ -74,3 +80,55 @@ if (btn_logout) {
         redirectToLogin();
     });
 }
+
+sidebar_items.forEach(function (item) {
+    item.addEventListener('click', function () {
+        const panel_name = item.dataset.panel;
+
+        sidebar_items.forEach(function (nav_item) {
+            nav_item.classList.toggle('active', nav_item === item);
+        });
+
+        dashboard_views.forEach(function (view) {
+            view.classList.toggle('active', view.dataset.view === panel_name);
+        });
+
+        if (window.matchMedia('(max-width: 700px)').matches) {
+            dashboard_shell.classList.remove('drawer-open');
+            drawer_toggle.setAttribute('aria-expanded', 'false');
+        }
+    });
+});
+
+if (sidebar_toggle) {
+    sidebar_toggle.addEventListener('click', function () {
+        const collapsed = dashboard_shell.classList.toggle('sidebar-collapsed');
+        sidebar_toggle.setAttribute('aria-expanded', String(!collapsed));
+        sidebar_toggle.setAttribute('aria-label', collapsed ? 'Expandir menú' : 'Colapsar menú');
+    });
+}
+
+function toggleDrawer() {
+    const opened = dashboard_shell.classList.toggle('drawer-open');
+    drawer_toggle.setAttribute('aria-expanded', String(opened));
+}
+
+if (drawer_toggle) drawer_toggle.addEventListener('click', toggleDrawer);
+if (drawer_backdrop) drawer_backdrop.addEventListener('click', toggleDrawer);
+
+field_toggles.forEach(function (toggle) {
+    toggle.addEventListener('click', function () {
+        const current_panel = toggle.parentElement;
+        const was_open = current_panel.classList.contains('open');
+
+        document.querySelectorAll('.field-panel').forEach(function (panel) {
+            panel.classList.remove('open');
+            panel.querySelector('.field-toggle').setAttribute('aria-expanded', 'false');
+        });
+
+        if (!was_open) {
+            current_panel.classList.add('open');
+            toggle.setAttribute('aria-expanded', 'true');
+        }
+    });
+});
