@@ -82,6 +82,8 @@ button, input, select { font: inherit; }
 .btn-primary,
 .btn-secondary,
 .btn-ghost {
+    position: relative;
+    overflow: hidden;
     display: inline-flex;
     align-items: center;
     justify-content: center;
@@ -91,6 +93,48 @@ button, input, select { font: inherit; }
     border-radius: 12px;
     font-weight: 700;
     cursor: pointer;
+    transition: transform 180ms ease, box-shadow 180ms ease, background 180ms ease;
+}
+
+.btn-primary::after,
+.btn-secondary::after,
+.btn-ghost::after {
+    position: absolute;
+    top: -80%;
+    left: -35%;
+    width: 26%;
+    height: 260%;
+    content: '';
+    background: rgba(255, 255, 255, 0.32);
+    transform: rotate(25deg);
+    transition: left 500ms ease;
+}
+
+.btn-primary:hover,
+.btn-secondary:hover,
+.btn-ghost:hover {
+    box-shadow: 0 16px 28px rgba(79, 112, 255, 0.2);
+    transform: translateY(-3px);
+}
+
+.btn-primary:hover::after,
+.btn-secondary:hover::after,
+.btn-ghost:hover::after {
+    left: 125%;
+}
+
+.btn-primary:active,
+.btn-secondary:active,
+.btn-ghost:active {
+    transform: translateY(1px) scale(0.98);
+}
+
+.btn-primary:focus-visible,
+.btn-secondary:focus-visible,
+.btn-ghost:focus-visible,
+.main-nav a:focus-visible {
+    outline: 3px solid rgba(83, 109, 254, 0.3);
+    outline-offset: 3px;
 }
 
 .btn-primary {
@@ -169,6 +213,7 @@ button, input, select { font: inherit; }
     background: linear-gradient(145deg, #ffffff 0%, #edf3ff 100%);
     border: 1px solid var(--line);
     border-radius: var(--radius-xl);
+	box-shadow: 0 28px 60px rgba(83, 109, 254, 0.18);
 }
 
 .visual-top { display: flex; justify-content: space-between; gap: 12px; }
@@ -228,6 +273,7 @@ button, input, select { font: inherit; }
     background: rgba(255, 255, 255, 0.9);
     border: 1px solid var(--line);
     border-radius: 22px;
+	box-shadow: 0 18px 32px rgba(24, 35, 61, 0.12);
 }
 .release-tag { color: var(--muted); font-size: 0.7rem; text-transform: uppercase; }
 .release-card h3 { margin: 10px 0 0; font-size: 2rem; }
@@ -245,6 +291,7 @@ button, input, select { font: inherit; }
     width: 74%;
     height: 100%;
     background: linear-gradient(90deg, var(--primary), var(--success));
+	transform-origin: left center;
 }
 
 /* ---------- Tarjetas compartidas (features + preview) ---------- */
@@ -257,10 +304,20 @@ button, input, select { font: inherit; }
 
 .feature-card,
 .preview-card {
+    position: relative;
+    overflow: hidden;
     padding: 24px 22px;
     background: var(--card-bg);
     border: 1px solid var(--line);
     border-radius: var(--radius-lg);
+    transition: transform 220ms ease, box-shadow 220ms ease, border-color 220ms ease;
+}
+
+.feature-card:hover,
+.preview-card:hover {
+    border-color: rgba(83, 109, 254, 0.34);
+    box-shadow: 0 22px 38px rgba(83, 109, 254, 0.16);
+    transform: translateY(-7px) rotate(-0.5deg);
 }
 
 .feature-icon {
@@ -345,6 +402,7 @@ button, input, select { font: inherit; }
     height: var(--bar-h, 50%);
     border-radius: 12px 12px 0 0;
     background: linear-gradient(180deg, var(--secondary), var(--primary));
+	transform-origin: center bottom;
 }
 /* Uso: <span style="--bar-h:68%"></span> en vez de una clase .bar-XX por cada valor */
 .chart-bars .bar-35 { --bar-h: 35%; }
@@ -373,6 +431,24 @@ button, input, select { font: inherit; }
 }
 @keyframes spin-disc {
     to { transform: rotate(360deg); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+    }
+
+    .feature-card:hover,
+    .preview-card:hover,
+    .btn-primary:hover,
+    .btn-secondary:hover,
+    .btn-ghost:hover {
+        transform: none;
+    }
 }
 
 /* ---------- Responsive ---------- */
