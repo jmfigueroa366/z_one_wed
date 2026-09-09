@@ -47,16 +47,44 @@
 }
 
 .nav-item {
+	position: relative;
 	padding: 10px 12px;
 	color: var(--menu-muted);
 	border-radius: 8px;
 	font-weight: 600;
+	transition: color 180ms ease, background 180ms ease, transform 180ms ease;
 }
 
 .nav-item:hover,
 .nav-item.active {
 	color: var(--menu-text);
 	background: rgba(109, 139, 255, 0.14);
+}
+
+.nav-item:hover {
+	transform: translateX(4px);
+}
+
+.nav-item.active::before {
+	position: absolute;
+	left: 0;
+	top: 8px;
+	bottom: 8px;
+	width: 3px;
+	content: '';
+	background: var(--menu-primary);
+	border-radius: 999px;
+	animation: nav-indicator 300ms ease both;
+}
+
+.nav-item:focus-visible {
+	outline: 3px solid rgba(83, 109, 254, 0.3);
+	outline-offset: 3px;
+}
+
+@keyframes nav-indicator {
+	from { opacity: 0; transform: scaleY(0); }
+	to { opacity: 1; transform: scaleY(1); }
 }
 
 .sidebar-card {

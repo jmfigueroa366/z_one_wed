@@ -8,8 +8,17 @@ const btn_logout = document.getElementById('btnLogout');
 const user_form = document.getElementById('userForm');
 const resumen_usuario = document.getElementById('resumenUsuario');
 const menu_buttons = document.querySelectorAll('.btn-primary, .btn-logout');
+const sidebar_items = document.querySelectorAll('.nav-item');
 
 if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+    animate(sidebar_items, {
+        opacity: [0, 1],
+        x: [-18, 0],
+        delay: stagger(90),
+        duration: 550,
+        ease: 'out(3)'
+    });
+
     animate(menu_buttons, {
         opacity: [0, 1],
         y: [-12, 0],
