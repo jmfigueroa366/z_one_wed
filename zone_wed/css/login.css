@@ -130,6 +130,7 @@ a {
     box-shadow: 0 16px 24px rgba(79, 112, 255, 0.24);
     cursor: pointer;
     font-weight: 700;
+    will-change: transform;
     transition: transform 180ms ease, box-shadow 180ms ease, background 180ms ease;
 }
 
@@ -210,5 +211,16 @@ a {
 @media (max-width: 480px) {
     .login-card {
         padding: 26px 20px;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        scroll-behavior: auto !important;
+        transition-duration: 0.01ms !important;
     }
 }
