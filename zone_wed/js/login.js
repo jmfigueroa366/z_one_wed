@@ -1,6 +1,7 @@
 const form = document.getElementById('loginForm');
 const mensaje = document.getElementById('mensaje');
 const btn_login = document.getElementById('btnLogin');
+const btn_menu = document.getElementById('btnMenu');
 const session_key = 'zone_usuario';
 
 function redirectToMenu() {
@@ -47,4 +48,8 @@ if (form) {
             btn_login.textContent = 'Entrar al panel →';
         }
     });
+}
+
+if (btn_menu) {
+    btn_menu.addEventListener('click', redirectToMenu);
 }

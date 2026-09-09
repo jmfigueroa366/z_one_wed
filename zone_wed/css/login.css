@@ -133,6 +133,18 @@ a {
     opacity: 0.7;
 }
 
+.login-button-secondary {
+    margin-top: 0;
+    color: var(--login-text);
+    background: transparent;
+    border: 1px solid var(--login-line);
+    box-shadow: none;
+}
+
+.login-button-secondary:hover {
+    background: rgba(83, 109, 254, 0.08);
+}
+
 .mensaje {
     min-height: 20px;
     margin: 0;
