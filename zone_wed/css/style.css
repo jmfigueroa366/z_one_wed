@@ -379,6 +379,59 @@ button, input, select { font: inherit; }
 .release-card h3 { margin: 10px 0 0; font-size: 2rem; }
 .release-card p { margin: 8px 0 0; color: var(--muted); }
 
+.track-controls {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-top: 16px;
+}
+
+.play-toggle {
+    display: grid;
+    place-items: center;
+    width: 38px;
+    height: 38px;
+    flex: 0 0 38px;
+    padding: 0;
+    color: white;
+    background: var(--text);
+    border: 0;
+    border-radius: 50%;
+    cursor: pointer;
+    transition: transform 180ms ease, background 180ms ease;
+}
+
+.play-toggle:hover {
+    background: var(--primary);
+    transform: scale(1.08);
+}
+
+.play-icon { font-size: 0.8rem; transform: translateX(1px); }
+.track-meta { min-width: 0; flex: 1; }
+.track-progress {
+    height: 5px;
+    overflow: hidden;
+    background: rgba(148, 163, 184, 0.2);
+    border-radius: var(--radius-pill);
+}
+.track-progress span {
+    display: block;
+    width: 0;
+    height: 100%;
+    background: linear-gradient(90deg, var(--secondary), var(--primary));
+    transition: width 100ms linear;
+}
+.track-time {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 5px;
+    color: var(--muted);
+    font-size: 0.68rem;
+}
+
+.visual-panel.is-playing .vinyl-disc { animation-duration: 5s; }
+.visual-panel.is-playing .waveform i { animation-duration: 0.55s; }
+
 .progress-bar {
     height: 8px;
     margin-top: 18px;
@@ -402,8 +455,68 @@ button, input, select { font: inherit; }
     gap: 20px;
 }
 
+.workflow {
+    max-width: 1280px;
+    margin: 0 auto;
+    padding: 116px var(--pad-container) 24px;
+}
+
+.workflow-heading {
+    max-width: 620px;
+}
+
+.workflow-heading h2 {
+    margin: 0;
+    font-size: clamp(2.4rem, 4vw, 4.6rem);
+    line-height: 0.98;
+    letter-spacing: -0.07em;
+}
+
+.workflow-heading > p:last-child {
+    max-width: 460px;
+    margin: 20px 0 0;
+    color: var(--muted);
+    line-height: 1.6;
+}
+
+.workflow-steps {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 0;
+    list-style: none;
+    padding: 0;
+    margin: 54px 0 0;
+}
+
+.workflow-step {
+    position: relative;
+    min-height: 190px;
+    padding-right: 38px;
+}
+
+.step-number {
+    display: block;
+    color: var(--primary);
+    font-size: 0.8rem;
+    font-weight: 800;
+    letter-spacing: 0.14em;
+}
+
+.step-line {
+    display: block;
+    width: 100%;
+    height: 1px;
+    margin: 18px 0 24px;
+    background: linear-gradient(90deg, var(--primary), rgba(83, 109, 254, 0.08));
+    transform-origin: left center;
+}
+
+.workflow-step h3 { margin: 0 0 10px; font-size: 1.7rem; }
+.workflow-step p { max-width: 250px; margin: 0; color: var(--muted); line-height: 1.6; }
+
 .feature-card,
-.preview-card {
+.preview-card,
+.workflow-step {
     position: relative;
     overflow: hidden;
     padding: 24px 22px;
@@ -576,7 +689,14 @@ button, input, select { font: inherit; }
     .topbar { flex-wrap: wrap; justify-content: center; }
     .hero,
     .features,
-    .preview-grid { grid-template-columns: 1fr; }
+    .preview-grid,
+    .workflow-steps { grid-template-columns: 1fr; }
+
+    .workflow-step {
+        padding: 0 0 34px;
+    }
+
+    .workflow-step p { max-width: 420px; }
 }
 
 @media (max-width: 700px) {
@@ -594,6 +714,8 @@ button, input, select { font: inherit; }
     .btn-primary,
     .btn-secondary,
     .btn-ghost { width: 100%; }
+
+    .workflow { padding: 84px 16px 24px; }
 
     .release-card {
         position: relative;

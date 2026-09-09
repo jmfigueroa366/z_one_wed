@@ -44,6 +44,9 @@ function animarContadores() {
             if (progreso < 1) requestAnimationFrame(actualizarContador);
         }
 
+        setTimeout(() => {
+            element.textContent = destino + (element.dataset.suffix || '');
+        }, 1900 + indice * 120);
         requestAnimationFrame(actualizarContador);
     });
 }
@@ -150,23 +153,70 @@ function animarRevelado(elementos) {
     });
 }
 
+function activarReproductor() {
+    const boton = document.querySelector('.play-toggle');
+    const panel = document.querySelector('.visual-panel');
+    const progreso = document.querySelector('.track-progress span');
+    const barra = document.querySelector('.track-progress');
+    const tiempo_actual = document.querySelector('.track-time span');
+    if (!boton || !panel || !progreso || !barra || !tiempo_actual) return;
+
+    let reproduciendo = false;
+    let inicio = 0;
+    let reloj = null;
+    const duracion = 168;
+
+    function actualizar() {
+        if (!reproduciendo) return;
+        const transcurrido = (performance.now() - inicio) / 1000;
+        const segundos = transcurrido % duracion;
+        const porcentaje = (segundos / duracion) * 100;
+        progreso.style.width = `${porcentaje}%`;
+        barra.setAttribute('aria-valuenow', Math.round(porcentaje));
+        tiempo_actual.textContent = `${Math.floor(segundos / 60)}:${String(Math.floor(segundos % 60)).padStart(2, '0')}`;
+    }
+
+    boton.addEventListener('click', () => {
+        reproduciendo = !reproduciendo;
+        if (reproduciendo)
+        {
+            inicio = performance.now();
+            panel.classList.add('is-playing');
+            boton.setAttribute('aria-label', 'Pausar Midnight Echo');
+            boton.setAttribute('aria-pressed', 'true');
+            boton.querySelector('.play-icon').textContent = 'Ⅱ';
+            actualizar();
+            reloj = setInterval(actualizar, 100);
+        }
+        else
+        {
+            panel.classList.remove('is-playing');
+            boton.setAttribute('aria-label', 'Reproducir Midnight Echo');
+            boton.setAttribute('aria-pressed', 'false');
+            boton.querySelector('.play-icon').textContent = '▶';
+            clearInterval(reloj);
+        }
+    });
+}
+
 if (!movimiento_reducido)
 {
     prepararCampoAmbiental();
     prepararWaveform();
     prepararTitulo();
     activarParallax();
+    activarReproductor();
     animarEntrada();
 
     const observador = new IntersectionObserver((entradas, observer) => {
         entradas.forEach((entrada) => {
             if (!entrada.isIntersecting) return;
-            animarRevelado(entrada.target.querySelectorAll('.feature-card, .preview-card'));
+            animarRevelado(entrada.target.querySelectorAll('.feature-card, .workflow-step, .preview-card'));
             observer.unobserve(entrada.target);
         });
     }, { threshold: 0.2 });
 
-    document.querySelectorAll('.features, .dashboard-preview').forEach((seccion) => {
+    document.querySelectorAll('.features, .workflow, .dashboard-preview').forEach((seccion) => {
         observador.observe(seccion);
     });
 }
