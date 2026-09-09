@@ -45,7 +45,7 @@
             <section class="hero-panel">
                 <div>
                     <p class="eyebrow small">GESTIÓN MUSICAL</p>
-                    <h3>Bienvenido a tu espacio de producción y artistas.</h3>
+                    <h3>Bienvenido al centro operativo de Z-ONE.</h3>
                 </div>
                 <button class="btn-primary" type="button">Continuar</button>
             </section>
@@ -70,6 +70,28 @@
                     <span class="card-note">Acceso de productor</span>
                 </article>
             </div>
+
+            <section class="panel-card information-panel" id="informacion">
+                <div class="section-heading">
+                    <p class="eyebrow small">INFORMACIÓN DE Z-ONE</p>
+                    <h3>Una gestión musical centralizada</h3>
+                </div>
+                <p class="information-copy">Z-ONE digitaliza y centraliza los procesos de artistas, productores, equipo técnico, catálogo, producción, agenda, búsqueda y estadísticas.</p>
+                <div class="information-grid">
+                    <article>
+                        <h4>Propósito</h4>
+                        <p>Centralizar la operación de la productora musical en un solo sistema.</p>
+                    </article>
+                    <article>
+                        <h4>Problema</h4>
+                        <p>Los registros dispersos dificultan coordinar recursos, fechas y proyectos.</p>
+                    </article>
+                    <article>
+                        <h4>Justificación</h4>
+                        <p>La gestión estructurada mejora la eficiencia y la toma de decisiones.</p>
+                    </article>
+                </div>
+            </section>
 
             <section class="panel-card production-panel" id="produccion">
                 <div class="section-heading">
@@ -105,11 +127,12 @@
                 </div>
             </section>
 
-            <section class="panel-grid">
-                <div class="panel-card" id="artistas">
+            <section class="panel-card artist-panel" id="artistas">
                     <div class="section-heading">
-                        <h3>Artistas</h3>
+                        <p class="eyebrow small">MÓDULO INDEPENDIENTE</p>
+                        <h3>Gestión de artistas</h3>
                     </div>
+                    <p class="panel-description">Administra artistas, productores y responsables vinculados a los proyectos musicales.</p>
 
                     <form id="userForm" class="user-form">
                         <div class="form-row">
@@ -129,30 +152,29 @@
                                 <option value="Manager">Manager</option>
                             </select>
                         </div>
-                        <button type="submit" class="btn-primary form-button">Guardar perfil</button>
+                        <button type="submit" class="btn-primary form-button">Guardar artista</button>
                     </form>
-                </div>
 
-                <div class="panel-card" id="reportes">
-                    <div class="section-heading">
-                        <h3>Resumen de flujo</h3>
-                    </div>
+                    <div class="artist-summary">
+                        <div class="section-heading">
+                            <h3>Resumen de artistas</h3>
+                        </div>
 
-                    <div class="mini-list">
-                        <div>
-                            <small>Artistas</small>
-                            <strong id="resumenUsuario">48</strong>
-                        </div>
-                        <div>
-                            <small>Producción</small>
-                            <strong>12 proyectos</strong>
-                        </div>
-                        <div>
-                            <small>Último ingreso</small>
-                            <strong>Hoy</strong>
+                        <div class="mini-list">
+                            <div>
+                                <small>Artistas registrados</small>
+                                <strong id="resumenUsuario">48</strong>
+                            </div>
+                            <div>
+                                <small>Productores y managers</small>
+                                <strong>18 colaboradores</strong>
+                            </div>
+                            <div>
+                                <small>Proyectos relacionados</small>
+                                <strong>12 proyectos</strong>
+                            </div>
                         </div>
                     </div>
-                </div>
             </section>
         </main>
     </div>

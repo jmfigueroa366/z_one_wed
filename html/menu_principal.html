@@ -16,8 +16,9 @@
 
             <nav class="sidebar-nav" aria-label="Menú principal">
                 <a class="nav-item active" href="#inicio">Inicio</a>
-                <a class="nav-item" href="#perfil">Perfil</a>
-                <a class="nav-item" href="#usuarios">Usuarios</a>
+                <a class="nav-item" href="#artistas">Artistas</a>
+                <a class="nav-item" href="#produccion">Producción</a>
+                <a class="nav-item" href="#informacion">Información</a>
                 <a class="nav-item" href="#reportes">Reportes</a>
                 <a class="nav-item" href="#configuracion">Configuración</a>
             </nav>
@@ -43,38 +44,66 @@
 
             <section class="hero-panel">
                 <div>
-                    <p class="eyebrow small">INICIO DE USUARIO</p>
-                    <h3>Bienvenido a tu espacio de gestión.</h3>
+                    <p class="eyebrow small">SISTEMA DE GESTIÓN MUSICAL</p>
+                    <h3>Bienvenido al centro operativo de Z-ONE.</h3>
                 </div>
-                <button class="btn-primary" type="button">Continuar</button>
+                <span class="hero-label">Resumen general</span>
             </section>
 
             <div class="summary-grid">
                 <article class="summary-card summary-card-primary">
                     <span class="card-icon" aria-hidden="true">◈</span>
-                    <p>Estado de la plataforma</p>
-                    <strong>Todo en orden</strong>
+                    <p>Estado de Z-ONE</p>
+                    <strong>Operación activa</strong>
                     <span class="status"><i></i> Servicios activos</span>
                 </article>
                 <article class="summary-card">
                     <span class="card-icon" aria-hidden="true">▦</span>
-                    <p>Actividad reciente</p>
-                    <strong>0 pendientes</strong>
-                    <span class="card-note">Sin tareas por revisar</span>
+                    <p>Proyectos activos</p>
+                    <strong>12 proyectos</strong>
+                    <span class="card-note">En diferentes fases</span>
                 </article>
                 <article class="summary-card">
                     <span class="card-icon" aria-hidden="true">✦</span>
-                    <p>Tu espacio</p>
-                    <strong>Perfil activo</strong>
-                    <span class="card-note">Acceso estándar</span>
+                    <p>Catálogo musical</p>
+                    <strong>26 lanzamientos</strong>
+                    <span class="card-note">Registrados en Z-ONE</span>
                 </article>
             </div>
 
-            <section class="panel-grid">
-                <div class="panel-card" id="perfil">
+            <section class="panel-card information-panel" id="informacion">
+                <div class="section-heading">
+                    <p class="eyebrow small">INFORMACIÓN DE Z-ONE</p>
+                    <h3>Una gestión musical centralizada</h3>
+                </div>
+                <p class="information-copy">
+                    Z-ONE digitaliza y centraliza los procesos operativos de una productora musical: artistas, productores, equipo técnico, catálogo, producción, agenda, búsqueda y estadísticas.
+                </p>
+                <p class="information-copy">
+                    La plataforma organiza la información, mejora la trazabilidad de cada proyecto y facilita decisiones oportunas basadas en datos confiables.
+                </p>
+                <div class="information-grid">
+                    <article>
+                        <h4>Propósito</h4>
+                        <p>Digitalizar y centralizar la operación de la productora musical en un solo sistema.</p>
+                    </article>
+                    <article>
+                        <h4>Problema identificado</h4>
+                        <p>Los registros dispersos dificultan coordinar recursos, fechas, proyectos y equipos de trabajo.</p>
+                    </article>
+                    <article>
+                        <h4>Justificación</h4>
+                        <p>Una gestión estructurada mejora la eficiencia, la consistencia de los datos y la toma de decisiones.</p>
+                    </article>
+                </div>
+            </section>
+
+            <section class="panel-card artist-panel" id="artistas">
                     <div class="section-heading">
-                        <h3>Inicio de usuario</h3>
+                        <p class="eyebrow small">MÓDULO INDEPENDIENTE</p>
+                        <h3>Gestión de artistas</h3>
                     </div>
+                    <p class="panel-description">Administra artistas, productores y responsables vinculados a los proyectos musicales.</p>
 
                     <form id="userForm" class="user-form">
                         <div class="form-row">
@@ -94,31 +123,29 @@
                                 <option value="Supervisor">Supervisor</option>
                             </select>
                         </div>
-                        <button type="submit" class="btn-primary form-button">Guardar inicio</button>
+                        <button type="submit" class="btn-primary form-button">Guardar artista</button>
                     </form>
-                </div>
-
-                <div class="panel-card" id="usuarios">
-                    <div class="section-heading">
-                        <h3>Resumen de acceso</h3>
-                    </div>
-
-                    <div class="mini-list">
-                        <div>
-                            <small>Usuario</small>
-                            <strong id="resumenUsuario">admin</strong>
+                    <div class="artist-summary">
+                        <div class="section-heading">
+                            <h3>Resumen de artistas</h3>
                         </div>
-                        <div>
-                            <small>Estado</small>
-                            <strong>Validado</strong>
-                        </div>
-                        <div>
-                            <small>Último ingreso</small>
-                            <strong>Hoy</strong>
+                        <div class="mini-list">
+                            <div>
+                                <small>Artistas registrados</small>
+                                <strong id="resumenUsuario">48</strong>
+                            </div>
+                            <div>
+                                <small>Productores y managers</small>
+                                <strong>18 colaboradores</strong>
+                            </div>
+                            <div>
+                                <small>Proyectos relacionados</small>
+                                <strong>12 proyectos</strong>
+                            </div>
                         </div>
                     </div>
-                </div>
             </section>
+
         </main>
     </div>
 
