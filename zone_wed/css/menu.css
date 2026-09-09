@@ -114,6 +114,24 @@
 	border: 1px solid var(--menu-line);
 	border-radius: 12px;
 	cursor: pointer;
+	transition: transform 180ms ease, color 180ms ease, background 180ms ease, box-shadow 180ms ease;
+}
+
+.btn-logout:hover {
+	color: var(--menu-primary);
+	background: rgba(83, 109, 254, 0.08);
+	box-shadow: 0 10px 20px rgba(83, 109, 254, 0.1);
+	transform: translateY(-2px);
+}
+
+.btn-logout:active {
+	transform: translateY(1px) scale(0.98);
+}
+
+.btn-logout:focus-visible,
+.btn-primary:focus-visible {
+	outline: 3px solid rgba(83, 109, 254, 0.3);
+	outline-offset: 3px;
 }
 
 .hero-panel,

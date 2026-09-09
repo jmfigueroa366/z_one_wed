@@ -1,3 +1,5 @@
+import { animate, stagger } from 'https://cdn.jsdelivr.net/npm/animejs@4.2.2/+esm';
+
 const session_key = 'zone_usuario';
 const profile_key = 'zone_perfil_usuario';
 const user_badge = document.getElementById('userBadge');
@@ -5,6 +7,17 @@ const welcome_user = document.getElementById('welcomeUser');
 const btn_logout = document.getElementById('btnLogout');
 const user_form = document.getElementById('userForm');
 const resumen_usuario = document.getElementById('resumenUsuario');
+const menu_buttons = document.querySelectorAll('.btn-primary, .btn-logout');
+
+if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+    animate(menu_buttons, {
+        opacity: [0, 1],
+        y: [-12, 0],
+        delay: stagger(100),
+        duration: 600,
+        ease: 'out(3)'
+    });
+}
 
 function redirectToLogin() {
     window.location.href = 'index.html';
