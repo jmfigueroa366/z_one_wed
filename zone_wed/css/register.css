@@ -130,6 +130,28 @@ body {
     box-shadow: 0 16px 24px rgba(31, 99, 255, 0.2);
 }
 
+.btn-secondary {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    min-height: 50px;
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    background: #f7f9fd;
+    color: var(--text);
+    font-size: 1rem;
+    font-weight: 700;
+    text-decoration: none;
+    transition: background 180ms ease, border-color 180ms ease, transform 180ms ease;
+}
+
+.btn-secondary:hover {
+    background: #eef3ff;
+    border-color: rgba(31, 99, 255, 0.28);
+    transform: translateY(-2px);
+}
+
 .register-message {
     min-height: 20px;
     margin: 0;
