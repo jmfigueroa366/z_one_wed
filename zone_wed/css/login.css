@@ -117,8 +117,12 @@ a {
 }
 
 .login-button {
+    position: relative;
+    isolation: isolate;
+    overflow: hidden;
     min-height: 50px;
     margin-top: 8px;
+    padding: 0 20px;
     color: white;
     background: linear-gradient(135deg, var(--login-primary), var(--login-secondary));
     border: 0;
@@ -126,6 +130,36 @@ a {
     box-shadow: 0 16px 24px rgba(79, 112, 255, 0.24);
     cursor: pointer;
     font-weight: 700;
+    transition: transform 180ms ease, box-shadow 180ms ease, background 180ms ease;
+}
+
+.login-button::before {
+    position: absolute;
+    z-index: -1;
+    inset: 0;
+    content: '';
+    background: linear-gradient(110deg, transparent 30%, rgba(255, 255, 255, 0.28), transparent 70%);
+    transform: translateX(-120%);
+    transition: transform 500ms ease;
+}
+
+.login-button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 20px 28px rgba(79, 112, 255, 0.3);
+}
+
+.login-button:hover::before {
+    transform: translateX(120%);
+}
+
+.login-button:active {
+    transform: translateY(1px) scale(0.99);
+    box-shadow: 0 10px 16px rgba(79, 112, 255, 0.2);
+}
+
+.login-button:focus-visible {
+    outline: 3px solid rgba(83, 109, 254, 0.3);
+    outline-offset: 3px;
 }
 
 .login-button:disabled {
@@ -143,6 +177,11 @@ a {
 
 .login-button-secondary:hover {
     background: rgba(83, 109, 254, 0.08);
+    box-shadow: 0 10px 20px rgba(83, 109, 254, 0.1);
+}
+
+.login-button-secondary::before {
+    background: linear-gradient(110deg, transparent 30%, rgba(83, 109, 254, 0.12), transparent 70%);
 }
 
 .mensaje {
