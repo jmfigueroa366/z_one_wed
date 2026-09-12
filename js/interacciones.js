@@ -1,4 +1,4 @@
-
+div
 
 function guardarDato(clave, datos) {
     localStorage.setItem(clave, JSON.stringify(datos));
@@ -135,3 +135,144 @@ function inicializarCatalogo() {
 
     pintarTabla();
 }
+
+
+/*SESIONES DE GRABACION (sesiones.html)*/
+
+const SESIONES_KEY = 'zone_sesiones';
+const CABINAS = ['Cabina A', 'Cabina B', 'Cabina C', 'Sala de Mezclas'];
+
+const sesionesSeed = [
+    {id: 's1', fecha: '2024-06-01', hora: '10:00', duracion: '1 hora', cabina: 'Cabina A', 
+        artista: 'Artista 1', tipo: 'grabacion', estado: 'confirmada'},
+    {id: 's2', fecha: '2024-06-02', hora: '14:00', duracion: '2 horas', cabina: 'Cabina B', 
+        artista: 'Artista 2', tipo: 'mezcla', estado: 'pendiente'},
+    {id: 's3', fecha: '2024-06-03', hora: '09:00', duracion: '1.5 horas', cabina: 'Cabina C', 
+        artista: 'Artista 3', tipo: 'ensayo', estado: 'cancelada'},
+    {id: 's4', fecha: '2024-06-04', hora: '11:00', duracion: '2 horas', cabina: 'Sala de Mezclas', 
+        artista: 'Artista 4', tipo: 'grabacion', estado: 'confirmada'},
+];
+
+function inicializarSesiones() {
+    const tabla = document.getElementById('sesionesBody');
+    if (!tabla) return;
+
+    if (obtenerDatos(SESIONES_KEY).length === 0) {
+        guardarDato(SESIONES_KEY, sesionesSeed);
+    }
+
+    pintarCabinas();
+
+    const form = document.getElementById('sesionForm');
+    const chips = document.querySelectorAll('.filter-chip[data-estado]');
+    let filtroTipo = 'todos';
+
+    function ocupacionHoy (cabina) {
+        const hoy = new Date().toISOString().slice(0, 10);
+        return obtenerDatos(SESIONES_KEY).some(
+            (s) => s.cabina === cabina && s.fecha === hoy && s.estado !== 'cancelada'
+        );
+    }
+
+    function pintarCabinas() {
+        const cont=document.getElementById('cabinGrid');
+        if (!cont) return;
+        cont.innerHTML =  CABINAS.map((cabina) => {
+            const ocupada = ocupacionHoy(cabina);
+            return `
+                <div class="cabin-card">
+                    <h4>${cabina}</h4>
+                    <span class="cabin-status ${ocupada ? 'ocupada' : 'libre'}">${ocupada ? 'Ocupada Hoy' : 'Libre Hoy'}</span>
+                    <p class="cabin-note">${ocupada ? 'Ya tiene una sesion agendada para hoy.' : 'Sin sesiones agendadas para hoy.'}</p>
+                </div>
+            `;
+        }).join(' ');
+    }
+
+    function pintarTabla() {
+        const items = obtenerDatos(SESIONES_KEY)
+            .filter((s) => filtroEstado === 'todas' || s.estado === filtroEstado)
+            .sort((a, b) => (a.fecha + a.hora).localeCompare(b.fecha + b.hora);
+
+        tabla.innerHTML = '';
+
+        if (items.length === 0) {
+            tabla.innerHTML = '<tr class="empty-row"><td colspan="6">No hay resultados</td></tr>';
+            return;
+        }
+
+        items.forEach((s) => {
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+                <td>
+                    <span class="session-when">${formatearFecha(s.fecha)} · ${s.hora}</span>
+                    <span class="session-when-sub">${s.duracion}</span>
+                </td>
+                <td>${s.cabina}</td>
+                <td>${s.artista}</td>
+                <td><span class="session-type">${s.tipo}</span></td>
+                    <span class="session-status ${s.estado}">${etiquetaEstadoSesion(s.estado)}</span>
+                </td>
+                <td><button type="button" class="row-remove" data-id="${s.id}">Eliminar</button></td>
+            `;
+            tabla.appendChild(tr);
+        });
+
+        tabla.querySelectorAll('.row-remove').forEach((btn) => {
+            btn.addEventListener('click', function () {
+                if (!confirmarAccion('¿Deseas eliminar esta sesión?')) return;
+                const restantes = obtenerDatos(SESIONES_KEY).filter((s) => s.id !== btn.dataset.id);
+                guardarDato(SESIONES_KEY, restantes);
+                pintarTabla();
+            });
+        });
+    }
+
+    function formatearFecha(fecha) {
+        const [y, m, d] = fecha.split('-');
+        return `${d}/${m}/${y}`;
+    }
+
+    function etiquetaEstadoSesion(estado) {
+        return {confirmada: 'Confirmada', pendiente: 'Pendiente', cancelada: 'Cancelada'}[estado] || estado;
+    }
+
+    if (chips.length) {
+        chips.forEach((chip) => {
+            chip.addEventListener('click', function () {
+                chips.forEach((c) => c.classList.remove('active'));
+                chip.classList.add('active');
+                filtroEstado = chip.dataset.estado;
+                pintarTabla();
+            });
+        });
+    }
+
+    if (form) {
+        form.addEventListener('submit', function (e) {
+            e.preventDefault();
+            if (!confirmarAccion('¿Deseas guardar esta sesión?')) return;
+
+            const nueva = {
+                id: 's' + Date.now(),
+                fecha: document.getElementById('sesFecha').value,
+                hora: document.getElementById('sesHora').value,
+                duracion: document.getElementById('sesDuracion').value.trim() || '-',
+                cabina: document.getElementById('sesCabina').value,
+                artista: document.getElementById('sesArtista').value.trim(),
+                tipo: document.getElementById('sesTipo').value,
+                estado: document.getElementById('sesEstado').value,
+            };
+
+            const items = obtenerDatos(SESIONES_KEY);
+            items.push(nueva);
+            guardarDato(SESIONES_KEY, items);
+            form.reset();
+            pintarTabla();
+            pintarCabinas();
+        });
+    }
+
+    pintarTabla();
+}
+
