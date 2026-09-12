@@ -8,6 +8,90 @@
     <link rel="stylesheet" href="../css/catalogo.css">
 </head>
 <body>
-    
+    <div class="deshboard-shell">
+        <aside class="sidebar">
+            <div class="sidebar-branda">
+                <span class="brand-mark">Z-</span><span>ONE</span>
+            </div>
+            
+            <nav class="sidebar-nav" aria-label="Menu principal">
+                <a class="nav-item" href="menu_principal.html">Inicio</a>
+                <a class="nav-item" href="artistas.html">Artistas</a>
+                <a class="nav-item" href="productores.html">Productores</a>
+                <a class="nav-item" href="catalogo.html">Catálogo</a>
+                <a class="nav-item" href="sesiones.html">Sesiones</a>
+                <a class="nav-item" href="agencia.html">Agencia</a>
+                <a class="nav-item" href="estadistica.html">Estadísticas</a>
+                <a class="nav-item" href="chatbot.html">Chatbot</a>
+            </nav>
+            
+            <div class="sidebar-card">
+                <small>Estado</small>
+                <strong>Operación activa</strong>
+            </div>
+        </aside>
+
+        <main class="main-panel">
+            <header class="topbar">
+                <div>
+                    <p class="eyebrow">GESTIÓN</p>
+                    <h2>Hola, <span id="welcomeUser">Usuario</span></h2>
+                </div>
+
+                <div class="topbar-actions">
+                    <span class=""user-badge" id="userBadge">Usuario</span>
+                    <button class="btn-logout" id="btnLogout" type="button">Cerrar sesión</button>
+                </div>
+            </header>
+
+            <div class="page-head">
+                <div>
+                    <p class="eyebrow small">CATÁLOGO</p>
+                    <h1>Explora nuestra música, versiones y álbumes</h1>
+                    <p>Todo lo que ha producido la casa, en un solo lugar: listo para publicar y que siga el proceso</p>
+                </div>
+            </div>
+            
+            <section class="catalogo-layout">
+                <div class="panel-card>
+                    <div class="filter-row">
+                        <button type=""button" class="filter-chip active" data.tipo="todos">Todos</button>
+                        <button type=""button" class="filter-chip" data.tipo="cancion">Canciones</button>
+                        <button type=""button" class="filter-chip" data.tipo="version">Versiones</button>
+                        <button type=""button" class="filter-chip" data.tipo="album">Álbumes</button>
+                    </div>
+
+                    <input type="search" id="catalogoBuscar" class="catalogo-search" placeholder="Buscar por titulo, artista o album...">
+
+                    <table class="catalogo-table">
+                        <thead>
+                            <tr>
+                                <th>Título</th>
+                                <th>Album</th>
+                                <th>Tipo</th>
+                                <th>Duración</th>
+                                <th>Estado</th>
+                                <th></th>
+                            </tr>
+                        </thead>
+                        <tbody id="catalogoBody">
+                            <!-- Aquí se llenará dinámicamente por interacción.js -->
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="panel-card" id="agregar">
+                    <div class="section-heading">
+                        <h3>Agregar al catalogo</h3>
+                    </div>
+                    
+                    <form id=""catalogoForm" class="user-form">
+                        <div class="form-row">
+                            <label for="catalogo">Título</label>
+                            <input type="text" id="catTitulo" placeholder="Ej: Rojo" required>
+                        </div>
+                        <div></div>
+                </div>
+    </div>
 </body>
 </html>
