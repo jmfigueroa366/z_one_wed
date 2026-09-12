@@ -87,11 +87,46 @@
                     
                     <form id=""catalogoForm" class="user-form">
                         <div class="form-row">
-                            <label for="catalogo">Título</label>
+                            <label for="catTitulo">Título</label>
                             <input type="text" id="catTitulo" placeholder="Ej: Rojo" required>
                         </div>
-                        <div></div>
+                        <div class="form-row">
+                            <label for="catArtista">Artista</label>
+                            <input type="text" id="catArtista" placeholder="Ej: Sarita" required>
+                        </div>
+                        <div class="form-row">
+                            <label for="catÁlbum">Álbum</label>
+                            <input type="text" id="catÁlbum" placeholder="Opcional">
+                        </div>
+                        <div class="form-row">
+                            <label for="catTipo">Tipo</label>
+                            <select id="catTipo" required>
+                                <option value="cancion">Canción</option>
+                                <option value="version">Versión</option>
+                                <option value="album">Álbum</option>
+                            </select>
+                        </div>
+                        <div class="form-row">
+                            <label for="catDuracion">Duración</label>
+                            <input type="text" id="catDuracion" placeholder="Ej: 3:45" required>
+                        </div>
+                        <div class="form-row">
+                            <label for="catEstado">Estado</label>
+                            <select id="catEstado" required>
+                                <option value="borrador">Borrador</option>
+                                <option value="proceso">En proceso</option>
+                                <option value="publicado">Publicado</option>
+                            </select>
+                        </div>
+                        <p class="field-hint">Se guarda en este navegador (localStorage)</p>
+                        <button type="submit" class="btn-primary form-btn">Guardar en el catálogo</button>
+                    </form>
                 </div>
+            </section>
+        </main>
     </div>
+
+    <script src="../js/menu.js"></script>
+    <script src="../js/interaccion.js"></script>
 </body>
 </html>
