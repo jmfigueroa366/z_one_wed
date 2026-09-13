@@ -443,3 +443,106 @@ function inicializarAgenda() {
     pintarLista();
 }
 
+
+/*ESTADISTICA (estadisticas.html)*/
+
+function asegurarDatosDemo() {
+    if (obtenerDatos(CATALOGO_KEY).length === 0) guardarDato(CATALOGO_KEY, catalogoSeed);
+    if (obtenerDatos(SESIONES_KEY).length === 0) guardarDato(SESIONES_KEY, sesionesSeed);
+    if (obtenerDatos(AGENDA_KEY).length === 0) guardarDato(AGENDA_KEY, agendaSeed);
+}
+
+function inicializarEstadisticas() {
+    const cont = document.getElementById('kpiGrid');
+    if (!cont) return;
+
+    asegurarDatosDemo();
+
+    const catalogo = obtenerDatos(CATALOGO_KEY);
+    const sesiones = obtenerDatos(SESIONES_KEY);
+    const agenda = obtenerDatos(AGENDA_KEY);
+
+    const totalCatalogo = catalogo.length;
+    const publicadas = catalogo.filter((c) => c.estado === 'publicado').length;
+    const pctPublicado = totalCatalogo ? Math.round((publicadas / totalCatalogo) * 100) : 0;
+    const sesionesConfirmadas = sesiones.filter((s) => s.estado === 'confirmada').length;    
+    
+    const hoy = new Date();
+    const en7dias = new Date(hoy);
+    en7dias.setDate(en7dias.getDate() + 7);
+    const proximosEvantos = agenda.filter((e) => {
+        const f = new Date(e.fecha + 'T00:00:00');
+        return f >= new Date(fechaLocalISO(hoy) + 'T00:00:00') && f <= en7dias;
+    }).length
+
+    document.getElementById('kpiGrid').innerHTML = `
+        <div class="kpi-card"><span>Canciones en catálogo</span><strong>${totalCatalogo}</strong></div>
+        <div class="kpi-card"><span>% publicado</span><strong>${pctPublicado}%</strong></div>
+        <div class="kpi-card"><span>Sesiones confirmadas</span><strong>${sesionesConfirmadas}</strong></div>
+        <div class="kpi-card"><span>Eventos próximos 7 días</span><strong>${proximosEventos}</strong></div>
+    `;
+
+    /* Catálogo por tipo (barras verticales) */
+    const tipos = ['cancion', 'version', 'album'];
+    const etiquetasTipo = { cancion: 'Canciones', version: 'Versiones', album: 'Álbumes' };
+    const conteoTipos = tipos.map((t) => catalogo.filter((c) => c.tipo === t).length);
+    const maxTipo = Math.max(1, ...conteoTipos);
+ 
+    document.getElementById('vbarChart').innerHTML = tipos.map((t, i) => `
+        <div class="vbar">
+            <div class="vbar-fill-wrap">
+                <div class="vbar-fill" style="height:${(conteoTipos[i] / maxTipo) * 100}%"></div>
+            </div>
+            <span class="vbar-value">${conteoTipos[i]}</span>
+            <span class="vbar-label">${etiquetasTipo[t]}</span>
+        </div>
+    `).join('');
+
+    /* Catálogo por estado (barras horizontales) */
+    const estados = ['publicado', 'proceso', 'borrador'];
+    const etiquetasEstado = { publicado: 'Publicado', proceso: 'En proceso', borrador: 'Borrador' };
+    document.getElementById('hbarEstados').innerHTML = estados.map((es) => {
+        const n = catalogo.filter((c) => c.estado === es).length;
+        const pct = totalCatalogo ? Math.round((n / totalCatalogo) * 100) : 0;
+        return `
+            <div class="hbar-row">
+                <span>${etiquetasEstado[es]}</span>
+                <div class="hbar-track"><div class="hbar-fill" style="width:${pct}%"></div></div>
+                <span>${n}</span>
+            </div>
+        `;
+    }).join('');
+
+    /* Sesiones por cabina (barras horizontales) */
+    const maxSesionesCabina = Math.max(1, ...CABINAS.map((c) => sesiones.filter((s) => s.cabina === c).length));
+    document.getElementById('hbarCabinas').innerHTML = CABINAS.map((cabina) => {
+        const n = sesiones.filter((s) => s.cabina === cabina).length;
+        const pct = Math.round((n / maxSesionesCabina) * 100);
+        return `
+            <div class="hbar-row">
+                <span>${cabina}</span>
+                <div class="hbar-track"><div class="hbar-fill" style="width:${pct}%"></div></div>
+                <span>${n}</span>
+            </div>
+        `;
+    }).join('');
+
+    const proximos = agenda
+        .filter((e) => new Date(e.fecha + 'T00:00:00') >= new Date(fechaLocalISO(hoy) + 'T00:00:00'))
+        .sort((a, b) => (a.fecha + a.hora).localeCompare(b.fecha + b.hora))
+        .slice(0, 5);
+ 
+    const listaProximos = document.getElementById('upcomingList');
+    listaProximos.innerHTML = proximos.length
+        ? proximos.map((e) => {
+            const [y, m, d] = e.fecha.split('-');
+            return `
+                <div class="upcoming-item">
+                    <span>${e.titulo}</span>
+                    <span class="upcoming-date">${d}/${m} · ${e.hora}</span>
+                </div>
+            `;
+        }).join('')
+        : '<p class="field-hint">No hay eventos próximos.</p>';
+
+}
