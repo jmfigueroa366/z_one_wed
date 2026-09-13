@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Z-ONE | Sesiones de grabación</title>
+    <link rel="stylesheet" href="../css/style.css">
+    <link rel="stylesheet" href="../css/catalogo.css">
+    <link rel="stylesheet" href="../css/sesiones.css">
+</head>
+<body>
+    <div class="deshboard-shell">
+        <aside class="sidebar">
+            <div class="sidebar-branda">
+                <span class="brand-mark">Z-</span><span>ONE</span>
+            </div>
+            
+            <nav class="sidebar-nav" aria-label="Menu principal">
+                <a class="nav-item" href="menu_principal.html">Inicio</a>
+                <a class="nav-item" href="artistas.html">Artistas</a>
+                <a class="nav-item" href="productores.html">Productores</a>
+                <a class="nav-item" href="catalogo.html">Catálogo</a>
+                <a class="nav-item active" href="sesiones.html">Sesiones</a>
+                <a class="nav-item" href="agencia.html">Agencia</a>
+                <a class="nav-item" href="estadistica.html">Estadísticas</a>
+                <a class="nav-item" href="chatbot.html">Chatbot</a>
+            </nav>
+            
+            <div class="sidebar-card">
+                <small>Estado</small>
+                <strong>Operación activa</strong>
+            </div>
+        </aside>
+
+        <main class="main-panel">
+            <header class="topbar">
+                <div>
+                    <p class="eyebrow">GESTIÓN</p>
+                    <h2>Hola, <span id="welcomeUser">Usuario</span></h2>
+                </div>
+
+                <div class="topbar-actions">
+                    <span class="user-badge" id="userBadge">Usuario</span>
+                    <button class="btn-logout" id="btnLogout" type="button">Cerrar sesión</button>
+                </div>
+            </header>
+
+            <div class="page-head">
+                <div>
+                    <p class="eyebrow small">SESIONES DE GRABACIÓN</p>
+                    <h1>Agente de cabinas y sesiones</h1>
+                    <p>Que cabina esta libre ahora mismo y qué sesiones hay programadas, para no chocar horarios</p>
+                </div>
+            </div>
+            
+            <div class="cabin-grid" id="cabinGrid">
+                <!-- tarjetas de cabinas generadas por interaccion.js -->
+            </div>
+                
+            <section class="catalogo-layout">
+                <div class="panel-card">
+                    <div class="filter-row">
+                        <button type="button" class="filter-chip active" data-estado="todos">Todas</button>
+                        <button type="button" class="filter-chip" data-estado="confirmada">Confirmadas</button>
+                        <button type="button" class="filter-chip" data-estado="pendiente">Pendientes</button>
+                        <button type="button" class="filter-chip" data-estado="cancelada">Canceladas</button>
+                    </div>
+
+                    <table class="session-table">
+                        <thead>
+                            <tr>
+                                <th>Fecha y Hora</th>
+                                <th>Cabina</th>
+                                <th>Artista / Productor</th>
+                                <th>Tipo</th>
+                                <th>Estado</th>
+                                <th></th>
+                            </tr>
+                        </thead>
+                        <tbody id="sesionesBody">
+                            <!-- Filas generadas por interacción.js -->
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="panel-card" id="agendar">
+                    <div class="section-heading">
+                        <h3>Agendar sesion</h3>
+                    </div>
+                    
+                    <form id="sesionForm" class="user-form">
+                        <div class="form-row">
+                            <label for="sesFecha">Fecha</label>
+                            <input type="date" id="sesFecha" required>
+                        </div>
+                        <div class="form-row">
+                            <label for="sesHora">Hora</label>
+                            <input type="time" id="sesHora" required>
+                        </div>
+                        <div class="form-row">
+                            <label for="sesDuracion">Duración</label>
+                            <input type="text" id="sesDuracion" placeholder="Ej: 2 Horas">
+                        </div>
+                        <div class="form-row">
+                            <label for="sesCabina">Cabina</label>
+                            <select id="sesCabina" required>
+                                <option value="cabina A">Cabina A</option>
+                                <option value="cabina B">Cabina B</option>
+                                <option value="cabina C">Cabina C</option>
+                                <option value="Sala de mezclas">Sala de mezclas</option>
+                            </select>
+                        </div>
+                        <div class="form-row">
+                            <label for="sesArtista">Artista / Productor</label>
+                            <input type="text" id="sesArtista" placeholder="Ej. Ferreira" required>
+                        </div>
+                        <div class="form-row">
+                            <label for="sesTipo">Tipo de sesión</label>
+                            <select id="sesTipo" required>
+                                <option value="grabacion">Grabación</option>
+                                <option value="mezcla">Mezcla</option>
+                                <option value="masterizacion">Masterización</option>
+                                <option value="ensayo">En Ensayo</option>
+                            </select>
+                        </div>
+                        <div class="form-row">
+                            <label for="sesEstado">Estado</label>
+                            <select id="sesEstado" required>
+                                <option value="confirmada">Confirmada</option>
+                                <option value="pendiente">Pendiente</option>
+                                <option value="cancelada">Cancelada</option>
+                            </select>
+                        </div>
+                        <p class="field-hint">Se guarda en este navegador (localStorage)</p>
+                        <button type="submit" class="btn-primary form-btn">Guardar la sesión</button>
+                    </form>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <script src="../js/menu.js"></script>
+    <script src="../js/interaccion.js"></script>
+</body>
+</html>

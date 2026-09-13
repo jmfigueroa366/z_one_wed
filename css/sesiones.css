@@ -1,0 +1,113 @@
+
+
+.cabin-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 12px;
+    margin-bottom: 20px;
+}
+ 
+.cabin-card {
+    background: #fff;
+    border: 1px solid #dfe7e2;
+    border-radius: 14px;
+    padding: 16px;
+}
+ 
+.cabin-card h4 {
+    margin: 0 0 8px;
+    font-size: 1rem;
+    letter-spacing: -0.02em;
+    color: #121826;
+}
+ 
+.cabin-status {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.78rem;
+    font-weight: 700;
+}
+ 
+.cabin-status::before {
+    content: "";
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+}
+ 
+.cabin-status.libre {
+    color: #1d5a4a;
+}
+.cabin-status.libre::before {
+    background: #34d399;
+}
+ 
+.cabin-status.ocupada {
+    color: #92650a;
+}
+.cabin-status.ocupada::before {
+    background: #f59e0b;
+}
+ 
+.cabin-note {
+    margin: 8px 0 0;
+    font-size: 0.8rem;
+    color: var(--muted);
+}
+ 
+.session-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.9rem;
+}
+ 
+.session-table th {
+    text-align: left;
+    color: var(--muted);
+    font-size: 0.74rem;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    padding: 0 10px 10px;
+    border-bottom: 1px solid #ebefee;
+}
+ 
+.session-table td {
+    padding: 11px 10px;
+    border-bottom: 1px solid #ebefee;
+    vertical-align: middle;
+}
+ 
+.session-table tr:last-child td {
+    border-bottom: none;
+}
+ 
+.session-when {
+    display: block;
+    font-weight: 700;
+    color: #121826;
+}
+ 
+.session-when-sub {
+    display: block;
+    color: var(--muted);
+    font-size: 0.8rem;
+    margin-top: 2px;
+}
+ 
+.session-status {
+    display: inline-flex;
+    padding: 4px 10px;
+    border-radius: 999px;
+    font-size: 0.72rem;
+    font-weight: 700;
+}
+ 
+.session-status.confirmada { background: rgba(52, 211, 153, 0.14); color: #1d5a4a; }
+.session-status.pendiente  { background: rgba(245, 158, 11, 0.14); color: #92650a; }
+.session-status.cancelada  { background: rgba(148, 163, 184, 0.18); color: #5d6470; }
+ 
+.session-type {
+    font-size: 0.82rem;
+    color: var(--muted);
+}

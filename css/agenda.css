@@ -1,0 +1,150 @@
+
+.agenda-layout {
+    display: grid;
+    grid-template-columns: 1.3fr 1fr;
+    gap: 18px;
+    align-items: start;
+}
+ 
+.calendar-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 14px;
+}
+ 
+.calendar-head h3 {
+    margin: 0;
+    font-size: 1.2rem;
+    letter-spacing: -0.03em;
+    text-transform: capitalize;
+}
+ 
+.calendar-nav {
+    display: flex;
+    gap: 8px;
+}
+ 
+.calendar-nav button {
+    width: 34px;
+    height: 34px;
+    border-radius: 10px;
+    border: 1px solid #dfe7e2;
+    background: #fff;
+    color: var(--text);
+    font-weight: 700;
+    cursor: pointer;
+}
+ 
+.calendar-nav button:hover {
+    background: #f2f6f4;
+}
+ 
+.calendar-grid {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 6px;
+}
+ 
+.calendar-weekday {
+    text-align: center;
+    font-size: 0.7rem;
+    font-weight: 700;
+    color: var(--muted);
+    text-transform: uppercase;
+    padding-bottom: 4px;
+}
+ 
+.calendar-day {
+    position: relative;
+    min-height: 58px;
+    border-radius: 10px;
+    border: 1px solid #ebefee;
+    background: #fff;
+    padding: 6px 8px;
+    cursor: pointer;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 4px;
+}
+ 
+.calendar-day.empty {
+    background: transparent;
+    border-color: transparent;
+    cursor: default;
+}
+ 
+.calendar-day .day-num {
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: #121826;
+}
+ 
+.calendar-day.today {
+    border-color: #1d5a4a;
+}
+ 
+.calendar-day.today .day-num {
+    color: #1d5a4a;
+}
+ 
+.calendar-day.selected {
+    background: rgba(29, 90, 74, 0.08);
+    border-color: #1d5a4a;
+}
+ 
+.day-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: #1d5a4a;
+}
+ 
+.event-list {
+    display: grid;
+    gap: 14px;
+    margin-top: 6px;
+}
+ 
+.event-item {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 10px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid #ebefee;
+}
+ 
+.event-item:last-child {
+    border-bottom: none;
+    padding-bottom: 0;
+}
+ 
+.event-time {
+    font-size: 0.78rem;
+    color: var(--muted);
+    font-weight: 700;
+    min-width: 52px;
+}
+ 
+.event-body {
+    flex: 1;
+}
+ 
+.event-title {
+    display: block;
+    font-weight: 700;
+    color: #121826;
+}
+ 
+.event-type {
+    display: inline-block;
+    margin-top: 4px;
+    font-size: 0.72rem;
+    padding: 3px 9px;
+    border-radius: 999px;
+    background: rgba(29, 90, 74, 0.1);
+    color: #1d5a4a;
+    font-weight: 700;
+}
