@@ -137,6 +137,8 @@ if (btn_logout) {
 
 sidebar_items.forEach(function (item) {
     item.addEventListener('click', function () {
+        if (item.tagName === 'A') return;
+
         const panel_name = item.dataset.panel;
 
         sidebar_items.forEach(function (nav_item) {

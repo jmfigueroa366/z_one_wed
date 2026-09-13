@@ -3,7 +3,7 @@ function guardarDato(clave, datos) {
     localStorage.setItem(clave, JSON.stringify(datos));
 }
 
-function obtenerDato(clave) {
+function obtenerDatos(clave) {
     const crudo = localStorage.getItem(clave);
     return crudo ? JSON.parse(crudo) : [];
 }
@@ -191,7 +191,7 @@ function inicializarSesiones() {
     function pintarTabla() {
         const items = obtenerDatos(SESIONES_KEY)
             .filter((s) => filtroEstado === 'todas' || s.estado === filtroEstado)
-            .sort((a, b) => (a.fecha + a.hora).localeCompare(b.fecha + b.hora);
+            .sort((a, b) => (a.fecha + a.hora).localeCompare(b.fecha + b.hora));
 
         tabla.innerHTML = '';
 
@@ -395,7 +395,7 @@ function inicializarAgenda() {
         });
     }
 
-    document.getElementById('prevMonth'). addEventListerner('click', function () {
+    document.getElementById('prevMonth').addEventListener('click', function () {
         mesActual -=1;
         if (mesActual < 0) {
             mesActual = 11; anioActual -=1;
@@ -403,7 +403,7 @@ function inicializarAgenda() {
         pintarCalendario();
     });
 
-    document.getElementById('nextMonth'). addEventListerner('click', function () {
+    document.getElementById('nextMonth').addEventListener('click', function () {
         mesActual +=1;
         if (mesActual > 11) {
             mesActual = 0; anioActual +=1;
@@ -421,16 +421,16 @@ function inicializarAgenda() {
                 fecha: document.getElementById('agFecha').value,
                 hora: document.getElementById('agHora').value,
                 titulo: document.getElementById('agTitulo').value.trim(),
-                tipo: document.getElementById('sesTipo').value,
+                tipo: document.getElementById('agTipo').value,
             };
 
             const items = obtenerDatos(AGENDA_KEY);
             items.push(nueva);
             guardarDato(AGENDA_KEY, items);
 
-            diaSeleccionado = nuevo.fecha;
-            mesActual = Number (nuevo.fecha.split('-')[1]) -1;
-            anioActual = Number(nuevo.fecha.split('-')[0]);
+            diaSeleccionado = nueva.fecha;
+            mesActual = Number(nueva.fecha.split('-')[1]) - 1;
+            anioActual = Number(nueva.fecha.split('-')[0]);
 
 
             form.reset();
@@ -442,4 +442,10 @@ function inicializarAgenda() {
     pintarCalendario();
     pintarLista();
 }
+
+document.addEventListener('DOMContentLoaded', function () {
+    inicializarCatalogo();
+    inicializarSesiones();
+    inicializarAgenda();
+});
 
