@@ -1,4 +1,3 @@
-div
 
 function guardarDato(clave, datos) {
     localStorage.setItem(clave, JSON.stringify(datos));
@@ -274,5 +273,173 @@ function inicializarSesiones() {
     }
 
     pintarTabla();
+}
+
+
+/*AGENDA (agenda.html)*/
+
+const AGENDA_KEY = 'zone_agenda';
+const MESES = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'];
+const DIAS_SEMANA = ['Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb', 'Dom'];
+
+function fechaLocalISO(d) {
+    return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+}
+
+function agendaSeed() {
+    const hoy = new Date();
+    const en = (offset) => {
+        const d = new Date(hoy);
+        d.setDate(d.getDate() + offset);
+        return fechaLocalISO(d);
+    };
+    return [
+        {id: 'a1', fecha: en(0), hora: '10:00', titulo: 'Reunión de equipo', tipo: 'Reunion' },
+        {id: 'a2', fecha: en(2), hora: '14:00', titulo: 'Lanzamiento de Rojo', tipo: 'Lanzamineto' },
+        {id: 'a3', fecha: en(3), hora: '09:00', titulo: 'Sesión de grabación', tipo: 'Grabación' },
+        {id: 'a4', fecha: en(5), hora: '11:00', titulo: 'Revisión de mezclas', tipo: 'Mezcla' },
+    ];
+}
+
+function inicializarAgenda() {
+    const grid = document.getElementById('calendarGrid');
+    if (!grid) return;
+
+    if (obtenerDatos(AGENDA_KEY).length === 0) {
+        guardarDato(AGENDA_KEY, agendaSeed());
+    }
+
+    const hoy = new Date();
+    let mesActual = hoy.getMonth();
+    let anioActual = hoy.getFullYear();
+    let diaSeleccionado = fechaLocalISO(hoy);
+
+    const titulo = document.getElementById('calendarTitle');
+    const lista = document.getElementById('eventList');
+    const listaLabel = document.getElementById('eventListLabel');
+    const form = document.getElementById('agendaForm');
+
+    function eventosDe (fecha) {
+        return obtenerDatos(AGENDA_KEY)
+        .filter((e) => e.fecha === fecha)
+        .sort((a, b) => a.hora.localeCompare(b.hora));
+    }
+        
+    function pintarCalendario() {
+        titulo.textContent = `${MESES[mesActual]} ${anioActual}`;
+
+        const primerDia = new Date(anioActual, mesActual, 1);
+        const diasEnMes = new Date(anioActual, mesActual, +1, 0).getDate();
+        const offset = (primerDia.getDay() + 6) %7; //lunes = 0
+
+        let html = DIAS_SEMANA.map((d) => `<div class="calendar-weekday">${d}</div>`).join('');
+
+        for (let i=0; i < offset; i++) {
+            html += '<div class ="calendar-day empty"></div>'; 
+        }
+
+        for (let dia = 1; dia <= diasEnMes; dia++) {
+            const fecha = fechaLocalISO(new Date(anioActual, mesActual, dia));
+            const tieneEventos = eventosDe(fecha).length > 0;
+            const esHoy = fecha === fechaLocalISO(hoy);
+            const esSeleccionado = fecha === diaSeleccionado;
+
+            html += `
+                <div class="calendar-day ${esHoy ? 'today' : ''} ${esSeleccionado ? 'selected' : ''}" data-fecha="${fecha}">
+                    <span class="day-num">${dia}</span>
+                    ${tieneEventos ? '<span class="day-dot"></span>' : ''}
+                </div>
+            `;
+        }
+
+        grid.innerHTML = html;
+ 
+        grid.querySelectorAll('.calendar-day[data-fecha]').forEach((celda) => {
+            celda.addEventListener('click', function () {
+                diaSeleccionado = celda.dataset.fecha;
+                pintarCalendario();
+                pintarLista();
+            });
+        });
+    }
+
+    function pintarLista() {
+        const eventos = eventosDe(diaSeleccionado);
+        const [y, m, d] = diaSeleccionado.split('-');
+        listaLabel.textContent = `${d}/${m}/${y}`;
+
+        if (eventos.length === 0) {
+            lista.innerHTML = '<p class="field-hint">Nohay eventos este día</p>';
+            return;
+        }
+
+         lista.innerHTML = eventos.map((e) => `
+            <div class="event-item">
+                <span class="event-time">${e.hora}</span>
+                <div class="event-body">
+                    <span class="event-title">${e.titulo}</span>
+                    <span class="event-type">${e.tipo}</span>
+                </div>
+                <button type="button" class="row-remove" data-id="${e.id}">Eliminar</button>
+            </div>
+        `).join('');
+
+        lista.querySelectorAll('.row-remove').forEach((btn) => {
+            btn.addEventListener('click', function () {
+                if (!confirmarAccion('¿Deseas eliminar este evento de la agenda?')) return;
+                const restantes = obtenerDatos(AGENDA_KEY).filter((e) => e.id !== btn.dataset.id);
+                guardarDato(AGENDA_KEY, restantes);
+                pintarCalendario();
+                pintarLista();
+            });
+        });
+    }
+
+    document.getElementById('prevMonth'). addEventListerner('click', function () {
+        mesActual -=1;
+        if (mesActual < 0) {
+            mesActual = 11; anioActual -=1;
+        }
+        pintarCalendario();
+    });
+
+    document.getElementById('nextMonth'). addEventListerner('click', function () {
+        mesActual +=1;
+        if (mesActual > 11) {
+            mesActual = 0; anioActual +=1;
+        }
+        pintarCalendario();
+    });
+
+    if (form) {
+        form.addEventListener('submit', function (e) {
+            e.preventDefault();
+            if (!confirmarAccion('¿Deseas guardar este evento en la agenda?')) return;
+
+            const nueva = {
+                id: 'a' + Date.now(),
+                fecha: document.getElementById('agFecha').value,
+                hora: document.getElementById('agHora').value,
+                titulo: document.getElementById('agTitulo').value.trim(),
+                tipo: document.getElementById('sesTipo').value,
+            };
+
+            const items = obtenerDatos(AGENDA_KEY);
+            items.push(nueva);
+            guardarDato(AGENDA_KEY, items);
+
+            diaSeleccionado = nuevo.fecha;
+            mesActual = Number (nuevo.fecha.split('-')[1]) -1;
+            anioActual = Number(nuevo.fecha.split('-')[0]);
+
+
+            form.reset();
+            pintarCalendario();
+            pintarLista();
+        });
+    }
+
+    pintarCalendario();
+    pintarLista();
 }
 
