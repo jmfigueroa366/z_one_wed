@@ -16,6 +16,88 @@ const drawer_backdrop = document.getElementById('drawerBackdrop');
 const dashboard_views = document.querySelectorAll('.dashboard-view');
 const field_toggles = document.querySelectorAll('.field-toggle');
 const reduced_motion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+const artist_form = document.getElementById('artistForm');
+const production_form = document.getElementById('productionForm');
+const artist_storage_key = 'zone_artistas';
+const production_storage_key = 'zone_producciones';
+
+function obtenerRegistros(clave, valoresIniciales) {
+    const registros = JSON.parse(localStorage.getItem(clave) || 'null');
+    if (Array.isArray(registros)) return registros;
+
+    localStorage.setItem(clave, JSON.stringify(valoresIniciales));
+    return valoresIniciales;
+}
+
+function guardarRegistros(clave, registros) {
+    localStorage.setItem(clave, JSON.stringify(registros));
+}
+
+function pintarArtistas() {
+    const contenedor = document.querySelector('#panel-artistas .record-grid');
+    if (!contenedor) return;
+
+    const artistas = obtenerRegistros(artist_storage_key, [
+        { nombre: 'Nova Lima', rol: 'Artista principal' },
+        { nombre: 'Leo Norte', rol: 'Productor invitado' },
+        { nombre: 'Alma Beats', rol: 'Proyecto independiente' }
+    ]);
+
+    contenedor.innerHTML = artistas.map((artista) => `
+        <article class="record-card"><strong>${artista.nombre}</strong><span>${artista.rol}</span></article>
+    `).join('');
+}
+
+function pintarProducciones() {
+    const contenedor = document.querySelector('#panel-produccion .production-list');
+    if (!contenedor) return;
+
+    const producciones = obtenerRegistros(production_storage_key, [
+        { nombre: 'Beat Session', etapa: 'Grabación y arreglos', avance: 92 },
+        { nombre: 'Master final', etapa: 'Mezcla y masterización', avance: 78 },
+        { nombre: 'Campaña de lanzamiento', etapa: 'Promoción y distribución', avance: 64 }
+    ]);
+
+    contenedor.innerHTML = producciones.map((produccion) => `
+        <div class="production-item">
+            <span class="production-icon" aria-hidden="true">♪</span>
+            <div><strong>${produccion.nombre}</strong><small>${produccion.etapa}</small></div>
+            <span class="production-progress">${produccion.avance}%</span>
+        </div>
+    `).join('');
+}
+
+pintarArtistas();
+pintarProducciones();
+
+if (artist_form) {
+    artist_form.addEventListener('submit', function (event) {
+        event.preventDefault();
+        const artistas = obtenerRegistros(artist_storage_key, []);
+        artistas.push({
+            nombre: document.getElementById('artistName').value.trim(),
+            rol: document.getElementById('artistRole').value
+        });
+        guardarRegistros(artist_storage_key, artistas);
+        artist_form.reset();
+        pintarArtistas();
+    });
+}
+
+if (production_form) {
+    production_form.addEventListener('submit', function (event) {
+        event.preventDefault();
+        const producciones = obtenerRegistros(production_storage_key, []);
+        producciones.push({
+            nombre: document.getElementById('productionName').value.trim(),
+            etapa: document.getElementById('productionStage').value.trim(),
+            avance: Number(document.getElementById('productionProgress').value)
+        });
+        guardarRegistros(production_storage_key, producciones);
+        production_form.reset();
+        pintarProducciones();
+    });
+}
 
 function animateView(view) {
     if (reduced_motion || !view) return;
@@ -137,6 +219,8 @@ if (btn_logout) {
 
 sidebar_items.forEach(function (item) {
     item.addEventListener('click', function () {
+        if (item.tagName === 'A') return;
+
         const panel_name = item.dataset.panel;
 
         sidebar_items.forEach(function (nav_item) {

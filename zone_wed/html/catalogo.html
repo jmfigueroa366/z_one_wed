@@ -8,9 +8,9 @@
     <link rel="stylesheet" href="../css/catalogo.css">
 </head>
 <body>
-    <div class="deshboard-shell">
+    <div class="dashboard-shell">
         <aside class="sidebar">
-            <div class="sidebar-branda">
+            <div class="sidebar-brand">
                 <span class="brand-mark">Z-</span><span>ONE</span>
             </div>
             
@@ -55,10 +55,10 @@
             <section class="catalogo-layout">
                 <div class="panel-card">
                     <div class="filter-row">
-                        <button type="button" class="filter-chip active" data.tipo="todos">Todos</button>
-                        <button type="button" class="filter-chip" data.tipo="cancion">Canciones</button>
-                        <button type="button" class="filter-chip" data.tipo="version">Versiones</button>
-                        <button type="button" class="filter-chip" data.tipo="album">Álbumes</button>
+                            <button type="button" class="filter-chip active" data-tipo="todos">Todos</button>
+                            <button type="button" class="filter-chip" data-tipo="cancion">Canciones</button>
+                            <button type="button" class="filter-chip" data-tipo="version">Versiones</button>
+                            <button type="button" class="filter-chip" data-tipo="album">Álbumes</button>
                     </div>
 
                     <input type="search" id="catalogoBuscar" class="catalogo-search" placeholder="Buscar por titulo, artista o album...">
@@ -85,7 +85,7 @@
                         <h3>Agregar al catalogo</h3>
                     </div>
                     
-                    <form id=""catalogoForm" class="user-form">
+                    <form id="catalogoForm" class="user-form">
                         <div class="form-row">
                             <label for="catTitulo">Título</label>
                             <input type="text" id="catTitulo" placeholder="Ej: Rojo" required>
@@ -126,7 +126,7 @@
         </main>
     </div>
 
-    <script src="../js/menu.js"></script>
-    <script src="../js/interaccion.js"></script>
+    <script type="module" src="../js/menu.js"></script>
+    <script src="../js/interacciones.js"></script>
 </body>
 </html>
