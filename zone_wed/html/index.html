@@ -3,69 +3,183 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Z-ONE | Inicio</title>
+    <title>Z-ONE | Productora musical</title>
     <link rel="stylesheet" href="../css/style.css">
 </head>
-<body>
-    <div class="promo-bar">
-        <span class="promo-dot"></span>
-        <span>Oferta de la semana: Hosting desde $1.99/mes</span>
-        <div class="promo-actions">
-            <a href="#">Atención</a>
-            <a href="#">Ayuda</a>
-            <a href="#">Soporte</a>
-            <a href="#" class="promo-cta">Español</a>
-        </div>
-    </div>
-
-    <header class="main-header">
-        <div class="logo-wrap">
-            <div class="logo-mark">◉</div>
-            <span class="logo-text">DreamHost</span>
+<body class="z-one-page">
+    <header class="topbar">
+        <div class="brand" aria-label="Z-ONE">
+            Z-<span>ONE</span>
         </div>
 
         <nav class="main-nav" aria-label="Navegación principal">
-            <a href="#">WordPress</a>
-            <a href="#">Hosting</a>
-            <a href="#">Sitios Web</a>
-            <a href="#">Dominios</a>
-            <a href="#">Correo electrónico</a>
-            <a href="#">Servicios Profesionales</a>
-            <a href="#">Blog</a>
+            <a href="#inicio">Inicio</a>
+            <a href="#produccion">Producción</a>
+            <a href="#distribucion">Distribución</a>
+            <a href="#reportes">Reportes</a>
         </nav>
 
-        <div class="header-actions">
-            <button class="btn-outline" type="button">Iniciar sesión</button>
-            <a href="register.html" class="btn-primary header-cta" type="button">Comienza ahora</a>
+        <div class="topbar-actions">
+            <a href="login.html" class="btn-secondary">Iniciar sesión</a>
+            <a href="register.html" class="btn-primary">Registrar</a>
         </div>
     </header>
 
-    <main class="hero-wrap">
+    <main class="hero" id="inicio">
         <section class="hero-copy">
-            <p class="eyebrow">CONOCE A DREAMHOST</p>
-            <h1>Hosting Web<br>Para Todos</h1>
+            <p class="eyebrow">PRODUCTORA MUSICAL</p>
+                <h1 data-split-text>Gestiona la música, los artistas y los lanzamientos.</h1>
             <p class="lead">
-                Nos aseguramos de que tu sitio web sea rápido, seguro, y esté siempre activo,
-                para que tus visitantes y motores de búsqueda confíen en ti.
+                Z-ONE centraliza tu producción, promoción, distribución y análisis para que cada proyecto musical llegue al público con claridad y estrategia.
             </p>
 
             <div class="cta-row">
-                <a href="register.html" class="btn-primary large">Comienza ahora</a>
-                <button class="btn-ghost" type="button">Más que un sitio web</button>
+                <a href="register.html" class="btn-primary">Crear cuenta</a>
+                <a href="#produccion" class="btn-ghost">Ver plataforma</a>
             </div>
 
-            <div class="brand-strip">
-                <span class="brand-mini">dreamhost.com</span>
-            </div>
+            <ul class="stats" aria-label="Estadísticas">
+                <li><strong class="stat-value" data-value="48">0</strong><span>Artistas activos</span></li>
+                <li><strong class="stat-value" data-value="26">0</strong><span>Lanzamientos</span></li>
+                <li><strong class="stat-value" data-value="92" data-suffix="%">0%</strong><span>Retención</span></li>
+            </ul>
         </section>
 
-        <section class="hero-visual" aria-label="Ilustración del producto">
-            <div class="visual-glow"></div>
-            <div class="profile-card">
-                <div class="profile-avatar"></div>
-                <div class="mini-tag">VOYAGE</div>
+        <section class="hero-visual" aria-label="Vista de la plataforma musical">
+            <div class="visual-panel">
+                <div class="ambient-field" aria-hidden="true"></div>
+                <div class="visual-top">
+                    <span class="pill live">En vivo</span>
+                    <span class="pill neutral">Z-ONE Studio</span>
+                </div>
+
+                <div class="disc-wrap">
+                    <div class="vinyl-disc">
+                        <div class="disc-inner"></div>
+                    </div>
+                </div>
+                    <div class="waveform" aria-label="Visualización de audio"></div>
+
+                <div class="release-card">
+                    <span class="release-tag">Último lanzamiento</span>
+                    <h3>Midnight Echo</h3>
+                    <p>Single</p>
+                    <div class="track-controls">
+                        <button class="play-toggle" type="button" aria-label="Reproducir Midnight Echo" aria-pressed="false">
+                            <span class="play-icon" aria-hidden="true">▶</span>
+                        </button>
+                        <div class="track-meta">
+                            <div class="track-progress" role="progressbar" aria-label="Progreso de Midnight Echo" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
+                                <span></span>
+                            </div>
+                            <div class="track-time"><span>0:00</span><span>2:48</span></div>
+                        </div>
+                    </div>
+                    <div class="progress-bar">
+                        <span></span>
+                    </div>
+                </div>
             </div>
         </section>
     </main>
+
+    <section class="features" id="produccion">
+        <article class="feature-card">
+            <span class="feature-icon" aria-hidden="true">◒</span>
+            <h3>Producción</h3>
+            <p>Organiza sesiones, demos, mezclas y entregables del estudio.</p>
+        </article>
+        <article class="feature-card">
+            <span class="feature-icon" aria-hidden="true">↗</span>
+            <h3>Distribución</h3>
+            <p>Gestiona fechas, plataformas y campañas de lanzamiento.</p>
+        </article>
+        <article class="feature-card">
+            <span class="feature-icon" aria-hidden="true">▣</span>
+            <h3>Reportes</h3>
+            <p>Monitorea crecimiento, rendimiento y resultados del catálogo.</p>
+        </article>
+    </section>
+
+    <section class="workflow" id="distribucion">
+        <div class="workflow-heading">
+            <p class="eyebrow">FLUJO DE LANZAMIENTO</p>
+            <h2>De la primera idea al público.</h2>
+            <p>Un proceso claro para que cada lanzamiento avance sin perder energía.</p>
+        </div>
+
+        <ol class="workflow-steps">
+            <li class="workflow-step">
+                <span class="step-number">01</span>
+                <span class="step-line" aria-hidden="true"></span>
+                <h3>Produce</h3>
+                <p>Ordena demos, sesiones y entregables desde el estudio.</p>
+            </li>
+            <li class="workflow-step">
+                <span class="step-number">02</span>
+                <span class="step-line" aria-hidden="true"></span>
+                <h3>Distribuye</h3>
+                <p>Programa fechas y lleva tu música a cada plataforma.</p>
+            </li>
+            <li class="workflow-step">
+                <span class="step-number">03</span>
+                <span class="step-line" aria-hidden="true"></span>
+                <h3>Crece</h3>
+                <p>Lee los resultados y convierte los datos en decisiones.</p>
+            </li>
+        </ol>
+    </section>
+
+    <section class="dashboard-preview" id="reportes">
+        <div class="preview-header">
+            <p class="eyebrow">SISTEMA DE GESTIÓN</p>
+            <h2>Todo tu ecosistema musical en una sola plataforma.</h2>
+        </div>
+
+        <div class="preview-grid">
+            <div class="preview-card large">
+                <div class="table-header">
+                    <span>Proyecto actual</span>
+                    <span class="status-badge">Activo</span>
+                </div>
+                <ul class="project-list">
+                    <li><span>Beat Session</span><strong>92%</strong></li>
+                    <li><span>Master final</span><strong>78%</strong></li>
+                    <li><span>Campaña social</span><strong>64%</strong></li>
+                </ul>
+            </div>
+
+            <div class="preview-card">
+                <div class="mini-card-header">
+                    <span>Calendario</span>
+                    <strong>5 eventos</strong>
+                </div>
+                <div class="calendar-mini">
+                    <span>Lu</span>
+                    <span>Ma</span>
+                    <span>Mi</span>
+                    <span>Ju</span>
+                    <span>Vi</span>
+                </div>
+            </div>
+
+            <div class="preview-card">
+                <div class="mini-card-header">
+                    <span>Ingresos</span>
+                    <strong>$12.4k</strong>
+                </div>
+                <div class="chart-bars">
+                    <span class="bar-35"></span>
+                    <span class="bar-52"></span>
+                    <span class="bar-68"></span>
+                    <span class="bar-72"></span>
+                    <span class="bar-88"></span>
+                    <span class="bar-100"></span>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <script type="module" src="../js/index.js"></script>
 </body>
 </html>

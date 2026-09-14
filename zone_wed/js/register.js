@@ -1,4 +1,5 @@
 const form = document.getElementById('registerForm');
+const register_message = document.getElementById('registerMessage');
 
 if (form) {
     form.addEventListener('submit', function (e) {
@@ -9,7 +10,9 @@ if (form) {
         const password = document.getElementById('password').value.trim();
 
         if (!nombre || !email || !password) {
-            alert('Completa todos los campos');
+            if (register_message) {
+                register_message.textContent = 'Completa todos los campos.';
+            }
             return;
         }
 
@@ -20,7 +23,6 @@ if (form) {
         };
 
         localStorage.setItem('usuario_registrado', JSON.stringify(usuario));
-        alert('Usuario registrado correctamente');
-        window.location.href = 'index.html';
+        window.location.href = 'login.html';
     });
 }
