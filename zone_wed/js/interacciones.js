@@ -164,7 +164,7 @@ function inicializarSesiones() {
 
     const form = document.getElementById('sesionForm');
     const chips = document.querySelectorAll('.filter-chip[data-estado]');
-    let filtroTipo = 'todos';
+    let filtroEstado = 'todas';
 
     function ocupacionHoy (cabina) {
         const hoy = new Date().toISOString().slice(0, 10);
