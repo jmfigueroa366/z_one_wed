@@ -58,24 +58,31 @@
                     <div class="calendar-head">
                         <h3 id="calendarTitle">Mes</h3>
                         <div class="calendar-nav">
-                            <button type="button" id="prevMonth" aria-label="Mes anterior">,</button>
-                            <button type="button" id="nextMonth" aria-label="Mes siguiente">.</button>
+                            <button type="button" id="prevMonth" aria-label="Mes anterior">‹</button>
+                            <button type="button" id="nextMonth" aria-label="Mes siguiente">›</button>
                         </div>
                     </div>
                     <div class="calendar-grid" id="calendarGrid">
                         <!-- Celdas del calendario generadas por interaccion.js -->
                     </div>
 
-                    <div class="panel-card">
+                </div>
+
+                <div class="panel-card agenda-details">
                         <div class="section-heading">
+                            <p class="eyebrow small">DÍA SELECCIONADO</p>
                             <h3>Eventos del <span id="eventListLabel">día</span></h3>
-                    </div>
+                        </div>
 
-                    <div class="event-list" id="eventList">
+                        <div class="event-list" id="eventList">
                         <!-- Eventos del día generados por interaccion.js -->
-                    </div>
+                        </div>
 
-                    <form id="agendaForm" class="user-form" style="margin-top: 22px;">
+                    <div class="agenda-form-heading">
+                        <p class="eyebrow small">NUEVO EVENTO</p>
+                        <h3>Agregar a la agenda</h3>
+                    </div>
+                    <form id="agendaForm" class="user-form agenda-form">
                         <div class="form-row">
                             <label for="agFecha">Fecha</label>
                             <input type="date" id="agFecha" required>

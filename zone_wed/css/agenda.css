@@ -1,9 +1,19 @@
 
 .agenda-layout {
     display: grid;
-    grid-template-columns: 1.3fr 1fr;
-    gap: 18px;
+    grid-template-columns: minmax(0, 1.35fr) minmax(320px, 0.85fr);
+    gap: 22px;
     align-items: start;
+}
+
+.agenda-layout > .panel-card {
+    min-width: 0;
+}
+
+.agenda-details {
+    display: flex;
+    flex-direction: column;
+    min-height: 100%;
 }
  
 .calendar-head {
@@ -15,7 +25,7 @@
  
 .calendar-head h3 {
     margin: 0;
-    font-size: 1.2rem;
+    font-size: 1.35rem;
     letter-spacing: -0.03em;
     text-transform: capitalize;
 }
@@ -26,24 +36,29 @@
 }
  
 .calendar-nav button {
-    width: 34px;
-    height: 34px;
-    border-radius: 10px;
+    width: 38px;
+    height: 38px;
+    border-radius: 12px;
     border: 1px solid #dfe7e2;
     background: #fff;
     color: var(--text);
     font-weight: 700;
+    font-size: 1.35rem;
+    line-height: 1;
     cursor: pointer;
+    transition: transform 160ms ease, background 160ms ease, border-color 160ms ease;
 }
  
 .calendar-nav button:hover {
     background: #f2f6f4;
+    border-color: #1d5a4a;
+    transform: translateY(-2px);
 }
  
 .calendar-grid {
     display: grid;
     grid-template-columns: repeat(7, 1fr);
-    gap: 6px;
+    gap: 8px;
 }
  
 .calendar-weekday {
@@ -57,16 +72,22 @@
  
 .calendar-day {
     position: relative;
-    min-height: 58px;
-    border-radius: 10px;
+    min-height: 72px;
+    border-radius: 14px;
     border: 1px solid #ebefee;
     background: #fff;
-    padding: 6px 8px;
+    padding: 9px 10px;
     cursor: pointer;
     display: flex;
     flex-direction: column;
     align-items: flex-start;
     gap: 4px;
+    transition: transform 160ms ease, border-color 160ms ease, background 160ms ease;
+}
+
+.calendar-day:not(.empty):hover {
+    border-color: #8fb8aa;
+    transform: translateY(-2px);
 }
  
 .calendar-day.empty {
@@ -92,6 +113,7 @@
 .calendar-day.selected {
     background: rgba(29, 90, 74, 0.08);
     border-color: #1d5a4a;
+    box-shadow: inset 0 0 0 1px rgba(29, 90, 74, 0.16);
 }
  
 .day-dot {
@@ -104,7 +126,8 @@
 .event-list {
     display: grid;
     gap: 14px;
-    margin-top: 6px;
+    margin: 6px 0 24px;
+    min-height: 88px;
 }
  
 .event-item {
@@ -112,7 +135,7 @@
     align-items: flex-start;
     justify-content: space-between;
     gap: 10px;
-    padding-bottom: 12px;
+    padding: 12px 0;
     border-bottom: 1px solid #ebefee;
 }
  
@@ -126,6 +149,7 @@
     color: var(--muted);
     font-weight: 700;
     min-width: 52px;
+    padding-top: 2px;
 }
  
 .event-body {
@@ -147,4 +171,51 @@
     background: rgba(29, 90, 74, 0.1);
     color: #1d5a4a;
     font-weight: 700;
+}
+
+.agenda-form-heading {
+    padding-top: 20px;
+    border-top: 1px solid #ebefee;
+}
+
+.agenda-form-heading h3 {
+    margin: 2px 0 0;
+    font-size: 1.08rem;
+}
+
+.agenda-form {
+    margin-top: 14px;
+}
+
+.agenda-form .form-row {
+    margin-bottom: 13px;
+}
+
+.agenda-form .form-button {
+    width: 100%;
+}
+
+@media (max-width: 900px) {
+    .agenda-layout {
+        grid-template-columns: 1fr;
+    }
+
+    .agenda-details {
+        min-height: auto;
+    }
+}
+
+@media (max-width: 520px) {
+    .calendar-grid {
+        gap: 4px;
+    }
+
+    .calendar-day {
+        min-height: 54px;
+        padding: 7px;
+    }
+
+    .calendar-day .day-num {
+        font-size: 0.78rem;
+    }
 }
