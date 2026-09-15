@@ -331,7 +331,7 @@ function inicializarAgenda() {
         titulo.textContent = `${MESES[mesActual]} ${anioActual}`;
 
         const primerDia = new Date(anioActual, mesActual, 1);
-        const diasEnMes = new Date(anioActual, mesActual, +1, 0).getDate();
+        const diasEnMes = new Date(anioActual, mesActual + 1, 0).getDate();
         const offset = (primerDia.getDay() + 6) %7; //lunes = 0
 
         let html = DIAS_SEMANA.map((d) => `<div class="calendar-weekday">${d}</div>`).join('');
@@ -371,7 +371,7 @@ function inicializarAgenda() {
         listaLabel.textContent = `${d}/${m}/${y}`;
 
         if (eventos.length === 0) {
-            lista.innerHTML = '<p class="field-hint">Nohay eventos este día</p>';
+            lista.innerHTML = '<p class="field-hint">No hay eventos este día.</p>';
             return;
         }
 
