@@ -14,8 +14,7 @@
         <aside class="sidebar">
             <div class="sidebar-brand">
                 <span class="brand-mark">Z-</span><span>ONE</span>
-            </div>
-            
+            </div>      
             <nav class="sidebar-nav" aria-label="Menu principal">
                 <a class="nav-item" href="menu_principal.html">Inicio</a>
                 <a class="nav-item" href="artistas.html">Artistas</a>
@@ -26,34 +25,29 @@
                 <a class="nav-item" href="estadisticas.html">Estadísticas</a>
                 <a class="nav-item" href="chatbot.html">Chatbot</a>
             </nav>
-            
             <div class="sidebar-card">
                 <small>Estado</small>
                 <strong>Operación activa</strong>
             </div>
         </aside>
-
         <main class="main-panel">
             <header class="topbar">
                 <div>
                     <p class="eyebrow">GESTIÓN</p>
                     <h2>Hola, <span id="welcomeUser">Usuario</span></h2>
                 </div>
-
                 <div class="topbar-actions">
                     <span class="user-badge" id="userBadge">Usuario</span>
                     <button class="btn-logout" id="btnLogout" type="button">Cerrar sesión</button>
                 </div>
             </header>
-
             <div class="page-head">
                 <div>
                     <p class="eyebrow small">AGENDA</p>
                     <h1>Calendario del Equipo</h1>
                     <p>Lanzamiento, reuniones y sesiones en calendario. Toca un día para ver o agregar un evento</p>
                 </div>
-            </div>
-                
+            </div>     
             <section class="agenda-layout">
                 <div class="panel-card">
                     <div class="calendar-head">
@@ -66,19 +60,15 @@
                     <div class="calendar-grid" id="calendarGrid">
                         <!-- Celdas del calendario generadas por interaccion.js -->
                     </div>
-
                 </div>
-
                 <div class="panel-card agenda-details">
                         <div class="section-heading">
                             <p class="eyebrow small">DÍA SELECCIONADO</p>
                             <h3>Eventos del <span id="eventListLabel">día</span></h3>
                         </div>
-
                         <div class="event-list" id="eventList">
                         <!-- Eventos del día generados por interaccion.js -->
                         </div>
-
                     <div class="agenda-form-heading">
                         <p class="eyebrow small">NUEVO EVENTO</p>
                         <h3>Agregar a la agenda</h3>
@@ -112,10 +102,8 @@
             </section>
         </main>
     </div>
-
     <script type="module" src="../js/menu.js"></script>
     <script src="../js/interacciones.js"></script>
     <script type="module" src="../js/agenda.js"></script>
 </body>
 </html>
-

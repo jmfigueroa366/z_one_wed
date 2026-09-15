@@ -15,7 +15,6 @@
             <div class="sidebar-brand">
                 <span class="brand-mark">Z-</span><span>ONE</span>
             </div>
- 
             <nav class="sidebar-nav" aria-label="Menú principal">
                 <a class="nav-item" href="menu_principal.html">Inicio</a>
                 <a class="nav-item" href="artistas.html">Artistas</a>
@@ -27,26 +26,22 @@
                 <a class="nav-item" href="chatbot.html">Chatbot</a>
                 <a class="nav-item" href="configuracion.html">Configuración</a>
             </nav>
- 
             <div class="sidebar-card">
                 <small>Estado</small>
                 <strong>Producción activa</strong>
             </div>
         </aside>
- 
         <main class="main-panel">
             <header class="topbar">
                 <div>
                     <p class="eyebrow">GESTIÓN</p>
                     <h2>Hola, <span id="welcomeUser">usuario</span>.</h2>
                 </div>
- 
                 <div class="topbar-actions">
                     <span class="user-badge" id="userBadge">Usuario</span>
                     <button class="btn-logout" id="btnLogout" type="button">Cerrar sesión</button>
                 </div>
             </header>
- 
             <div class="page-head">
                 <div>
                     <p class="eyebrow small">SESIONES DE GRABACIÓN</p>
@@ -54,11 +49,9 @@
                     <p>Qué cabina está libre ahora mismo y qué sesiones hay programadas, para no chocar horarios.</p>
                 </div>
             </div>
- 
             <div class="cabin-grid" id="cabinGrid">
                 <!-- tarjetas de cabinas generadas por interacciones.js -->
             </div>
- 
             <section class="catalog-layout">
                 <div class="panel-card">
                     <div class="filter-row">
@@ -67,7 +60,6 @@
                         <button type="button" class="filter-chip" data-estado="pendiente">Pendientes</button>
                         <button type="button" class="filter-chip" data-estado="cancelada">Canceladas</button>
                     </div>
- 
                     <table class="session-table">
                         <thead>
                             <tr>
@@ -84,12 +76,10 @@
                         </tbody>
                     </table>
                 </div>
- 
                 <div class="panel-card" id="agendar">
                     <div class="section-heading">
                         <h3>Agendar sesión</h3>
                     </div>
- 
                     <form id="sesionForm" class="user-form">
                         <div class="form-row">
                             <label for="sesFecha">Fecha</label>
@@ -140,9 +130,7 @@
             </section>
         </main>
     </div>
- 
     <script src="../js/menu.js"></script>
     <script src="../js/interacciones.js"></script>
 </body>
 </html>
- 
