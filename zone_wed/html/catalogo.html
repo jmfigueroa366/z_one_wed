@@ -3,8 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Z-ONE | Catalogo Musical</title>
+    <title>Z-ONE | Catálogo musical</title>
     <link rel="stylesheet" href="../css/style.css">
+    <link rel="stylesheet" href="../css/dashboard.css">
     <link rel="stylesheet" href="../css/catalogo.css">
 </head>
 <body>
@@ -13,61 +14,62 @@
             <div class="sidebar-brand">
                 <span class="brand-mark">Z-</span><span>ONE</span>
             </div>
-            
-            <nav class="sidebar-nav" aria-label="Menu principal">
+ 
+            <nav class="sidebar-nav" aria-label="Menú principal">
                 <a class="nav-item" href="menu_principal.html">Inicio</a>
                 <a class="nav-item" href="artistas.html">Artistas</a>
                 <a class="nav-item" href="productores.html">Productores</a>
-                <a class="nav-item" href="catalogo.html">Catálogo</a>
+                <a class="nav-item active" href="catalogo.html">Catálogo</a>
                 <a class="nav-item" href="sesiones.html">Sesiones</a>
-                <a class="nav-item" href="agencia.html">Agencia</a>
-                <a class="nav-item" href="estadistica.html">Estadísticas</a>
+                <a class="nav-item" href="agenda.html">Agenda</a>
+                <a class="nav-item" href="estadisticas.html">Estadísticas</a>
                 <a class="nav-item" href="chatbot.html">Chatbot</a>
+                <a class="nav-item" href="configuracion.html">Configuración</a>
             </nav>
-            
+ 
             <div class="sidebar-card">
                 <small>Estado</small>
-                <strong>Operación activa</strong>
+                <strong>Producción activa</strong>
             </div>
         </aside>
-
+ 
         <main class="main-panel">
             <header class="topbar">
                 <div>
                     <p class="eyebrow">GESTIÓN</p>
-                    <h2>Hola, <span id="welcomeUser">Usuario</span></h2>
+                    <h2>Hola, <span id="welcomeUser">usuario</span>.</h2>
                 </div>
-
+ 
                 <div class="topbar-actions">
                     <span class="user-badge" id="userBadge">Usuario</span>
                     <button class="btn-logout" id="btnLogout" type="button">Cerrar sesión</button>
                 </div>
             </header>
-
+ 
             <div class="page-head">
                 <div>
-                    <p class="eyebrow small">CATÁLOGO</p>
-                    <h1>Explora nuestra música, versiones y álbumes</h1>
-                    <p>Todo lo que ha producido la casa, en un solo lugar: listo para publicar y que siga el proceso</p>
+                    <p class="eyebrow small">CATÁLOGO MUSICAL</p>
+                    <h1>Canciones, versiones y álbumes</h1>
+                    <p>Todo lo que ha producido la casa, en un solo lugar: qué está listo para publicarse y qué sigue en proceso.</p>
                 </div>
             </div>
-            
-            <section class="catalogo-layout">
+ 
+            <section class="catalog-layout">
                 <div class="panel-card">
                     <div class="filter-row">
-                            <button type="button" class="filter-chip active" data-tipo="todos">Todos</button>
-                            <button type="button" class="filter-chip" data-tipo="cancion">Canciones</button>
-                            <button type="button" class="filter-chip" data-tipo="version">Versiones</button>
-                            <button type="button" class="filter-chip" data-tipo="album">Álbumes</button>
+                        <button type="button" class="filter-chip active" data-tipo="todos">Todos</button>
+                        <button type="button" class="filter-chip" data-tipo="cancion">Canciones</button>
+                        <button type="button" class="filter-chip" data-tipo="version">Versiones</button>
+                        <button type="button" class="filter-chip" data-tipo="album">Álbumes</button>
                     </div>
-
-                    <input type="search" id="catalogoBuscar" class="catalogo-search" placeholder="Buscar por titulo, artista o album...">
-
-                    <table class="catalogo-table">
+ 
+                    <input type="search" id="catalogoBuscar" class="catalog-search" placeholder="Buscar por título, artista o álbum…">
+ 
+                    <table class="catalog-table">
                         <thead>
                             <tr>
                                 <th>Título</th>
-                                <th>Album</th>
+                                <th>Álbum</th>
                                 <th>Tipo</th>
                                 <th>Duración</th>
                                 <th>Estado</th>
@@ -75,28 +77,28 @@
                             </tr>
                         </thead>
                         <tbody id="catalogoBody">
-                            <!-- Aquí se llenará dinámicamente por interacción.js -->
+                            <!-- filas generadas por interacciones.js -->
                         </tbody>
                     </table>
                 </div>
-
+ 
                 <div class="panel-card" id="agregar">
                     <div class="section-heading">
-                        <h3>Agregar al catalogo</h3>
+                        <h3>Agregar al catálogo</h3>
                     </div>
-                    
+ 
                     <form id="catalogoForm" class="user-form">
                         <div class="form-row">
                             <label for="catTitulo">Título</label>
-                            <input type="text" id="catTitulo" placeholder="Ej: Rojo" required>
+                            <input type="text" id="catTitulo" placeholder="Ej. Rio Seco" required>
                         </div>
                         <div class="form-row">
                             <label for="catArtista">Artista</label>
-                            <input type="text" id="catArtista" placeholder="Ej: Sarita" required>
+                            <input type="text" id="catArtista" placeholder="Ej. Batey Norte" required>
                         </div>
                         <div class="form-row">
-                            <label for="catÁlbum">Álbum</label>
-                            <input type="text" id="catÁlbum" placeholder="Opcional">
+                            <label for="catAlbum">Álbum</label>
+                            <input type="text" id="catAlbum" placeholder="Opcional">
                         </div>
                         <div class="form-row">
                             <label for="catTipo">Tipo</label>
@@ -108,7 +110,7 @@
                         </div>
                         <div class="form-row">
                             <label for="catDuracion">Duración</label>
-                            <input type="text" id="catDuracion" placeholder="Ej: 3:45" required>
+                            <input type="text" id="catDuracion" placeholder="Ej. 3:24">
                         </div>
                         <div class="form-row">
                             <label for="catEstado">Estado</label>
@@ -118,15 +120,16 @@
                                 <option value="publicado">Publicado</option>
                             </select>
                         </div>
-                        <p class="field-hint">Se guarda en este navegador (localStorage)</p>
-                        <button type="submit" class="btn-primary form-btn">Guardar en el catálogo</button>
+                        <p class="field-hint">Se guarda en este navegador (localStorage); todavía no hay conexión a Oracle.</p>
+                        <button type="submit" class="btn-primary form-button">Guardar en el catálogo</button>
                     </form>
                 </div>
             </section>
         </main>
     </div>
-
-    <script type="module" src="../js/menu.js"></script>
+ 
+    <script src="../js/menu.js"></script>
     <script src="../js/interacciones.js"></script>
 </body>
 </html>
+ 

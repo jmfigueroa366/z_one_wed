@@ -3,11 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Z-ONE | Estadísticas</title>
+    <title>Z-ONE | Chatbot</title>
     <link rel="stylesheet" href="../css/style.css">
     <link rel="stylesheet" href="../css/dashboard.css">
     <link rel="stylesheet" href="../css/catalogo.css">
-    <link rel="stylesheet" href="../css/estadisticas.css">
+    <link rel="stylesheet" href="../css/chatbot.css">
 </head>
 <body>
     <div class="dashboard-shell">
@@ -23,8 +23,8 @@
                 <a class="nav-item" href="catalogo.html">Catálogo</a>
                 <a class="nav-item" href="sesiones.html">Sesiones</a>
                 <a class="nav-item" href="agenda.html">Agenda</a>
-                <a class="nav-item active" href="estadisticas.html">Estadísticas</a>
-                <a class="nav-item" href="chatbot.html">Chatbot</a>
+                <a class="nav-item" href="estadisticas.html">Estadísticas</a>
+                <a class="nav-item active" href="chatbot.html">Chatbot</a>
                 <a class="nav-item" href="configuracion.html">Configuración</a>
             </nav>
  
@@ -49,35 +49,41 @@
  
             <div class="page-head">
                 <div>
-                    <p class="eyebrow small">ESTADÍSTICAS</p>
-                    <h1>Cómo va la producción</h1>
-                    <p>Un vistazo rápido al catálogo, las sesiones y la agenda — se calcula con lo que ya cargaste en las otras pantallas.</p>
+                    <p class="eyebrow small">CHATBOT</p>
+                    <h1>Asistente Z-ONE</h1>
+                    <p>Interfaz visual del chat. Todavía no está conectado a ninguna lógica real de clasificación.</p>
                 </div>
             </div>
  
-            <div class="kpi-grid" id="kpiGrid">
-                <!-- generado por interacciones.js -->
-            </div>
- 
-            <section class="stats-layout">
-                <div class="panel-card">
-                    <h3 class="chart-title">Catálogo por tipo</h3>
-                    <div class="vbar-chart" id="vbarChart"></div>
+            <section class="chat-shell">
+                <div class="panel-card chat-side">
+                    <div class="section-heading">
+                        <h3>Prueba con esto</h3>
+                    </div>
+                    <div class="chat-suggestions">
+                        <button type="button" class="chat-suggestion">¿Cuántas canciones hay en el catálogo?</button>
+                        <button type="button" class="chat-suggestion">¿Qué cabina está libre hoy?</button>
+                        <button type="button" class="chat-suggestion">¿Qué eventos tengo esta semana?</button>
+                    </div>
                 </div>
  
-                <div class="panel-card">
-                    <h3 class="chart-title">Catálogo por estado</h3>
-                    <div class="hbar-chart" id="hbarEstados"></div>
-                </div>
+                <div class="panel-card chat-window-card">
+                    <div class="chat-window-head">
+                        <div class="chat-avatar">Z</div>
+                        <div>
+                            <strong>Asistente Z-ONE</strong>
+                            <span>Maqueta visual — sin lógica real</span>
+                        </div>
+                    </div>
  
-                <div class="panel-card">
-                    <h3 class="chart-title">Sesiones por cabina</h3>
-                    <div class="hbar-chart" id="hbarCabinas"></div>
-                </div>
+                    <div class="chat-messages" id="chatMessages">
+                        <!-- generado por interacciones.js -->
+                    </div>
  
-                <div class="panel-card">
-                    <h3 class="chart-title">Próximos en la agenda</h3>
-                    <div class="upcoming-list" id="upcomingList"></div>
+                    <form id="chatForm" class="chat-input-row">
+                        <input type="text" id="chatInput" placeholder="Escribe un mensaje…" autocomplete="off" required>
+                        <button type="submit" class="btn-primary">Enviar</button>
+                    </form>
                 </div>
             </section>
         </main>

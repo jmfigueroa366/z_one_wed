@@ -1,3 +1,5 @@
+/* estadisticas.css — estilos propios del Panel de Estadísticas */
+ 
 .kpi-grid {
     display: grid;
     grid-template-columns: repeat(4, 1fr);
@@ -146,4 +148,3 @@
         grid-template-columns: 1fr;
     }
 }
- 

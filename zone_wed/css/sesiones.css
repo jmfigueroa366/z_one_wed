@@ -1,5 +1,5 @@
-
-
+/* sesiones.css — estilos propios de Sesiones de grabación y cabinas */
+ 
 .cabin-grid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
@@ -111,3 +111,4 @@
     font-size: 0.82rem;
     color: var(--muted);
 }
+ 

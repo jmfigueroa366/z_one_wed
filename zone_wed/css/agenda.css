@@ -1,4 +1,5 @@
-
+/* agenda.css — estilos propios de Agenda / calendario */
+ 
 .agenda-layout {
     display: grid;
     grid-template-columns: 1.3fr 1fr;
@@ -148,3 +149,4 @@
     color: #1d5a4a;
     font-weight: 700;
 }
+ 
