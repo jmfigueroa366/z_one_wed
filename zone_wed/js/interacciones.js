@@ -25,6 +25,7 @@ function confirmarAccion(mensaje) {
 --------------------------------------------------------- */
 const CATALOGO_KEY = 'zone_catalogo';
  
+
 const catalogoSeed = [
     { id: 'c1', titulo: 'Midnight Echo', artista: 'Lúa Ferreira', album: 'Nocturno', tipo: 'cancion', duracion: '3:24', estado: 'publicado' },
     { id: 'c2', titulo: 'Midnight Echo (VIP Mix)', artista: 'Lúa Ferreira', album: 'Nocturno', tipo: 'version', duracion: '4:02', estado: 'proceso' },
@@ -274,7 +275,6 @@ function inicializarSesiones() {
             pintarCabinas();
         });
     }
- 
     pintarTabla();
 }
  
@@ -284,11 +284,9 @@ function inicializarSesiones() {
 const AGENDA_KEY = 'zone_agenda';
 const MESES = ['enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio', 'julio', 'agosto', 'septiembre', 'octubre', 'noviembre', 'diciembre'];
 const DIAS_SEMANA = ['Lu', 'Ma', 'Mi', 'Ju', 'Vi', 'Sá', 'Do'];
- 
 function fechaLocalISO(d) {
     return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
 }
- 
 function agendaSeed() {
     const hoy = new Date();
     const en = (offset) => {
@@ -303,50 +301,39 @@ function agendaSeed() {
         { id: 'a4', fecha: en(9), hora: '16:00', titulo: 'Entrevista con medio local', tipo: 'Otro' },
     ];
 }
- 
 function inicializarAgenda() {
     const grid = document.getElementById('calendarGrid');
     if (!grid) return; // no estamos en agenda.html
- 
     if (obtenerDatos(AGENDA_KEY).length === 0) {
         guardarDato(AGENDA_KEY, agendaSeed());
     }
- 
     const hoy = new Date();
     let mesActual = hoy.getMonth();
     let anioActual = hoy.getFullYear();
     let diaSeleccionado = fechaLocalISO(hoy);
- 
     const titulo = document.getElementById('calendarTitle');
     const lista = document.getElementById('eventList');
     const listaLabel = document.getElementById('eventListLabel');
     const form = document.getElementById('agendaForm');
- 
     function eventosDe(fecha) {
         return obtenerDatos(AGENDA_KEY)
             .filter((e) => e.fecha === fecha)
             .sort((a, b) => a.hora.localeCompare(b.hora));
     }
- 
     function pintarCalendario() {
         titulo.textContent = `${MESES[mesActual]} ${anioActual}`;
- 
         const primerDia = new Date(anioActual, mesActual, 1);
         const diasEnMes = new Date(anioActual, mesActual + 1, 0).getDate();
         const offset = (primerDia.getDay() + 6) % 7; // lunes = 0
- 
         let html = DIAS_SEMANA.map((d) => `<div class="calendar-weekday">${d}</div>`).join('');
- 
         for (let i = 0; i < offset; i++) {
             html += '<div class="calendar-day empty"></div>';
         }
- 
         for (let dia = 1; dia <= diasEnMes; dia++) {
             const fecha = fechaLocalISO(new Date(anioActual, mesActual, dia));
             const tieneEventos = eventosDe(fecha).length > 0;
             const esHoy = fecha === fechaLocalISO(hoy);
             const esSeleccionado = fecha === diaSeleccionado;
- 
             html += `
                 <div class="calendar-day ${esHoy ? 'today' : ''} ${esSeleccionado ? 'selected' : ''}" data-fecha="${fecha}">
                     <span class="day-num">${dia}</span>
@@ -354,9 +341,7 @@ function inicializarAgenda() {
                 </div>
             `;
         }
- 
         grid.innerHTML = html;
- 
         grid.querySelectorAll('.calendar-day[data-fecha]').forEach((celda) => {
             celda.addEventListener('click', function () {
                 diaSeleccionado = celda.dataset.fecha;
@@ -365,17 +350,14 @@ function inicializarAgenda() {
             });
         });
     }
- 
     function pintarLista() {
         const eventos = eventosDe(diaSeleccionado);
         const [y, m, d] = diaSeleccionado.split('-');
         listaLabel.textContent = `${d}/${m}/${y}`;
- 
         if (eventos.length === 0) {
             lista.innerHTML = '<p class="field-hint">No hay eventos este día.</p>';
             return;
         }
- 
         lista.innerHTML = eventos.map((e) => `
             <div class="event-item">
                 <span class="event-time">${e.hora}</span>
@@ -386,7 +368,6 @@ function inicializarAgenda() {
                 <button type="button" class="row-remove" data-id="${e.id}">Eliminar</button>
             </div>
         `).join('');
- 
         lista.querySelectorAll('.row-remove').forEach((btn) => {
             btn.addEventListener('click', function () {
                 if (!confirmarAccion('¿Deseas eliminar este evento de la agenda?')) return;
@@ -397,24 +378,20 @@ function inicializarAgenda() {
             });
         });
     }
- 
     document.getElementById('prevMonth').addEventListener('click', function () {
         mesActual -= 1;
         if (mesActual < 0) { mesActual = 11; anioActual -= 1; }
         pintarCalendario();
     });
- 
     document.getElementById('nextMonth').addEventListener('click', function () {
         mesActual += 1;
         if (mesActual > 11) { mesActual = 0; anioActual += 1; }
         pintarCalendario();
     });
- 
     if (form) {
         form.addEventListener('submit', function (e) {
             e.preventDefault();
             if (!confirmarAccion('¿Deseas guardar este evento en la agenda?')) return;
- 
             const nuevo = {
                 id: 'a' + Date.now(),
                 fecha: document.getElementById('agFecha').value,
@@ -422,22 +399,18 @@ function inicializarAgenda() {
                 titulo: document.getElementById('agTitulo').value.trim(),
                 tipo: document.getElementById('agTipo').value,
             };
- 
             const items = obtenerDatos(AGENDA_KEY);
             items.push(nuevo);
             guardarDato(AGENDA_KEY, items);
- 
             diaSeleccionado = nuevo.fecha;
             mesActual = Number(nuevo.fecha.split('-')[1]) - 1;
             anioActual = Number(nuevo.fecha.split('-')[0]);
- 
             form.reset();
             pintarCalendario();
             pintarLista();
         });
     }
- 
-    pintarCalendario();
+     pintarCalendario()
     pintarLista();
 }
  
