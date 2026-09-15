@@ -1,7 +1,7 @@
 // ============================================================================
 // IMPORTACIÓN DE LA LIBRERÍA
 // ============================================================================
-import { animate, stagger } from 'https://cdn.jsdelivr.net/npm/animejs@4.2.2/+esm';
+import { animate, stagger } from './motion.js';
 // Importa dos funciones de la librería "anime.js" (versión 4.2.2) directamente
 // desde un CDN (sin necesidad de instalarla con npm):
 // - animate: función principal para crear animaciones.
@@ -66,6 +66,7 @@ function prepararWaveform() {
     }).join('');
     // Une las 28 barras en un solo string HTML y las inserta en el waveform.
 }
+
 // ============================================================================
 // FUNCIÓN: prepararTitulo
 // Separa un título en palabras individuales para animarlas una por una

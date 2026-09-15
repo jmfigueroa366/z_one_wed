@@ -1,4 +1,4 @@
-import { animate, stagger } from 'https://cdn.jsdelivr.net/npm/animejs@4.2.2/+esm';
+import { animate, stagger } from './motion.js';
 
 const form = document.getElementById('loginForm');
 const mensaje = document.getElementById('mensaje');
