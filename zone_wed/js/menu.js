@@ -2,7 +2,6 @@ const session_key = 'zone_usuario';
  
 /* ---------- Guard de sesión ---------- */
 // Si no hay usuario "logueado" en localStorage, se devuelve al login.
-// (Es una maqueta, así que esto es solo para que la navegación se sienta real.)
 function protegerPagina() {
     const usuario = localStorage.getItem(session_key);
     if (!usuario) {
@@ -37,7 +36,7 @@ function activarLogout() {
     });
 }
  
-/* ---------- Resaltar la página actual en el menú ---------- */
+/* ---------- Resaltar la página actual en el menú ---------- 
 // Nota: las 9 páginas ya traen la clase "active" puesta a mano en el
 // enlace correspondiente, así que esto es un respaldo por si en el
 // futuro se generan los enlaces dinámicamente con data-page.
@@ -49,9 +48,9 @@ function resaltarPaginaActiva() {
             enlace.classList.add('is-active');
         }
     });
-}
+}*/
  
-/* ---------- Menú hamburguesa en pantallas pequeñas ---------- */
+/* ---------- Menú hamburguesa en pantallas pequeñas ---------- 
 // Nota: solo se activa si la página tiene #navToggle y #navPrincipal.
 // Ninguna de mis 9 páginas los trae todavía; no rompe nada si no existen.
 function activarMenuMovil() {
@@ -70,7 +69,7 @@ function activarMenuMovil() {
             boton.setAttribute('aria-expanded', 'false');
         });
     });
-}
+}*/
  
 const usuario = protegerPagina();
 if (usuario) {

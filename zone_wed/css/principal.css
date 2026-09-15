@@ -3,6 +3,7 @@
 /* Corrección de contraste: estos títulos heredaban el texto claro
    pensado para el fondo oscuro y quedaban casi invisibles sobre
    tarjetas claras. */
+   
 .hero-panel h3,
 .panel-card h3,
 .panel-card .section-heading h3 {
