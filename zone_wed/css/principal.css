@@ -24,6 +24,23 @@
     border: 1px solid #dfe7e2;
     border-radius: 16px;
     padding: 20px;
+    animation: summary-card-in 560ms cubic-bezier(.22, 1, .36, 1) both;
+    transition: transform 180ms ease, border-color 180ms ease, box-shadow 180ms ease;
+}
+
+.summary-card:hover,
+.summary-card:focus-within {
+    border-color: #7dd3c0;
+    box-shadow: 0 16px 30px rgba(16, 25, 21, 0.08);
+    transform: translateY(-5px);
+}
+
+.summary-card:nth-child(2) {
+    animation-delay: 90ms;
+}
+
+.summary-card:nth-child(3) {
+    animation-delay: 180ms;
 }
  
 .summary-card.summary-card-primary {
@@ -99,6 +116,13 @@
     border: 1px solid #dfe7e2;
     border-radius: 14px;
     padding: 16px;
+    transition: transform 180ms ease, border-color 180ms ease, background 180ms ease;
+}
+
+.information-grid article:hover {
+    background: #f8fcfa;
+    border-color: #7dd3c0;
+    transform: translateY(-3px);
 }
  
 .information-grid h4 {
@@ -116,6 +140,25 @@
     .summary-grid,
     .information-grid {
         grid-template-columns: 1fr;
+    }
+}
+
+@keyframes summary-card-in {
+    from {
+        opacity: 0;
+        transform: translateY(14px) scale(.98);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .summary-card,
+    .information-grid article {
+        animation: none;
+        transition: none;
     }
 }
  

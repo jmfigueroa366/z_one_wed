@@ -17,6 +17,27 @@
     border: 1px solid #dfe7e2;
     border-radius: 14px;
     padding: 16px;
+    animation: producer-card-in 520ms cubic-bezier(.22, 1, .36, 1) both;
+    transition: transform 180ms ease, border-color 180ms ease, box-shadow 180ms ease;
+}
+
+.record-card:hover,
+.record-card:focus-within {
+    border-color: #7dd3c0;
+    box-shadow: 0 12px 24px rgba(16, 25, 21, 0.08);
+    transform: translateY(-4px);
+}
+
+.record-card:nth-child(2) {
+    animation-delay: 70ms;
+}
+
+.record-card:nth-child(3) {
+    animation-delay: 140ms;
+}
+
+.record-card:nth-child(4) {
+    animation-delay: 210ms;
 }
  
 .record-card strong {
@@ -41,5 +62,23 @@
 .form-button {
     width: fit-content;
     margin-top: 8px;
+}
+
+@keyframes producer-card-in {
+    from {
+        opacity: 0;
+        transform: translateY(12px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .record-card {
+        animation: none;
+        transition: none;
+    }
 }
  
