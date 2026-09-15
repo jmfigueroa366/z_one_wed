@@ -1,19 +1,24 @@
 
 .agenda-layout {
     display: grid;
-    grid-template-columns: minmax(0, 1.35fr) minmax(320px, 0.85fr);
-    gap: 22px;
-    align-items: start;
+    grid-template-columns: minmax(0, 1.25fr) minmax(340px, 0.75fr);
+    gap: 18px;
+    align-items: stretch;
+    margin-top: 4px;
 }
 
 .agenda-layout > .panel-card {
     min-width: 0;
+    min-height: 100%;
+    box-sizing: border-box;
+    box-shadow: 0 10px 24px rgba(24, 35, 61, 0.06);
 }
 
 .agenda-details {
     display: flex;
     flex-direction: column;
     min-height: 100%;
+    overflow: hidden;
 }
  
 .calendar-head {
@@ -59,6 +64,7 @@
     display: grid;
     grid-template-columns: repeat(7, 1fr);
     gap: 8px;
+    min-width: 0;
 }
  
 .calendar-weekday {
@@ -128,6 +134,7 @@
     gap: 14px;
     margin: 6px 0 24px;
     min-height: 88px;
+    align-content: start;
 }
  
 .event-item {
@@ -187,6 +194,11 @@
     margin-top: 14px;
 }
 
+.agenda-details .agenda-form {
+    margin-top: auto;
+    padding-top: 2px;
+}
+
 .agenda-form .form-row {
     margin-bottom: 13px;
 }
@@ -201,11 +213,19 @@
     }
 
     .agenda-details {
-        min-height: auto;
+        min-height: 0;
     }
 }
 
 @media (max-width: 520px) {
+    .agenda-layout {
+        gap: 14px;
+    }
+
+    .agenda-layout > .panel-card {
+        padding: 16px;
+    }
+
     .calendar-grid {
         gap: 4px;
     }
