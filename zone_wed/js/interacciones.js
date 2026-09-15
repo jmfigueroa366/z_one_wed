@@ -409,7 +409,6 @@ function inicializarEstadisticas() {
     const etiquetasTipo = { cancion: 'Canciones', version: 'Versiones', album: 'Álbumes' };
     const conteoTipos = tipos.map((t) => catalogo.filter((c) => c.tipo === t).length);
     const maxTipo = Math.max(1, ...conteoTipos);
-
     document.getElementById('vbarChart').innerHTML = tipos.map((t, i) => `
         <div class="vbar">
             <div class="vbar-fill-wrap">
@@ -419,7 +418,6 @@ function inicializarEstadisticas() {
             <span class="vbar-label">${etiquetasTipo[t]}</span>
         </div>
     `).join('');
- 
     /* Catálogo por estado (barras horizontales) */
     const estados = ['publicado', 'proceso', 'borrador'];
     const etiquetasEstado = { publicado: 'Publicado', proceso: 'En proceso', borrador: 'Borrador' };
@@ -448,7 +446,6 @@ function inicializarEstadisticas() {
             </div>
         `;
     }).join('');
- 
     /* Próximos eventos de agenda */
     const proximos = agenda
         .filter((e) => new Date(e.fecha + 'T00:00:00') >= new Date(fechaLocalISO(hoy) + 'T00:00:00'))
@@ -556,10 +553,8 @@ function inicializarChatbot() {
             enviarMensaje(btn.textContent);
         });
     });
- 
     pintarMensajes();
 }
- 
 /* ---------------------------------------------------------
    Artistas (artistas.html) — borrador funcional de Persona B
    para que la pantalla no quede rota; Persona A puede
