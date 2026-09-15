@@ -1,3 +1,5 @@
+// Clave donde se conserva la cuenta creada en este navegador.
+const registered_user_key = 'usuario_registrado';
 const form = document.getElementById('registerForm');
 const register_message = document.getElementById('registerMessage');
 
@@ -22,7 +24,8 @@ if (form) {
             password
         };
 
-        localStorage.setItem('usuario_registrado', JSON.stringify(usuario));
+        // JSON permite guardar varios campos dentro de una sola entrada.
+        localStorage.setItem(registered_user_key, JSON.stringify(usuario));
         window.location.href = 'login.html';
     });
 }

@@ -174,6 +174,7 @@ function redirectToLogin() {
     window.location.href = 'index.html';
 }
 
+// zone_usuario contiene el nombre del usuario que inició sesión.
 const usuario_guardado = localStorage.getItem(session_key);
 if (!usuario_guardado) {
     redirectToLogin();

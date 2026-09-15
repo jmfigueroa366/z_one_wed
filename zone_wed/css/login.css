@@ -18,7 +18,7 @@ body {
     min-height: 100vh;
     font-family: 'Segoe UI', Arial, sans-serif;
     color: var(--login-text);
-    background: radial-gradient(circle at top left, rgba(83, 109, 254, 0.14), transparent 34%),
+    background: radial-gradient(circle at top left, rgba(75, 99, 238, 0.14), transparent 34%),
                 linear-gradient(135deg, #f8faff 0%, #edf4fb 100%);
 }
 

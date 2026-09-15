@@ -5,6 +5,7 @@ const mensaje = document.getElementById('mensaje');
 const btn_login = document.getElementById('btnLogin');
 const btn_menu = document.getElementById('btnMenu');
 const session_key = 'zone_usuario';
+const registered_user_key = 'usuario_registrado';
 
 const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
@@ -28,8 +29,17 @@ function resetLoginMessage() {
     mensaje.className = 'mensaje';
 }
 
-const usuario_guardado = localStorage.getItem(session_key);
-if (usuario_guardado) {
+// La cuenta registrada se compara con lo escrito en el formulario.
+function obtenerUsuarioRegistrado() {
+    try {
+        return JSON.parse(localStorage.getItem(registered_user_key) || 'null');
+    } catch (error) {
+        return null;
+    }
+}
+
+const usuario_en_sesion = localStorage.getItem(session_key);
+if (usuario_en_sesion) {
     redirectToMenu();
 }
 
@@ -46,8 +56,14 @@ if (form) {
             btn_login.textContent = 'Verificando...';
         }
 
-        if (usuario === 'admin' && password === '1234') {
-            localStorage.setItem(session_key, usuario);
+        const cuenta = obtenerUsuarioRegistrado();
+        const credenciales_validas = cuenta &&
+            (usuario === cuenta.nombre || usuario === cuenta.email) &&
+            password === cuenta.password;
+
+        if (credenciales_validas) {
+            // Solo se guarda el nombre de la cuenta activa en la sesión.
+            localStorage.setItem(session_key, cuenta.nombre);
             redirectToMenu();
             return;
         }

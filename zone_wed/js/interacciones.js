@@ -1,9 +1,11 @@
 
 function guardarDato(clave, datos) {
+    // localStorage solo acepta texto; JSON convierte el arreglo en texto.
     localStorage.setItem(clave, JSON.stringify(datos));
 }
 
 function obtenerDatos(clave) {
+    // Al leer, JSON.parse reconstruye el arreglo original.
     const crudo = localStorage.getItem(clave);
     return crudo ? JSON.parse(crudo) : [];
 }
@@ -19,10 +21,10 @@ function confirmarAccion(mensaje) {
 const CATALOGO_KEY = 'zone_catalogo';
 
 const catalogoSeed = [
-    {id: 'c1', titulo: 'Canción 1', artista: 'Artista 1', album: 'Álbum 1', duracion: '3:45', estado: 'publicado' },
-    {id: 'c2', titulo: 'Canción 2', artista: 'Artista 2', album: 'Álbum 2', duracion: '4:20', estado: 'proceso' },
-    {id: 'c3', titulo: 'Canción 3', artista: 'Artista 3', album: 'Álbum 3', duracion: '5:10', estado: 'publicado'},
-    {id: 'c4', titulo: 'Canción 4', artista: 'Artista 4', album: 'Álbum 4', duracion: '3:30', estado: 'borrador' },
+    {id: 'c1', titulo: 'Canción 1', artista: 'Artista 1', album: 'Álbum 1', tipo: 'cancion', duracion: '3:45', estado: 'publicado' },
+    {id: 'c2', titulo: 'Canción 2', artista: 'Artista 2', album: 'Álbum 2', tipo: 'cancion', duracion: '4:20', estado: 'proceso' },
+    {id: 'c3', titulo: 'Canción 3', artista: 'Artista 3', album: 'Álbum 3', tipo: 'cancion', duracion: '5:10', estado: 'publicado'},
+    {id: 'c4', titulo: 'Canción 4', artista: 'Artista 4', album: 'Álbum 4', tipo: 'cancion', duracion: '3:30', estado: 'borrador' },
      ];
     
 function inicializarCatalogo() {
