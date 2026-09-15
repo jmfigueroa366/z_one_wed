@@ -5,82 +5,54 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Z-ONE | Menú principal</title>
     <link rel="stylesheet" href="../css/style.css">
-    <link rel="stylesheet" href="../css/menu.css">
-    <link rel="stylesheet" href="../css/catalogo.css">
-    <link rel="stylesheet" href="../css/sesiones.css">
-    <link rel="stylesheet" href="../css/agenda.css">
+    <link rel="stylesheet" href="../css/dashboard.css">
+    <link rel="stylesheet" href="../css/principal.css">
 </head>
 <body>
     <div class="dashboard-shell">
-        <div class="drawer-backdrop" id="drawerBackdrop"></div>
-        <aside class="sidebar" id="sidebar">
-            <div class="sidebar-header">
-                <div class="sidebar-brand">
-                    <span class="brand-mark">Z-</span><span class="brand-name">ONE</span>
-                </div>
-                <button class="sidebar-toggle" id="sidebarToggle" type="button" aria-label="Colapsar menú" aria-expanded="true">
-                    <span aria-hidden="true">‹</span>
-                </button>
+        <aside class="sidebar">
+            <div class="sidebar-brand">
+                <span class="brand-mark">Z-</span><span>ONE</span>
             </div>
-
+ 
             <nav class="sidebar-nav" aria-label="Menú principal">
-                <button class="nav-item active" type="button" data-panel="inicio" title="Inicio">
-                    <span class="nav-icon" aria-hidden="true">⌂</span><span class="nav-label">Inicio</span>
-                </button>
-                <button class="nav-item" type="button" data-panel="artistas" title="Artistas">
-                    <span class="nav-icon" aria-hidden="true">♫</span><span class="nav-label">Artistas</span>
-                </button>
-                <button class="nav-item" type="button" data-panel="produccion" title="Producción">
-                    <span class="nav-icon" aria-hidden="true">◒</span><span class="nav-label">Producción</span>
-                </button>
-                <button class="nav-item" type="button" data-panel="distribucion" title="Distribución">
-                    <span class="nav-icon" aria-hidden="true">↗</span><span class="nav-label">Distribución</span>
-                </button>
-                <button class="nav-item" type="button" data-panel="catalogo" title="Catálogo">
-                    <span class="nav-icon" aria-hidden="true">▣</span><span class="nav-label">Catálogo</span>
-                </button>
-                <button class="nav-item" type="button" data-panel="sesiones" title="Sesiones">
-                    <span class="nav-icon" aria-hidden="true">◷</span><span class="nav-label">Sesiones</span>
-                </button>
-                <button class="nav-item" type="button" data-panel="agenda" title="Agenda">
-                    <span class="nav-icon" aria-hidden="true">□</span><span class="nav-label">Agenda</span>
-                </button>
-                <button class="nav-item" type="button" data-panel="reportes" title="Reportes">
-                    <span class="nav-icon" aria-hidden="true">▥</span><span class="nav-label">Reportes</span>
-                </button>
-                <button class="nav-item" type="button" data-panel="configuracion" title="Configuración">
-                    <span class="nav-icon" aria-hidden="true">⚙</span><span class="nav-label">Configuración</span>
-                </button>
+                <a class="nav-item active" href="menu_principal.html">Inicio</a>
+                <a class="nav-item" href="artistas.html">Artistas</a>
+                <a class="nav-item" href="productores.html">Productores</a>
+                <a class="nav-item" href="catalogo.html">Catálogo</a>
+                <a class="nav-item" href="sesiones.html">Sesiones</a>
+                <a class="nav-item" href="agenda.html">Agenda</a>
+                <a class="nav-item" href="estadisticas.html">Estadísticas</a>
+                <a class="nav-item" href="chatbot.html">Chatbot</a>
+                <a class="nav-item" href="configuracion.html">Configuración</a>
             </nav>
-
+ 
             <div class="sidebar-card">
                 <small>Estado</small>
                 <strong>Producción activa</strong>
             </div>
         </aside>
-
+ 
         <main class="main-panel">
             <header class="topbar">
                 <div>
-                    <button class="drawer-toggle" id="drawerToggle" type="button" aria-label="Abrir menú" aria-expanded="false">☰</button>
                     <p class="eyebrow">PANEL PRINCIPAL</p>
                     <h2>Hola, <span id="welcomeUser">usuario</span>.</h2>
                 </div>
-
+ 
                 <div class="topbar-actions">
                     <span class="user-badge" id="userBadge">Usuario</span>
                     <button class="btn-logout" id="btnLogout" type="button">Cerrar sesión</button>
                 </div>
             </header>
-
-            <section class="dashboard-view active" id="panel-inicio" data-view="inicio">
+ 
             <section class="hero-panel">
                 <div>
                     <p class="eyebrow small">GESTIÓN MUSICAL</p>
                     <h3>Bienvenido al centro operativo de Z-ONE.</h3>
                 </div>
             </section>
-
+ 
             <div class="summary-grid">
                 <article class="summary-card summary-card-primary">
                     <span class="card-icon" aria-hidden="true">●</span>
@@ -101,13 +73,13 @@
                     <span class="card-note">Acceso de productor</span>
                 </article>
             </div>
-
+ 
             <section class="panel-card information-panel">
                 <div class="section-heading">
                     <p class="eyebrow small">INFORMACIÓN DE Z-ONE</p>
                     <h3>Una gestión musical centralizada</h3>
                 </div>
-                <p class="information-copy">Z-ONE digitaliza y centraliza los procesos de artistas, productores, equipo técnico, catálogo, producción, agenda, búsqueda y estadísticas.</p>
+                <p class="information-copy">Z-ONE digitaliza y centraliza los procesos de artistas, productores, catálogo, sesiones, agenda y estadísticas.</p>
                 <div class="information-grid">
                     <article>
                         <h4>Propósito</h4>
@@ -123,225 +95,10 @@
                     </article>
                 </div>
             </section>
-            </section>
-
-            <section class="dashboard-view" id="panel-artistas" data-view="artistas">
-                <section class="panel-card">
-                    <div class="section-heading">
-                        <p class="eyebrow small">GESTIÓN DE ARTISTAS</p>
-                        <h3>Artistas registrados</h3>
-                    </div>
-                    <div class="record-grid">
-                        <article class="record-card"><strong>Nova Lima</strong><span>Artista principal</span></article>
-                        <article class="record-card"><strong>Leo Norte</strong><span>Productor invitado</span></article>
-                        <article class="record-card"><strong>Alma Beats</strong><span>Proyecto independiente</span></article>
-                    </div>
-                    <div class="section-heading registration-heading">
-                        <p class="eyebrow small">NUEVO REGISTRO</p>
-                        <h3>Registrar artista</h3>
-                    </div>
-                    <form id="artistForm" class="user-form registration-form">
-                        <div class="form-row">
-                            <label for="artistName">Nombre del artista</label>
-                            <input type="text" id="artistName" placeholder="Ej: Luna Nova" required>
-                        </div>
-                        <div class="form-row">
-                            <label for="artistRole">Tipo de artista</label>
-                            <select id="artistRole" required>
-                                <option value="Artista principal">Artista principal</option>
-                                <option value="Productor">Productor</option>
-                                <option value="Proyecto independiente">Proyecto independiente</option>
-                            </select>
-                        </div>
-                        <button type="submit" class="btn-primary form-btn">Registrar artista</button>
-                    </form>
-                </section>
-            </section>
-
-            <section class="dashboard-view" id="panel-produccion" data-view="produccion">
-            <section class="panel-card production-panel">
-                <div class="section-heading">
-                    <p class="eyebrow small">PRODUCCIÓN MUSICAL</p>
-                    <h3>Proyectos en producción</h3>
-                </div>
-
-                <div class="production-list">
-                    <div class="production-item">
-                        <span class="production-icon" aria-hidden="true">♪</span>
-                        <div>
-                            <strong>Beat Session</strong>
-                            <small>Grabación y arreglos</small>
-                        </div>
-                        <span class="production-progress">92%</span>
-                    </div>
-                    <div class="production-item">
-                        <span class="production-icon" aria-hidden="true">◒</span>
-                        <div>
-                            <strong>Master final</strong>
-                            <small>Mezcla y masterización</small>
-                        </div>
-                        <span class="production-progress">78%</span>
-                    </div>
-                    <div class="production-item">
-                        <span class="production-icon" aria-hidden="true">↗</span>
-                        <div>
-                            <strong>Campaña de lanzamiento</strong>
-                            <small>Promoción y distribución</small>
-                        </div>
-                        <span class="production-progress">64%</span>
-                    </div>
-                </div>
-                <div class="section-heading registration-heading">
-                    <p class="eyebrow small">NUEVO REGISTRO</p>
-                    <h3>Registrar proyecto</h3>
-                </div>
-                <form id="productionForm" class="user-form registration-form">
-                    <div class="form-row">
-                        <label for="productionName">Nombre del proyecto</label>
-                        <input type="text" id="productionName" placeholder="Ej: Nuevo lanzamiento" required>
-                    </div>
-                    <div class="form-row">
-                        <label for="productionStage">Etapa</label>
-                        <input type="text" id="productionStage" placeholder="Ej: Grabación y arreglos" required>
-                    </div>
-                    <div class="form-row">
-                        <label for="productionProgress">Avance (%)</label>
-                        <input type="number" id="productionProgress" min="0" max="100" value="0" required>
-                    </div>
-                    <button type="submit" class="btn-primary form-btn">Registrar proyecto</button>
-                </form>
-            </section>
-            </section>
-
-            <section class="dashboard-view" id="panel-distribucion" data-view="distribucion">
-                <section class="panel-card">
-                    <div class="section-heading">
-                        <p class="eyebrow small">DISTRIBUCIÓN</p>
-                        <h3>Lanzamientos y plataformas</h3>
-                    </div>
-                    <div class="record-grid">
-                        <article class="record-card"><strong>Beat Session</strong><span>Spotify · Publicado</span></article>
-                        <article class="record-card"><strong>Master final</strong><span>Apple Music · En revisión</span></article>
-                    </div>
-                </section>
-            </section>
-
-            <section class="dashboard-view" id="panel-reportes" data-view="reportes">
-                <section class="panel-card">
-                    <div class="section-heading">
-                        <p class="eyebrow small">REPORTES</p>
-                        <h3>Resumen de actividad</h3>
-                    </div>
-                    <div class="report-grid">
-                        <div><strong>12</strong><span>Proyectos activos</span></div>
-                        <div><strong>86%</strong><span>Avance mensual</span></div>
-                        <div><strong>24</strong><span>Lanzamientos</span></div>
-                    </div>
-                </section>
-            </section>
-
-            <section class="dashboard-view" id="panel-configuracion" data-view="configuracion">
-                <section class="panel-card">
-                    <div class="section-heading">
-                        <p class="eyebrow small">CONFIGURACIÓN</p>
-                        <h3>Variaciones de campo</h3>
-                    </div>
-                    <div class="field-accordion">
-                        <article class="field-panel open">
-                            <button class="field-toggle" type="button" aria-expanded="true">Texto <span>＋</span></button>
-                            <div class="field-content"><label>Nombre del proyecto<input type="text" placeholder="Escribe un nombre"></label></div>
-                        </article>
-                        <article class="field-panel">
-                            <button class="field-toggle" type="button" aria-expanded="false">Número <span>＋</span></button>
-                            <div class="field-content"><label>Cantidad<input type="number" min="0" placeholder="0"></label></div>
-                        </article>
-                        <article class="field-panel">
-                            <button class="field-toggle" type="button" aria-expanded="false">Fecha <span>＋</span></button>
-                            <div class="field-content"><label>Fecha de lanzamiento<input type="date"></label></div>
-                        </article>
-                        <article class="field-panel">
-                            <button class="field-toggle" type="button" aria-expanded="false">Selección <span>＋</span></button>
-                            <div class="field-content"><label>Estado<select><option>En producción</option><option>En revisión</option><option>Publicado</option></select></label></div>
-                        </article>
-                    </div>
-                </section>
-            </section>
-
-            <section class="dashboard-view" id="panel-catalogo" data-view="catalogo">
-                <div class="page-head">
-                    <div>
-                        <p class="eyebrow small">CATÁLOGO</p>
-                        <h1>Explora nuestra música, versiones y álbumes</h1>
-                        <p>Todo lo producido por la casa, listo para publicar y seguir el proceso.</p>
-                    </div>
-                </div>
-                <section class="catalogo-layout">
-                    <div class="panel-card">
-                        <div class="filter-row">
-                            <button type="button" class="filter-chip active" data-tipo="todos">Todos</button>
-                            <button type="button" class="filter-chip" data-tipo="cancion">Canciones</button>
-                            <button type="button" class="filter-chip" data-tipo="version">Versiones</button>
-                            <button type="button" class="filter-chip" data-tipo="album">Álbumes</button>
-                        </div>
-                        <input type="search" id="catalogoBuscar" class="catalogo-search" placeholder="Buscar por título, artista o álbum...">
-                        <table class="catalogo-table">
-                            <thead><tr><th>Título</th><th>Álbum</th><th>Tipo</th><th>Duración</th><th>Estado</th><th></th></tr></thead>
-                            <tbody id="catalogoBody"></tbody>
-                        </table>
-                    </div>
-                    <div class="panel-card">
-                        <div class="section-heading"><h3>Agregar al catálogo</h3></div>
-                        <form id="catalogoForm" class="user-form">
-                            <div class="form-row"><label for="catTitulo">Título</label><input type="text" id="catTitulo" required></div>
-                            <div class="form-row"><label for="catArtista">Artista</label><input type="text" id="catArtista" required></div>
-                            <div class="form-row"><label for="catAlbum">Álbum</label><input type="text" id="catAlbum"></div>
-                            <div class="form-row"><label for="catTipo">Tipo</label><select id="catTipo" required><option value="cancion">Canción</option><option value="version">Versión</option><option value="album">Álbum</option></select></div>
-                            <div class="form-row"><label for="catDuracion">Duración</label><input type="text" id="catDuracion" required></div>
-                            <div class="form-row"><label for="catEstado">Estado</label><select id="catEstado" required><option value="borrador">Borrador</option><option value="proceso">En proceso</option><option value="publicado">Publicado</option></select></div>
-                            <p class="field-hint">Se guarda en este navegador.</p>
-                            <button type="submit" class="btn-primary form-btn">Guardar en el catálogo</button>
-                        </form>
-                    </div>
-                </section>
-            </section>
-
-            <section class="dashboard-view" id="panel-sesiones" data-view="sesiones">
-                <div class="page-head"><div><p class="eyebrow small">SESIONES DE GRABACIÓN</p><h1>Agenda de cabinas y sesiones</h1></div></div>
-                <div class="cabin-grid" id="cabinGrid"></div>
-                <section class="catalogo-layout">
-                    <div class="panel-card">
-                        <div class="filter-row"><button type="button" class="filter-chip active" data-estado="todas">Todas</button><button type="button" class="filter-chip" data-estado="confirmada">Confirmadas</button><button type="button" class="filter-chip" data-estado="pendiente">Pendientes</button><button type="button" class="filter-chip" data-estado="cancelada">Canceladas</button></div>
-                        <table class="session-table"><thead><tr><th>Fecha y hora</th><th>Cabina</th><th>Artista</th><th>Tipo</th><th>Estado</th><th></th></tr></thead><tbody id="sesionesBody"></tbody></table>
-                    </div>
-                    <div class="panel-card"><div class="section-heading"><h3>Agendar sesión</h3></div>
-                        <form id="sesionForm" class="user-form">
-                            <div class="form-row"><label for="sesFecha">Fecha</label><input type="date" id="sesFecha" required></div>
-                            <div class="form-row"><label for="sesHora">Hora</label><input type="time" id="sesHora" required></div>
-                            <div class="form-row"><label for="sesDuracion">Duración</label><input type="text" id="sesDuracion"></div>
-                            <div class="form-row"><label for="sesCabina">Cabina</label><select id="sesCabina"><option>Cabina A</option><option>Cabina B</option><option>Cabina C</option><option>Sala de Mezclas</option></select></div>
-                            <div class="form-row"><label for="sesArtista">Artista / Productor</label><input type="text" id="sesArtista" required></div>
-                            <div class="form-row"><label for="sesTipo">Tipo</label><select id="sesTipo"><option value="grabacion">Grabación</option><option value="mezcla">Mezcla</option><option value="masterizacion">Masterización</option><option value="ensayo">Ensayo</option></select></div>
-                            <div class="form-row"><label for="sesEstado">Estado</label><select id="sesEstado"><option value="confirmada">Confirmada</option><option value="pendiente">Pendiente</option><option value="cancelada">Cancelada</option></select></div>
-                            <button type="submit" class="btn-primary form-btn">Guardar la sesión</button>
-                        </form>
-                    </div>
-                </section>
-            </section>
-
-            <section class="dashboard-view" id="panel-agenda" data-view="agenda">
-                <div class="page-head"><div><p class="eyebrow small">AGENDA</p><h1>Calendario del equipo</h1><p>Lanzamientos, reuniones y sesiones en calendario.</p></div></div>
-                <section class="agenda-layout"><div class="panel-card">
-                    <div class="calendar-head"><h3 id="calendarTitle">Mes</h3><div class="calendar-nav"><button type="button" id="prevMonth" aria-label="Mes anterior">&lt;</button><button type="button" id="nextMonth" aria-label="Mes siguiente">&gt;</button></div></div>
-                    <div class="calendar-grid" id="calendarGrid"></div>
-                    <div class="section-heading"><h3>Eventos del <span id="eventListLabel">día</span></h3></div>
-                    <div class="event-list" id="eventList"></div>
-                    <form id="agendaForm" class="user-form"><div class="form-row"><label for="agFecha">Fecha</label><input type="date" id="agFecha" required></div><div class="form-row"><label for="agHora">Hora</label><input type="time" id="agHora" required></div><div class="form-row"><label for="agTitulo">Título</label><input type="text" id="agTitulo" required></div><div class="form-row"><label for="agTipo">Tipo</label><select id="agTipo"><option value="lanzamiento">Lanzamiento</option><option value="reunion">Reunión</option><option value="sesion">Sesión</option><option value="otro">Otro</option></select></div><button type="submit" class="btn-primary form-button">Agregar evento</button></form>
-                </div></section>
-            </section>
         </main>
     </div>
-
-    <script type="module" src="../js/menu.js"></script>
-    <script src="../js/interacciones.js"></script>
+ 
+    <script src="../js/menu.js"></script>
 </body>
 </html>
+ 

@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Z-ONE | Artistas</title>
+    <link rel="stylesheet" href="../css/style.css">
+    <link rel="stylesheet" href="../css/dashboard.css">
+    <link rel="stylesheet" href="../css/artistas.css">
+</head>
+<body>
+    <div class="dashboard-shell">
+        <aside class="sidebar">
+            <div class="sidebar-brand">
+                <span class="brand-mark">Z-</span><span>ONE</span>
+            </div>
+ 
+            <nav class="sidebar-nav" aria-label="Menú principal">
+                <a class="nav-item" href="menu_principal.html">Inicio</a>
+                <a class="nav-item active" href="artistas.html">Artistas</a>
+                <a class="nav-item" href="productores.html">Productores</a>
+                <a class="nav-item" href="catalogo.html">Catálogo</a>
+                <a class="nav-item" href="sesiones.html">Sesiones</a>
+                <a class="nav-item" href="agenda.html">Agenda</a>
+                <a class="nav-item" href="estadisticas.html">Estadísticas</a>
+                <a class="nav-item" href="chatbot.html">Chatbot</a>
+                <a class="nav-item" href="configuracion.html">Configuración</a>
+            </nav>
+ 
+            <div class="sidebar-card">
+                <small>Estado</small>
+                <strong>Producción activa</strong>
+            </div>
+        </aside>
+ 
+        <main class="main-panel">
+            <header class="topbar">
+                <div>
+                    <p class="eyebrow">PANEL PRINCIPAL</p>
+                    <h2>Hola, <span id="welcomeUser">usuario</span>.</h2>
+                </div>
+ 
+                <div class="topbar-actions">
+                    <span class="user-badge" id="userBadge">Usuario</span>
+                    <button class="btn-logout" id="btnLogout" type="button">Cerrar sesión</button>
+                </div>
+            </header>
+ 
+            <div class="page-head">
+                <div>
+                    <p class="eyebrow small">GESTIÓN DE ARTISTAS</p>
+                    <h1>Artistas registrados</h1>
+                    <p>Quiénes están produciendo música con la casa ahora mismo.</p>
+                </div>
+            </div>
+ 
+            <section class="panel-card">
+                <div class="section-heading">
+                    <p class="eyebrow small">GESTIÓN DE ARTISTAS</p>
+                    <h3>Artistas registrados</h3>
+                </div>
+                <div class="record-grid" id="artistasGrid">
+                </div>
+                <div class="section-heading registration-heading">
+                    <p class="eyebrow small">NUEVO REGISTRO</p>
+                    <h3>Registrar artista</h3>
+                </div>
+                <form id="artistForm" class="user-form registration-form">
+                    <div class="form-row">
+                        <label for="artistName">Nombre del artista</label>
+                        <input type="text" id="artistName" placeholder="Ej: Luna Nova" required>
+                    </div>
+                    <div class="form-row">
+                        <label for="artistRole">Tipo de artista</label>
+                        <select id="artistRole" required>
+                            <option value="Artista principal">Artista principal</option>
+                            <option value="Artista invitado">Artista invitado</option>
+                            <option value="Proyecto independiente">Proyecto independiente</option>
+                        </select>
+                    </div>
+                    <button type="submit" class="btn-primary form-button">Registrar artista</button>
+                </form>
+            </section>
+ 
+        </main>
+    </div>
+ 
+    <script src="../js/menu.js"></script>
+    <script src="../js/interacciones.js"></script>
+</body>
+</html>
+ 

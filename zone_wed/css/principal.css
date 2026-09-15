@@ -1,0 +1,121 @@
+/* principal.css — estilos propios del panel de Inicio (menu_principal.html) */
+ 
+/* Corrección de contraste: estos títulos heredaban el texto claro
+   pensado para el fondo oscuro y quedaban casi invisibles sobre
+   tarjetas claras. */
+.hero-panel h3,
+.panel-card h3,
+.panel-card .section-heading h3 {
+    color: #121826;
+}
+ 
+/* summary-grid / summary-card: no venían definidas en la base de
+   style.css (solo aparecían dentro de un @media query), así que estas
+   3 tarjetas de arriba de Inicio se veían como texto plano. */
+.summary-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+    margin: 20px 0;
+}
+ 
+.summary-card {
+    background: #fff;
+    border: 1px solid #dfe7e2;
+    border-radius: 16px;
+    padding: 20px;
+}
+ 
+.summary-card.summary-card-primary {
+    border-color: #1d5a4a;
+}
+ 
+.summary-card .card-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 34px;
+    height: 34px;
+    border-radius: 10px;
+    background: rgba(29, 90, 74, 0.1);
+    color: #1d5a4a;
+    margin-bottom: 10px;
+    font-style: normal;
+}
+ 
+.summary-card p {
+    margin: 0 0 6px;
+    color: var(--muted);
+    font-size: 0.85rem;
+}
+ 
+.summary-card strong {
+    display: block;
+    font-size: 1.3rem;
+    color: #121826;
+    margin-bottom: 6px;
+}
+ 
+.summary-card .status {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.8rem;
+    color: #1d5a4a;
+    font-weight: 700;
+}
+ 
+.summary-card .status i {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: #34d399;
+    display: inline-block;
+}
+ 
+.summary-card .card-note {
+    font-size: 0.8rem;
+    color: var(--muted);
+}
+ 
+.information-panel {
+    margin-top: 22px;
+}
+ 
+.information-copy {
+    color: var(--muted);
+    max-width: 70ch;
+    margin: 8px 0 18px;
+}
+ 
+.information-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+}
+ 
+.information-grid article {
+    background: #fff;
+    border: 1px solid #dfe7e2;
+    border-radius: 14px;
+    padding: 16px;
+}
+ 
+.information-grid h4 {
+    margin: 0 0 8px;
+    color: #121826;
+}
+ 
+.information-grid p {
+    margin: 0;
+    color: var(--muted);
+    font-size: 0.9rem;
+}
+ 
+@media (max-width: 900px) {
+    .summary-grid,
+    .information-grid {
+        grid-template-columns: 1fr;
+    }
+}
+ 

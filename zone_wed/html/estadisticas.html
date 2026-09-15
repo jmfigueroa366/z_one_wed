@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Z-ONE | Estadísticas</title>
+    <link rel="stylesheet" href="../css/style.css">
+    <link rel="stylesheet" href="../css/dashboard.css">
+    <link rel="stylesheet" href="../css/catalogo.css">
+    <link rel="stylesheet" href="../css/estadisticas.css">
+</head>
+<body>
+    <div class="dashboard-shell">
+        <aside class="sidebar">
+            <div class="sidebar-brand">
+                <span class="brand-mark">Z-</span><span>ONE</span>
+            </div>
+ 
+            <nav class="sidebar-nav" aria-label="Menú principal">
+                <a class="nav-item" href="menu_principal.html">Inicio</a>
+                <a class="nav-item" href="artistas.html">Artistas</a>
+                <a class="nav-item" href="productores.html">Productores</a>
+                <a class="nav-item" href="catalogo.html">Catálogo</a>
+                <a class="nav-item" href="sesiones.html">Sesiones</a>
+                <a class="nav-item" href="agenda.html">Agenda</a>
+                <a class="nav-item active" href="estadisticas.html">Estadísticas</a>
+                <a class="nav-item" href="chatbot.html">Chatbot</a>
+                <a class="nav-item" href="configuracion.html">Configuración</a>
+            </nav>
+ 
+            <div class="sidebar-card">
+                <small>Estado</small>
+                <strong>Producción activa</strong>
+            </div>
+        </aside>
+ 
+        <main class="main-panel">
+            <header class="topbar">
+                <div>
+                    <p class="eyebrow">GESTIÓN</p>
+                    <h2>Hola, <span id="welcomeUser">usuario</span>.</h2>
+                </div>
+ 
+                <div class="topbar-actions">
+                    <span class="user-badge" id="userBadge">Usuario</span>
+                    <button class="btn-logout" id="btnLogout" type="button">Cerrar sesión</button>
+                </div>
+            </header>
+ 
+            <div class="page-head">
+                <div>
+                    <p class="eyebrow small">ESTADÍSTICAS</p>
+                    <h1>Cómo va la producción</h1>
+                    <p>Un vistazo rápido al catálogo, las sesiones y la agenda — se calcula con lo que ya cargaste en las otras pantallas.</p>
+                </div>
+            </div>
+ 
+            <div class="kpi-grid" id="kpiGrid">
+                <!-- generado por interacciones.js -->
+            </div>
+ 
+            <section class="stats-layout">
+                <div class="panel-card">
+                    <h3 class="chart-title">Catálogo por tipo</h3>
+                    <div class="vbar-chart" id="vbarChart"></div>
+                </div>
+ 
+                <div class="panel-card">
+                    <h3 class="chart-title">Catálogo por estado</h3>
+                    <div class="hbar-chart" id="hbarEstados"></div>
+                </div>
+ 
+                <div class="panel-card">
+                    <h3 class="chart-title">Sesiones por cabina</h3>
+                    <div class="hbar-chart" id="hbarCabinas"></div>
+                </div>
+ 
+                <div class="panel-card">
+                    <h3 class="chart-title">Próximos en la agenda</h3>
+                    <div class="upcoming-list" id="upcomingList"></div>
+                </div>
+            </section>
+        </main>
+    </div>
+ 
+    <script src="../js/menu.js"></script>
+    <script src="../js/interacciones.js"></script>
+</body>
+</html>
+ 

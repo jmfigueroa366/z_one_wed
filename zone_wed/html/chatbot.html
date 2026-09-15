@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Z-ONE | Chatbot</title>
+    <link rel="stylesheet" href="../css/style.css">
+    <link rel="stylesheet" href="../css/dashboard.css">
+    <link rel="stylesheet" href="../css/catalogo.css">
+    <link rel="stylesheet" href="../css/chatbot.css">
+</head>
+<body>
+    <div class="dashboard-shell">
+        <aside class="sidebar">
+            <div class="sidebar-brand">
+                <span class="brand-mark">Z-</span><span>ONE</span>
+            </div>
+ 
+            <nav class="sidebar-nav" aria-label="Menú principal">
+                <a class="nav-item" href="menu_principal.html">Inicio</a>
+                <a class="nav-item" href="artistas.html">Artistas</a>
+                <a class="nav-item" href="productores.html">Productores</a>
+                <a class="nav-item" href="catalogo.html">Catálogo</a>
+                <a class="nav-item" href="sesiones.html">Sesiones</a>
+                <a class="nav-item" href="agenda.html">Agenda</a>
+                <a class="nav-item" href="estadisticas.html">Estadísticas</a>
+                <a class="nav-item active" href="chatbot.html">Chatbot</a>
+                <a class="nav-item" href="configuracion.html">Configuración</a>
+            </nav>
+ 
+            <div class="sidebar-card">
+                <small>Estado</small>
+                <strong>Producción activa</strong>
+            </div>
+        </aside>
+ 
+        <main class="main-panel">
+            <header class="topbar">
+                <div>
+                    <p class="eyebrow">GESTIÓN</p>
+                    <h2>Hola, <span id="welcomeUser">usuario</span>.</h2>
+                </div>
+ 
+                <div class="topbar-actions">
+                    <span class="user-badge" id="userBadge">Usuario</span>
+                    <button class="btn-logout" id="btnLogout" type="button">Cerrar sesión</button>
+                </div>
+            </header>
+ 
+            <div class="page-head">
+                <div>
+                    <p class="eyebrow small">CHATBOT</p>
+                    <h1>Asistente Z-ONE</h1>
+                    <p>Interfaz visual del chat. Todavía no está conectado a ninguna lógica real de clasificación.</p>
+                </div>
+            </div>
+ 
+            <section class="chat-shell">
+                <div class="panel-card chat-side">
+                    <div class="section-heading">
+                        <h3>Prueba con esto</h3>
+                    </div>
+                    <div class="chat-suggestions">
+                        <button type="button" class="chat-suggestion">¿Cuántas canciones hay en el catálogo?</button>
+                        <button type="button" class="chat-suggestion">¿Qué cabina está libre hoy?</button>
+                        <button type="button" class="chat-suggestion">¿Qué eventos tengo esta semana?</button>
+                    </div>
+                </div>
+ 
+                <div class="panel-card chat-window-card">
+                    <div class="chat-window-head">
+                        <div class="chat-avatar">Z</div>
+                        <div>
+                            <strong>Asistente Z-ONE</strong>
+                            <span>Maqueta visual — sin lógica real</span>
+                        </div>
+                    </div>
+ 
+                    <div class="chat-messages" id="chatMessages">
+                        <!-- generado por interacciones.js -->
+                    </div>
+ 
+                    <form id="chatForm" class="chat-input-row">
+                        <input type="text" id="chatInput" placeholder="Escribe un mensaje…" autocomplete="off" required>
+                        <button type="submit" class="btn-primary">Enviar</button>
+                    </form>
+                </div>
+            </section>
+        </main>
+    </div>
+ 
+    <script src="../js/menu.js"></script>
+    <script src="../js/interacciones.js"></script>
+</body>
+</html>
+ 

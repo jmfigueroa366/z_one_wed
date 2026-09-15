@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Z-ONE | Agenda</title>
     <link rel="stylesheet" href="../css/style.css">
+    <link rel="stylesheet" href="../css/dashboard.css">
     <link rel="stylesheet" href="../css/catalogo.css">
     <link rel="stylesheet" href="../css/agenda.css">
 </head>
@@ -14,67 +15,68 @@
             <div class="sidebar-brand">
                 <span class="brand-mark">Z-</span><span>ONE</span>
             </div>
-            
-            <nav class="sidebar-nav" aria-label="Menu principal">
+ 
+            <nav class="sidebar-nav" aria-label="Menú principal">
                 <a class="nav-item" href="menu_principal.html">Inicio</a>
                 <a class="nav-item" href="artistas.html">Artistas</a>
                 <a class="nav-item" href="productores.html">Productores</a>
                 <a class="nav-item" href="catalogo.html">Catálogo</a>
-                <a class="nav-item " href="sesiones.html">Sesiones</a>
-                <a class="nav-item active" href="agencia.html">Agencia</a>
-                <a class="nav-item" href="estadistica.html">Estadísticas</a>
+                <a class="nav-item" href="sesiones.html">Sesiones</a>
+                <a class="nav-item active" href="agenda.html">Agenda</a>
+                <a class="nav-item" href="estadisticas.html">Estadísticas</a>
                 <a class="nav-item" href="chatbot.html">Chatbot</a>
+                <a class="nav-item" href="configuracion.html">Configuración</a>
             </nav>
-            
+ 
             <div class="sidebar-card">
                 <small>Estado</small>
-                <strong>Operación activa</strong>
+                <strong>Producción activa</strong>
             </div>
         </aside>
-
+ 
         <main class="main-panel">
             <header class="topbar">
                 <div>
                     <p class="eyebrow">GESTIÓN</p>
-                    <h2>Hola, <span id="welcomeUser">Usuario</span></h2>
+                    <h2>Hola, <span id="welcomeUser">usuario</span>.</h2>
                 </div>
-
+ 
                 <div class="topbar-actions">
                     <span class="user-badge" id="userBadge">Usuario</span>
                     <button class="btn-logout" id="btnLogout" type="button">Cerrar sesión</button>
                 </div>
             </header>
-
+ 
             <div class="page-head">
                 <div>
                     <p class="eyebrow small">AGENDA</p>
-                    <h1>Calendario del Equipo</h1>
-                    <p>Lanzamiento, reuniones y sesiones en calendario. Toca un día para ver o agregar un evento</p>
+                    <h1>Calendario del equipo</h1>
+                    <p>Lanzamientos, reuniones y sesiones en un solo calendario. Toca un día para ver o agregar eventos.</p>
                 </div>
             </div>
-                
+ 
             <section class="agenda-layout">
                 <div class="panel-card">
                     <div class="calendar-head">
                         <h3 id="calendarTitle">Mes</h3>
                         <div class="calendar-nav">
-                            <button type="button" id="prevMonth" aria-label="Mes anterior">,</button>
-                            <button type="button" id="nextMonth" aria-label="Mes siguiente">.</button>
+                            <button type="button" id="prevMonth" aria-label="Mes anterior">‹</button>
+                            <button type="button" id="nextMonth" aria-label="Mes siguiente">›</button>
                         </div>
                     </div>
                     <div class="calendar-grid" id="calendarGrid">
-                        <!-- Celdas del calendario generadas por interaccion.js -->
+                        <!-- generado por interacciones.js -->
                     </div>
-
-                    <div class="panel-card">
-                        <div class="section-heading">
-                            <h3>Eventos del <span id="eventListLabel">día</span></h3>
+                </div>
+ 
+                <div class="panel-card">
+                    <div class="section-heading">
+                        <h3>Eventos del <span id="eventListLabel">día</span></h3>
                     </div>
-
                     <div class="event-list" id="eventList">
-                        <!-- Eventos del día generados por interaccion.js -->
+                        <!-- generado por interacciones.js -->
                     </div>
-
+ 
                     <form id="agendaForm" class="user-form" style="margin-top: 22px;">
                         <div class="form-row">
                             <label for="agFecha">Fecha</label>
@@ -85,28 +87,28 @@
                             <input type="time" id="agHora" required>
                         </div>
                         <div class="form-row">
-                            <label for="agTitulo">Titulo</label>
-                            <input type="text" id="agTitulo" placeholder="Ej: Reunión de equipo" required>
+                            <label for="agTitulo">Título</label>
+                            <input type="text" id="agTitulo" placeholder="Ej. Reunión de repertorio" required>
                         </div>
                         <div class="form-row">
                             <label for="agTipo">Tipo</label>
                             <select id="agTipo" required>
-                                <option value="lanzamiento">Lanzamiento</option>
-                                <option value="reunion">Reunión</option>
-                                <option value="sesion">Sesión</option>
-                                <option value="otro">Otro</option>
+                                <option value="Lanzamiento">Lanzamiento</option>
+                                <option value="Reunión">Reunión</option>
+                                <option value="Sesión">Sesión</option>
+                                <option value="Otro">Otro</option>
                             </select>
                         </div>
-                        <p class="field-hint">Se guarda en este navegador (localStorage)</p>
+                        <p class="field-hint">Se guarda en este navegador (localStorage); todavía no hay conexión a Oracle.</p>
                         <button type="submit" class="btn-primary form-button">Agregar evento</button>
                     </form>
                 </div>
             </section>
         </main>
     </div>
-
-    <script type="module" src="../js/menu.js"></script>
+ 
+    <script src="../js/menu.js"></script>
     <script src="../js/interacciones.js"></script>
 </body>
 </html>
-
+ 
