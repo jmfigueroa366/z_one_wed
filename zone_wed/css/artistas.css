@@ -1,0 +1,45 @@
+/* artistas.css — estilos propios de la pantalla de Artistas */
+ 
+.panel-card h3,
+.panel-card .section-heading h3 {
+    color: #121826;
+}
+ 
+.record-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 14px;
+    margin-bottom: 22px;
+}
+ 
+.record-card {
+    background: #fff;
+    border: 1px solid #dfe7e2;
+    border-radius: 14px;
+    padding: 16px;
+}
+ 
+.record-card strong {
+    display: block;
+    color: #121826;
+    margin-bottom: 4px;
+}
+ 
+.record-card span {
+    color: var(--muted);
+    font-size: 0.85rem;
+}
+ 
+.registration-heading {
+    margin-top: 26px;
+}
+ 
+.registration-form {
+    margin-top: 12px;
+}
+ 
+.form-button {
+    width: fit-content;
+    margin-top: 8px;
+}
+ 
