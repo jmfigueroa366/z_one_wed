@@ -1,7 +1,7 @@
 // ============================================================================
 // IMPORTACIÓN DE LA LIBRERÍA
 // ============================================================================
-import { animate, stagger } from 'https://cdn.jsdelivr.net/npm/animejs@4.2.2/+esm';
+import { animate, stagger } from './motion.js';
 // Importa dos funciones de la librería "anime.js" (v4.2.2) desde un CDN:
 // - animate: función principal para crear animaciones.
 // - stagger: crea retrasos escalonados entre varios elementos animados,
