@@ -12,6 +12,17 @@ const register_message = document.getElementById('registerMessage');
 // Busca el elemento con id="registerMessage" (normalmente un <p> o <span>)
 // donde se mostrarán mensajes de error o éxito al usuario.
 
+function obtenerUsuarioRegistrado() {
+    try {
+        const dato = localStorage.getItem('usuario_registrado');
+        if (!dato) return null;
+        const usuario = JSON.parse(dato);
+        return usuario && typeof usuario === 'object' ? usuario : null;
+    } catch (error) {
+        return null;
+    }
+}
+
 if (form) {
     // Verifica que el formulario realmente exista en la página antes de
     // intentar usarlo. Esto evita errores si el script se carga en una 
@@ -50,6 +61,22 @@ if (form) {
             return;
             // Detiene la ejecución de la función aquí: no continúa 
             // guardando datos si faltan campos.
+        }
+
+        const usuario_existente = obtenerUsuarioRegistrado();
+        const nombre_duplicado = usuario_existente &&
+            usuario_existente.nombre &&
+            usuario_existente.nombre.toLowerCase() === nombre.toLowerCase();
+        const email_duplicado = usuario_existente &&
+            usuario_existente.email &&
+            usuario_existente.email.toLowerCase() === email.toLowerCase();
+
+        if (nombre_duplicado || email_duplicado) {
+            if (register_message) {
+                register_message.textContent = '❌ Este usuario o correo ya está registrado. Elige otro.';
+                register_message.classList.add('error');
+            }
+            return;
         }
 
         const usuario = {

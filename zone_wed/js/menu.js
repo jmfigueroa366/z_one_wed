@@ -85,7 +85,10 @@ const usuario = protegerPagina();
 if (usuario) {
     mostrarUsuarioActual(usuario);
     activarLogout();
-    resaltarPaginaActiva();
-    activarMenuMovil();
+    if (typeof resaltarPaginaActiva === 'function') {
+        resaltarPaginaActiva();
+    }
+    if (typeof activarMenuMovil === 'function') {
+        activarMenuMovil();
+    }
 }
- 

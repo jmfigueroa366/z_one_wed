@@ -87,5 +87,6 @@ if (form) {
 }
 
 if (btn_menu) {
-    btn_menu.addEventListener('click', redirectToMenu);
+    btn_menu.setAttribute('href', 'index.html');
+    btn_menu.setAttribute('data-role', 'menu');
 }

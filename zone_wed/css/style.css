@@ -201,6 +201,28 @@ button, input, select { font: inherit; }
     font-weight: 800;
 }
 
+.hero-labels {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-top: 18px;
+}
+
+.hero-labels span {
+    display: inline-flex;
+    align-items: center;
+    min-height: 32px;
+    padding: 0 12px;
+    color: var(--primary);
+    background: rgba(83, 109, 254, 0.08);
+    border: 1px solid rgba(83, 109, 254, 0.18);
+    border-radius: var(--radius-pill);
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+}
+
 .lead {
     max-width: 620px;
     margin-top: 22px;
@@ -449,10 +471,29 @@ button, input, select { font: inherit; }
 
 /* ---------- Tarjetas compartidas (features + preview) ---------- */
 .features {
-    padding-top: 24px;
+    padding-top: 32px;
     display: grid;
-    grid-template-columns: repeat(3, minmax(0, 1fr));
+    grid-template-columns: 1.1fr repeat(3, minmax(0, 1fr));
     gap: 20px;
+    align-items: stretch;
+}
+
+.features-intro {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding: 18px 12px 18px 0;
+}
+
+.features-intro .eyebrow {
+    margin-bottom: 14px;
+}
+
+.features-intro h2 {
+    margin: 0;
+    font-size: clamp(2rem, 3vw, 3rem);
+    line-height: 1.02;
+    letter-spacing: -0.07em;
 }
 
 .workflow {
@@ -520,17 +561,29 @@ button, input, select { font: inherit; }
     position: relative;
     overflow: hidden;
     padding: 24px 22px;
-    background: var(--card-bg);
-    border: 1px solid var(--line);
+    background: linear-gradient(180deg, rgba(255,255,255,0.92), rgba(245,247,255,0.9));
+    border: 1px solid rgba(83, 109, 254, 0.12);
     border-radius: var(--radius-lg);
+    box-shadow: 0 18px 34px rgba(17, 24, 39, 0.05);
     transition: transform 220ms ease, box-shadow 220ms ease, border-color 220ms ease;
+}
+
+.feature-card::before,
+.preview-card::before {
+    position: absolute;
+    inset: 0 auto auto 0;
+    width: 100%;
+    height: 4px;
+    content: '';
+    background: linear-gradient(90deg, var(--primary), var(--secondary), var(--accent));
+    opacity: 0.9;
 }
 
 .feature-card:hover,
 .preview-card:hover {
     border-color: rgba(83, 109, 254, 0.34);
     box-shadow: 0 22px 38px rgba(83, 109, 254, 0.16);
-    transform: translateY(-7px) rotate(-0.5deg);
+    transform: translateY(-6px);
 }
 
 .feature-icon {
@@ -540,10 +593,11 @@ button, input, select { font: inherit; }
     width: 54px;
     height: 54px;
     margin-bottom: 12px;
-    color: #b4c5ff;
-    background: rgba(109, 139, 255, 0.14);
+    color: #fff;
+    background: linear-gradient(135deg, var(--primary), var(--secondary));
     border-radius: 16px;
     font-size: 1.6rem;
+    box-shadow: 0 12px 22px rgba(83, 109, 254, 0.22);
 }
 .feature-card h3 { margin: 0 0 10px; font-size: 1.5rem; }
 .feature-card p { margin: 0; color: var(--muted); line-height: 1.6; }
