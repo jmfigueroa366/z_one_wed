@@ -1,4 +1,10 @@
 const session_key = 'zone_usuario';
+const role_key = 'zone_rol_usuario';
+
+function obtenerRolUsuario() {
+    const rol = localStorage.getItem(role_key);
+    return rol === 'artista' ? 'Artista' : 'Productor';
+}
  
 /* ---------- Guard de sesión ---------- */
 // Si no hay usuario "logueado" en localStorage, se devuelve al login.
@@ -14,15 +20,18 @@ function protegerPagina() {
 /* ---------- Mostrar usuario actual ---------- */
 function mostrarUsuarioActual(usuario) {
     if (!usuario) return;
+    const rol = obtenerRolUsuario();
     // welcomeUser: el "Hola, ___" del encabezado
     const saludo = document.getElementById('welcomeUser');
     if (saludo) saludo.textContent = usuario;
     // userBadge: la insignia de usuario junto al botón de cerrar sesión
     const insignia = document.getElementById('userBadge');
-    if (insignia) insignia.textContent = usuario;
+    if (insignia) insignia.textContent = `${usuario} · ${rol}`;
     // usuarioActual: por si alguna página futura usa este id en vez de los de arriba
     const etiqueta = document.getElementById('usuarioActual');
     if (etiqueta) etiqueta.textContent = usuario;
+    const espacioRol = document.getElementById('spaceRole');
+    if (espacioRol) espacioRol.textContent = `Acceso de ${rol.toLowerCase()}`;
 }
  
 /* ---------- Cerrar sesión ---------- */
@@ -32,6 +41,7 @@ function activarLogout() {
  
     btnLogout.addEventListener('click', () => {
         localStorage.removeItem(session_key);
+        localStorage.removeItem(role_key);
         window.location.href = 'login.html';
     });
 }

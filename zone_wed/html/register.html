@@ -31,6 +31,13 @@
                     <label for="password">Contraseña</label>
                     <input type="password" id="password" placeholder="Crea una contraseña" required>
                 </div>
+                <div class="field-row">
+                    <label for="rol">Perfil</label>
+                    <select id="rol" required>
+                        <option value="productor">Productor</option>
+                        <option value="artista">Artista</option>
+                    </select>
+                </div>
                 <button type="submit" class="btn-primary wide">Crear cuenta</button>
                 <a class="btn-secondary" href="menu_principal.html">Volver al Menú</a>
                 <p id="registerMessage" class="register-message" role="alert" aria-live="polite"></p>

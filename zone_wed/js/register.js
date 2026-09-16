@@ -34,6 +34,7 @@ if (form) {
         // Igual que arriba, pero para el campo de correo electrónico.
 
         const password = document.getElementById('password').value.trim();
+        const rol = document.getElementById('rol')?.value || 'productor';
         // Igual que arriba, pero para el campo de contraseña.
 
         if (!nombre || !email || !password) {
@@ -54,7 +55,8 @@ if (form) {
         const usuario = {
             nombre,
             email,
-            password
+            password,
+            rol
         };
         // Crea un objeto JavaScript llamado "usuario" que agrupa los tres
         // datos capturados. Es la forma abreviada de escribir:
