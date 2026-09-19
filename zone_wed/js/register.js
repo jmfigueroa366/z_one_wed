@@ -1,8 +1,5 @@
-// Clave donde se conserva la cuenta creada en este navegador.
-const registered_user_key = 'usuario_registrado'; 
-// Guarda el nombre de la "clave" que se usará en localStorage para 
-// almacenar los datos del usuario registrado. Usar una constante evita 
-// errores de tipeo si se repite el nombre en otras partes del código.
+// Clave donde se conservan las cuentas creadas en este navegador.
+const registered_user_key = 'usuario_registrado';
 
 const form = document.getElementById('registerForm');
 // Busca en el HTML el elemento con id="registerForm" (el formulario de registro)
@@ -19,6 +16,7 @@ function obtenerUsuarioRegistrado() {
         const usuarios = JSON.parse(dato);
         return Array.isArray(usuarios) ? usuarios : [usuarios];
     } catch (error) {
+        return [];
         return [];
     }
 }
@@ -46,6 +44,7 @@ if (form) {
 
         const password = document.getElementById('password').value.trim();
         const rol = document.getElementById('rol')?.value || 'cliente';
+        const rol = document.getElementById('rol')?.value || 'cliente';
         // Igual que arriba, pero para el campo de contraseña.
 
         if (!nombre || !email || !password) {
@@ -70,7 +69,15 @@ if (form) {
             usuario_existente.nombre?.toLowerCase() === nombre_normalizado ||
             usuario_existente.email?.toLowerCase() === email_normalizado
         );
+        const usuarios_existentes = obtenerUsuarioRegistrado();
+        const nombre_normalizado = nombre.toLowerCase();
+        const email_normalizado = email.toLowerCase();
+        const usuario_duplicado = usuarios_existentes.some((usuario_existente) =>
+            usuario_existente.nombre?.toLowerCase() === nombre_normalizado ||
+            usuario_existente.email?.toLowerCase() === email_normalizado
+        );
 
+        if (usuario_duplicado) {
         if (usuario_duplicado) {
             if (register_message) {
                 register_message.textContent = 'No se puede repetir el nombre ni el usuario/correo.';
