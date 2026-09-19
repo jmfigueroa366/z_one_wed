@@ -3,7 +3,11 @@ const role_key = 'zone_rol_usuario';
 
 function obtenerRolUsuario() {
     const rol = localStorage.getItem(role_key);
-    return rol === 'artista' ? 'Artista' : 'Productor';
+    return {
+        colaborador: 'Colaborador',
+        cliente: 'Cliente',
+        administrador: 'Administrador'
+    }[rol] || 'Cliente';
 }
  
 /* ---------- Guard de sesión ---------- */
