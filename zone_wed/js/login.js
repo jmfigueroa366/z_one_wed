@@ -31,11 +31,14 @@ function resetLoginMessage() {
 }
 
 // La cuenta registrada se compara con lo escrito en el formulario.
-function obtenerUsuarioRegistrado() {
+function obtenerUsuariosRegistrados() {
     try {
-        return JSON.parse(localStorage.getItem(registered_user_key) || 'null');
+        const dato = localStorage.getItem(registered_user_key);
+        if (!dato) return [];
+        const usuarios = JSON.parse(dato);
+        return Array.isArray(usuarios) ? usuarios : [usuarios];
     } catch (error) {
-        return null;
+        return [];
     }
 }
 
@@ -58,17 +61,18 @@ if (form) {
             btn_login.textContent = 'Verificando...';
         }
 
-        const cuenta = obtenerUsuarioRegistrado();
-        const rolCuenta = cuenta?.rol || 'productor';
+        const cuentas = obtenerUsuariosRegistrados();
+        const cuenta = cuentas.find((usuarioRegistrado) =>
+            (usuario === usuarioRegistrado.nombre || usuario === usuarioRegistrado.email) &&
+            password === usuarioRegistrado.password &&
+            rolSeleccionado === usuarioRegistrado.rol
+        );
         const credenciales_validas = cuenta &&
-            (usuario === cuenta.nombre || usuario === cuenta.email) &&
-            password === cuenta.password &&
-            rolSeleccionado &&
-            rolSeleccionado === rolCuenta;
+            rolSeleccionado;
 
         if (credenciales_validas) {
             localStorage.setItem(session_key, cuenta.nombre);
-            localStorage.setItem(role_key, cuenta.rol || 'productor');
+            localStorage.setItem(role_key, cuenta.rol);
             redirectToMenu();
             return;
         }
