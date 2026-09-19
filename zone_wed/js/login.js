@@ -85,7 +85,7 @@ if (form) {
 
         if (btn_login) {
             btn_login.disabled = false;
-            btn_login.textContent = 'Entrar al panel →';
+            btn_login.textContent = 'Iniciar sesión';
         }
     });
 }

@@ -4,44 +4,191 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Z-ONE | Iniciar sesión</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700&family=Barlow:wght@400;500;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="../css/login.css">
 </head>
 <body class="login-page">
     <main class="login-shell">
-        <section class="login-card" aria-labelledby="loginTitle">
-            <a class="login-brand" href="index.html" aria-label="Volver a Z-ONE">
-                <span class="brand-mark">Z-</span><span>ONE</span>
-            </a>
-            <div class="login-header">
-                <p class="eyebrow">ACCESO A Z-ONE</p>
-                <h1 id="loginTitle">Iniciar sesión</h1>
-                <p>Entra a tu espacio de producción musical.</p>
+
+        <!-- Lado izquierdo: solo decoración -->
+        <section class="login-stage" aria-hidden="true">
+            <div class="stage-rings"><i></i><i></i><i></i></div>
+
+            <svg class="sparkle sparkle-a" viewBox="-14 -14 28 28"><path d="M0 -12 L3 -3 L12 0 L3 3 L0 12 L-3 3 L-12 0 L-3 -3 Z"/></svg>
+            <svg class="sparkle sparkle-b" viewBox="-14 -14 28 28"><path d="M0 -12 L3 -3 L12 0 L3 3 L0 12 L-3 3 L-12 0 L-3 -3 Z"/></svg>
+            <svg class="sparkle sparkle-c" viewBox="-14 -14 28 28"><path d="M0 -12 L3 -3 L12 0 L3 3 L0 12 L-3 3 L-12 0 L-3 -3 Z"/></svg>
+
+            <svg class="note note-a" viewBox="0 0 32 40"><ellipse cx="9" cy="32" rx="8" ry="6" transform="rotate(-20 9 32)"/><rect x="15" y="4" width="3" height="28"/><path d="M18 4 C26 6 30 12 27 22 C26 15 22 13 18 12 Z"/></svg>
+            <svg class="note note-b" viewBox="0 0 32 40"><ellipse cx="9" cy="32" rx="8" ry="6" transform="rotate(-20 9 32)"/><rect x="15" y="4" width="3" height="28"/><path d="M18 4 C26 6 30 12 27 22 C26 15 22 13 18 12 Z"/></svg>
+
+            <div class="record">
+                <svg viewBox="0 0 400 400">
+                    <circle cx="200" cy="200" r="196" fill="#12172e"/>
+                    <g fill="none" stroke="#242c54" stroke-width="1.6">
+                        <circle cx="200" cy="200" r="182"/><circle cx="200" cy="200" r="168"/>
+                        <circle cx="200" cy="200" r="154"/><circle cx="200" cy="200" r="140"/>
+                        <circle cx="200" cy="200" r="126"/><circle cx="200" cy="200" r="112"/>
+                        <circle cx="200" cy="200" r="98"/><circle cx="200" cy="200" r="84"/>
+                    </g>
+                    <path d="M200 200 L200 6 A194 194 0 0 1 337 63 Z" fill="#fff" opacity=".07"/>
+                    <path d="M200 200 L200 394 A194 194 0 0 1 63 337 Z" fill="#fff" opacity=".07"/>
+                    <circle cx="200" cy="200" r="66" fill="#ffc76a"/>
+                    <circle cx="200" cy="200" r="58" fill="none" stroke="#1d2340" stroke-width="1.5" stroke-dasharray="3 5"/>
+                    <path d="M200 166 L206 194 L234 200 L206 206 L200 234 L194 206 L166 200 L194 194 Z" fill="#1d2340"/>
+                    <circle cx="200" cy="200" r="7" fill="#5d67ff"/>
+                </svg>
             </div>
-            <form id="loginForm" class="login-form">
-                <div class="form-field">
-                    <label for="usuario">Usuario</label>
-                    <input type="text" id="usuario" name="usuario" autocomplete="username" placeholder="Escribe tu usuario" required>
+
+            <div class="stage-copy">
+                <h2>Tu música empieza aquí</h2>
+                <p>Produce, mezcla y comparte desde un solo espacio.</p>
+            </div>
+        </section>
+
+        <!-- Lado derecho: formulario -->
+        <section class="login-panel" aria-labelledby="loginTitle">
+            <div class="login-edge" id="loginEdge" aria-hidden="true"></div>
+
+            <a id="btnMenu" class="login-back" href="index.html">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
+                Volver al Menú
+            </a>
+
+            <div class="login-main">
+                <div class="login-card">
+                    <header class="login-header">
+                        <a class="login-brand" href="index.html" aria-label="Volver a Z-ONE">
+                            <img src="../Imagenes/logo.png" width="326" height="297" alt="Z-ONE, producción musical">
+                        </a>
+                        <h1 id="loginTitle">Iniciar sesión</h1>
+                        <p>Entra a tu espacio de producción musical.</p>
+                    </header>
+
+                    <form id="loginForm" class="login-form">
+                        <div class="form-field">
+                            <label for="usuario">Usuario</label>
+                            <div class="input-wrap">
+                                <svg class="input-icon" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                                <input type="text" id="usuario" name="usuario" autocomplete="username" placeholder="Escribe tu usuario" required>
+                            </div>
+                        </div>
+
+                        <div class="form-field">
+                            <label for="password">Contraseña</label>
+                            <div class="input-wrap">
+                                <svg class="input-icon" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+                                <input type="password" id="password" name="password" autocomplete="current-password" placeholder="Escribe tu contraseña" required>
+                                <button class="toggle-pass" type="button" id="togglePass" aria-label="Mostrar contraseña" aria-pressed="false">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- login.js lee este campo con id="rol". Las opciones de abajo lo actualizan. -->
+                        <input type="hidden" id="rol" name="rol" value="">
+                        <fieldset class="perfil">
+                            <legend>Ingresar como</legend>
+                            <div class="perfil-options">
+                                <label class="perfil-chip">
+                                    <input type="radio" name="perfil" value="colaborador">
+                                    <span>
+                                        <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+                                        Colaborador
+                                    </span>
+                                </label>
+                                <label class="perfil-chip">
+                                    <input type="radio" name="perfil" value="cliente">
+                                    <span>
+                                        <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 18v-6a9 9 0 0 1 18 0v6"/><path d="M21 19a2 2 0 0 1-2 2h-1a2 2 0 0 1-2-2v-3a2 2 0 0 1 2-2h3z"/><path d="M3 19a2 2 0 0 0 2 2h1a2 2 0 0 0 2-2v-3a2 2 0 0 0-2-2H3z"/></svg>
+                                        Cliente
+                                    </span>
+                                </label>
+                                <label class="perfil-chip">
+                                    <input type="radio" name="perfil" value="administrador">
+                                    <span>
+                                        <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+                                        Administrador
+                                    </span>
+                                </label>
+                            </div>
+                        </fieldset>
+
+                        <button id="btnLogin" class="login-button" type="submit">Iniciar sesión</button>
+                        <p id="mensaje" class="mensaje" role="alert" aria-live="polite"></p>
+                    </form>
+
+                    <p class="register-link">¿No tienes cuenta? <a href="register.html">Regístrate</a></p>
                 </div>
-                <div class="form-field">
-                    <label for="password">Contraseña</label>
-                    <input type="password" id="password" name="password" autocomplete="current-password" placeholder="Escribe tu contraseña" required>
-                </div>
-                <div class="form-field">
-                    <label for="rol">Ingresar como</label>
-                    <select id="rol" name="rol" required>
-                        <option value="">Selecciona un perfil</option>
-                        <option value="colaborador">Colaborador</option>
-                        <option value="cliente">Cliente</option>
-                        <option value="administrador">Administrador</option>
-                    </select>
-                </div>
-                <button id="btnLogin" class="login-button" type="submit">Iniciar Sesión</button>
-                <a id="btnMenu" class="login-button login-button-secondary" href="index.html" role="button">Volver al Menú</a>
-                <p id="mensaje" class="mensaje" role="alert" aria-live="polite"></p>
-            </form>
-            <p class="register-link">¿No tienes cuenta? <a href="register.html">Regístrate</a></p>
+            </div>
         </section>
     </main>
     <script type="module" src="../js/login.js"></script>
+    <script>
+// Detalles visuales del login. La lógica de inicio de sesión sigue en login.js.
+(function () {
+    // Barras del borde (espectro de audio)
+    var edge = document.getElementById('loginEdge');
+
+    function construirBorde() {
+        if (!edge) return;
+        edge.innerHTML = '';
+        var cantidad = Math.floor(edge.clientHeight / 14);
+        for (var i = 0; i < cantidad; i++) {
+            var barra = document.createElement('b');
+            var ancho = 14 + Math.round(80 * Math.abs(Math.sin(i * 0.42 + 1) * Math.cos(i * 0.11)));
+            barra.style.setProperty('--w', ancho + 'px');
+            barra.style.setProperty('--d', (i * 12) + 'ms');
+            barra.style.setProperty('--e', (-Math.random() * 1.6).toFixed(2) + 's');
+            edge.appendChild(barra);
+        }
+    }
+
+    construirBorde();
+    var espera;
+    window.addEventListener('resize', function () {
+        clearTimeout(espera);
+        espera = setTimeout(construirBorde, 150);
+    });
+
+    // Mostrar u ocultar la contraseña
+    var password = document.getElementById('password');
+    var boton_ver = document.getElementById('togglePass');
+
+    if (password && boton_ver) {
+        boton_ver.addEventListener('click', function () {
+            var mostrar = password.type === 'password';
+            password.type = mostrar ? 'text' : 'password';
+            boton_ver.setAttribute('aria-pressed', mostrar);
+            boton_ver.setAttribute('aria-label', mostrar ? 'Ocultar contraseña' : 'Mostrar contraseña');
+        });
+    }
+
+    // Perfil: las opciones actualizan el campo oculto #rol que lee login.js
+    var campo_rol = document.getElementById('rol');
+    var opciones = document.querySelectorAll('input[name="perfil"]');
+    var mensaje = document.getElementById('mensaje');
+
+    function limpiarMensaje() {
+        if (!mensaje) return;
+        mensaje.textContent = '';
+        mensaje.className = 'mensaje';
+    }
+
+    opciones.forEach(function (opcion) {
+        opcion.addEventListener('change', function () {
+            if (campo_rol) campo_rol.value = opcion.value;
+            limpiarMensaje();
+        });
+        if (opcion.checked && campo_rol) campo_rol.value = opcion.value;
+    });
+
+    ['usuario', 'password'].forEach(function (id) {
+        var campo = document.getElementById(id);
+        if (campo) campo.addEventListener('input', limpiarMensaje);
+    });
+})();
+    </script>
 </body>
 </html>
