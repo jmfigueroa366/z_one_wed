@@ -1,8 +1,13 @@
 const session_key = 'zone_usuario';
+const role_key = 'zone_rol_usuario';
+
+function obtenerRolUsuario() {
+    const rol = localStorage.getItem(role_key);
+    return rol === 'artista' ? 'Artista' : 'Productor';
+}
  
 /* ---------- Guard de sesión ---------- */
 // Si no hay usuario "logueado" en localStorage, se devuelve al login.
-// (Es una maqueta, así que esto es solo para que la navegación se sienta real.)
 function protegerPagina() {
     const usuario = localStorage.getItem(session_key);
     if (!usuario) {
@@ -15,15 +20,18 @@ function protegerPagina() {
 /* ---------- Mostrar usuario actual ---------- */
 function mostrarUsuarioActual(usuario) {
     if (!usuario) return;
+    const rol = obtenerRolUsuario();
     // welcomeUser: el "Hola, ___" del encabezado
     const saludo = document.getElementById('welcomeUser');
     if (saludo) saludo.textContent = usuario;
     // userBadge: la insignia de usuario junto al botón de cerrar sesión
     const insignia = document.getElementById('userBadge');
-    if (insignia) insignia.textContent = usuario;
+    if (insignia) insignia.textContent = `${usuario} · ${rol}`;
     // usuarioActual: por si alguna página futura usa este id en vez de los de arriba
     const etiqueta = document.getElementById('usuarioActual');
     if (etiqueta) etiqueta.textContent = usuario;
+    const espacioRol = document.getElementById('spaceRole');
+    if (espacioRol) espacioRol.textContent = `Acceso de ${rol.toLowerCase()}`;
 }
  
 /* ---------- Cerrar sesión ---------- */
@@ -33,11 +41,12 @@ function activarLogout() {
  
     btnLogout.addEventListener('click', () => {
         localStorage.removeItem(session_key);
+        localStorage.removeItem(role_key);
         window.location.href = 'login.html';
     });
 }
  
-/* ---------- Resaltar la página actual en el menú ---------- */
+/* ---------- Resaltar la página actual en el menú ---------- 
 // Nota: las 9 páginas ya traen la clase "active" puesta a mano en el
 // enlace correspondiente, así que esto es un respaldo por si en el
 // futuro se generan los enlaces dinámicamente con data-page.
@@ -49,9 +58,9 @@ function resaltarPaginaActiva() {
             enlace.classList.add('is-active');
         }
     });
-}
+}*/
  
-/* ---------- Menú hamburguesa en pantallas pequeñas ---------- */
+/* ---------- Menú hamburguesa en pantallas pequeñas ---------- 
 // Nota: solo se activa si la página tiene #navToggle y #navPrincipal.
 // Ninguna de mis 9 páginas los trae todavía; no rompe nada si no existen.
 function activarMenuMovil() {
@@ -70,13 +79,16 @@ function activarMenuMovil() {
             boton.setAttribute('aria-expanded', 'false');
         });
     });
-}
+}*/
  
 const usuario = protegerPagina();
 if (usuario) {
     mostrarUsuarioActual(usuario);
     activarLogout();
-    resaltarPaginaActiva();
-    activarMenuMovil();
+    if (typeof resaltarPaginaActiva === 'function') {
+        resaltarPaginaActiva();
+    }
+    if (typeof activarMenuMovil === 'function') {
+        activarMenuMovil();
+    }
 }
- 
