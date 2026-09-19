@@ -1,5 +1,6 @@
 :root {
     --login-text: #1d2340;
+    --login-ink: #161a35;
     --login-muted: #5e6c88;
     --login-line: #d5d9f2;
     --login-tint: #f5f6ff;
@@ -9,6 +10,7 @@
     --login-warm: #ffc76a;
     --login-danger: #c8283f;
     --login-ok: #1b7f4b;
+    --login-page: #e6e9f7;
     --login-display: 'Barlow Condensed', 'Roboto Condensed', 'Arial Narrow', sans-serif;
     --login-body: 'Barlow', 'Segoe UI', system-ui, Arial, sans-serif;
 }
@@ -19,14 +21,17 @@
 
 html,
 body {
-    height: 100%;
+    min-height: 100%;
 }
 
 body {
     margin: 0;
     font-family: var(--login-body);
     color: var(--login-text);
-    background: #fff;
+    background:
+        radial-gradient(50% 50% at 8% 0%, rgba(93, 103, 255, 0.18), transparent 70%),
+        radial-gradient(45% 45% at 100% 100%, rgba(255, 199, 106, 0.28), transparent 70%),
+        var(--login-page);
     -webkit-font-smoothing: antialiased;
     overflow-x: hidden;
 }
@@ -42,168 +47,63 @@ a {
     text-decoration: none;
 }
 
+a:focus-visible,
+button:focus-visible {
+    outline: 3px solid rgba(93, 103, 255, 0.45);
+    outline-offset: 2px;
+}
+
+/* ---------- Marco de la página ---------- */
+
+.login-page {
+    display: grid;
+    place-items: center;
+    min-height: 100vh;
+    padding: 24px;
+}
+
 .login-shell {
-    display: flex;
-    min-height: 100%;
-}
-
-/* ---------- Lado izquierdo ---------- */
-
-.login-stage {
     position: relative;
-    flex: 1;
-    min-width: 0;
-    overflow: hidden;
-    color: #fff;
-    background: linear-gradient(140deg, #5d67ff 0%, #3f49e0 42%, #1d2340 100%);
-}
-
-.stage-rings {
-    position: absolute;
-    left: 50%;
-    top: 36%;
-    width: 0;
-    height: 0;
-}
-
-.stage-rings i {
-    position: absolute;
-    border: 1.5px solid rgba(255, 255, 255, 0.16);
-    border-radius: 50%;
-    transform: translate(-50%, -50%);
-}
-
-.stage-rings i:nth-child(1) { width: min(640px, 50vw); height: min(640px, 50vw); }
-.stage-rings i:nth-child(2) { width: min(820px, 64vw); height: min(820px, 64vw); border-color: rgba(255, 255, 255, 0.1); }
-.stage-rings i:nth-child(3) { width: min(1000px, 78vw); height: min(1000px, 78vw); border-color: rgba(255, 255, 255, 0.05); }
-
-.record {
-    position: absolute;
-    left: 50%;
-    top: 36%;
-    width: clamp(300px, 33vw, 480px);
-    aspect-ratio: 1;
-    transform: translate(-50%, -50%);
-}
-
-.record svg {
-    display: block;
+    display: flex;
+    flex-direction: column;
     width: 100%;
-    height: 100%;
-    animation: login-spin 16s linear infinite;
-}
-
-.sparkle {
-    position: absolute;
-    width: 28px;
-    height: 28px;
-    animation: login-twinkle 3.2s ease-in-out infinite;
-}
-
-.sparkle-a { left: 12%; top: 16%; fill: #fff; }
-.sparkle-b { right: 16%; top: 10%; width: 20px; height: 20px; fill: var(--login-secondary); animation-delay: -1.2s; }
-.sparkle-c { left: 20%; top: 52%; width: 18px; height: 18px; fill: var(--login-warm); animation-delay: -2.1s; }
-
-.note {
-    position: absolute;
-    width: 30px;
-    fill: #fff;
-    opacity: 0.9;
-    animation: login-float 5s ease-in-out infinite;
-}
-
-.note-a { right: 10%; top: 44%; }
-.note-b { left: 9%; top: 34%; width: 24px; opacity: 0.6; animation-delay: -2.4s; }
-
-.stage-copy {
-    position: absolute;
-    left: clamp(28px, 4.5vw, 64px);
-    right: 110px;
-    bottom: clamp(28px, 7vh, 72px);
-}
-
-.stage-copy h2 {
-    margin: 0;
-    max-width: 9ch;
-    font-family: var(--login-display);
-    font-weight: 700;
-    font-size: clamp(40px, 4.8vw, 68px);
-    line-height: 0.98;
-    letter-spacing: 0.2px;
-}
-
-.stage-copy p {
-    max-width: 32ch;
-    margin: 12px 0 0;
-    font-size: 17px;
-    line-height: 1.5;
-    color: #d6d9f5;
-}
-
-@keyframes login-spin { to { transform: rotate(360deg); } }
-@keyframes login-twinkle { 0%, 100% { transform: scale(0.6); opacity: 0.5; } 50% { transform: scale(1.1); opacity: 1; } }
-@keyframes login-float { 0%, 100% { transform: translateY(0) rotate(-6deg); } 50% { transform: translateY(-14px) rotate(6deg); } }
-
-/* ---------- Lado derecho ---------- */
-
-.login-panel {
-    position: relative;
-    flex: 0 0 clamp(420px, 44%, 620px);
-    display: flex;
-    flex-direction: column;
-    padding: 26px clamp(24px, 4vw, 56px) 30px;
+    max-width: 1240px;
+    min-height: min(820px, calc(100vh - 48px));
+    overflow: hidden;
     background: #fff;
+    border: 1px solid rgba(93, 103, 255, 0.14);
+    border-radius: 30px;
+    box-shadow:
+        0 2px 4px rgba(35, 40, 120, 0.05),
+        0 40px 80px -20px rgba(35, 40, 120, 0.28);
 }
 
-/* Borde con forma de espectro de audio (las barras las crea login-ui.js) */
-.login-edge {
-    position: absolute;
-    top: 0;
-    bottom: 0;
-    right: 100%;
-    width: 98px;
+/* ---------- Barra superior ---------- */
+
+.login-nav {
     display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: flex-end;
-    gap: 6px;
-    pointer-events: none;
+    align-items: center;
+    justify-content: space-between;
+    gap: 24px;
+    padding: 22px 32px 10px 40px;
+    font-size: 15px;
 }
-
-.login-edge b {
-    display: block;
-    height: 8px;
-    width: var(--w);
-    transform-origin: right;
-    animation: login-grow 0.7s cubic-bezier(0.2, 0.8, 0.2, 1) both;
-    animation-delay: var(--d);
-}
-
-.login-edge b::after {
-    content: '';
-    display: block;
-    height: 100%;
-    background: #fff;
-    border-radius: 4px 0 0 4px;
-    transform-origin: right;
-    animation: login-eq 1.6s ease-in-out infinite alternate;
-    animation-delay: var(--e);
-}
-
-@keyframes login-grow { from { transform: scaleX(0); } }
-@keyframes login-eq { from { transform: scaleX(0.5); } to { transform: scaleX(1); } }
 
 .login-back {
-    align-self: flex-start;
     display: inline-flex;
     align-items: center;
-    gap: 6px;
-    margin-left: -6px;
-    padding: 6px 10px 6px 6px;
-    border-radius: 8px;
-    font-size: 14px;
+    gap: 8px;
+    padding: 8px 14px 8px 10px;
+    border-radius: 999px;
     font-weight: 500;
     color: var(--login-muted);
+    transition: background 0.15s, color 0.15s;
+}
+
+.login-back svg {
+    width: 18px;
+    height: 18px;
+    transition: transform 0.15s;
 }
 
 .login-back:hover {
@@ -211,9 +111,173 @@ a {
     color: var(--login-primary-deep);
 }
 
-.login-back svg {
-    width: 18px;
-    height: 18px;
+.login-back:hover svg {
+    transform: translateX(-3px);
+}
+
+.nav-actions {
+    display: flex;
+    align-items: center;
+    gap: 22px;
+}
+
+.nav-current {
+    position: relative;
+    font-weight: 700;
+    color: var(--login-ink);
+}
+
+.nav-current::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: -6px;
+    height: 2px;
+    border-radius: 2px;
+    background: var(--login-primary);
+}
+
+.nav-pill {
+    padding: 10px 22px;
+    border-radius: 999px;
+    background: var(--login-ink);
+    color: #fff;
+    font-weight: 600;
+    transition: background 0.15s, transform 0.1s;
+}
+
+.nav-pill:hover {
+    background: var(--login-primary-deep);
+}
+
+/* ---------- Contenido ---------- */
+
+.login-content {
+    flex: 1;
+    display: grid;
+    grid-template-columns: 1.08fr 1fr;
+    gap: 40px;
+    padding: 10px 24px 24px 24px;
+}
+
+/* ---------- Lado izquierdo ---------- */
+
+.login-stage {
+    position: relative;
+    min-width: 0;
+    min-height: 560px;
+    overflow: hidden;
+    border-radius: 24px;
+    color: var(--login-ink);
+    background:
+        radial-gradient(70% 60% at 100% 100%, rgba(255, 199, 106, 0.55), transparent 65%),
+        radial-gradient(60% 60% at 0% 0%, rgba(255, 255, 255, 0.9), transparent 70%),
+        linear-gradient(155deg, #dfe3ff 0%, #c7ccff 55%, #b5bcff 100%);
+}
+
+.stage-copy {
+    position: relative;
+    z-index: 2;
+    padding: clamp(28px, 3.6vw, 48px);
+}
+
+.stage-copy h2 {
+    margin: 0;
+    max-width: 8.5ch;
+    font-family: var(--login-display);
+    font-weight: 800;
+    font-size: clamp(46px, 5.2vw, 76px);
+    line-height: 0.94;
+    letter-spacing: -0.5px;
+    color: var(--login-ink);
+}
+
+.stage-copy p {
+    max-width: 26ch;
+    margin: 16px 0 0;
+    font-size: 18px;
+    line-height: 1.45;
+    color: #3d4470;
+}
+
+/* Disco grande, recortado por la esquina inferior derecha */
+.record-wrap {
+    position: absolute;
+    right: -14%;
+    bottom: -16%;
+    width: clamp(340px, 44vw, 600px);
+    aspect-ratio: 1;
+}
+
+.record {
+    position: absolute;
+    inset: 0;
+    filter: drop-shadow(0 30px 34px rgba(29, 35, 64, 0.4));
+}
+
+.record svg {
+    display: block;
+    width: 100%;
+    height: 100%;
+    animation: login-spin 18s linear infinite;
+}
+
+.pulse i {
+    position: absolute;
+    inset: 0;
+    border: 2px solid rgba(255, 255, 255, 0.75);
+    border-radius: 50%;
+    opacity: 0;
+    animation: login-pulse 4.5s ease-out infinite;
+}
+
+.pulse i:nth-child(2) { animation-delay: 1.5s; }
+.pulse i:nth-child(3) { animation-delay: 3s; }
+
+.tonearm {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    overflow: visible;
+    filter: drop-shadow(0 8px 10px rgba(29, 35, 64, 0.3));
+}
+
+.sparkle {
+    position: absolute;
+    width: 26px;
+    height: 26px;
+    animation: login-twinkle 3.2s ease-in-out infinite;
+}
+
+.sparkle-a { right: 12%; top: 9%; fill: #fff; }
+.sparkle-b { left: 12%; top: 58%; width: 18px; height: 18px; fill: var(--login-primary-deep); animation-delay: -1.2s; }
+.sparkle-c { left: 40%; top: 44%; width: 16px; height: 16px; fill: #fff; animation-delay: -2.1s; }
+
+.note {
+    position: absolute;
+    width: 28px;
+    fill: var(--login-ink);
+    opacity: 0.8;
+    animation: login-float 5s ease-in-out infinite;
+}
+
+.note-a { left: 8%; bottom: 14%; }
+.note-b { left: 30%; bottom: 8%; width: 22px; fill: var(--login-primary-deep); opacity: 0.7; animation-delay: -2.4s; }
+
+@keyframes login-spin { to { transform: rotate(360deg); } }
+@keyframes login-pulse { 0% { transform: scale(0.72); opacity: 0.7; } 100% { transform: scale(1.35); opacity: 0; } }
+@keyframes login-twinkle { 0%, 100% { transform: scale(0.6); opacity: 0.5; } 50% { transform: scale(1.1); opacity: 1; } }
+@keyframes login-float { 0%, 100% { transform: translateY(0) rotate(-6deg); } 50% { transform: translateY(-12px) rotate(6deg); } }
+
+/* ---------- Lado derecho ---------- */
+
+.login-panel {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    padding-right: 16px;
 }
 
 .login-main {
@@ -225,19 +289,19 @@ a {
 
 .login-card {
     width: 100%;
-    max-width: 390px;
-    padding: 10px 0;
+    max-width: 410px;
+    padding: 4px 0;
 }
 
 .login-header {
-    margin-bottom: 24px;
+    margin-bottom: 22px;
     text-align: center;
 }
 
 .login-brand {
     display: block;
-    width: 200px;
-    margin: 0 auto 12px;
+    width: 148px;
+    margin: 0 auto 10px;
 }
 
 .login-brand img {
@@ -249,14 +313,15 @@ a {
 .login-header h1 {
     margin: 0;
     font-family: var(--login-display);
-    font-weight: 700;
-    font-size: 38px;
-    line-height: 1.05;
+    font-weight: 800;
+    font-size: 44px;
+    line-height: 1;
+    color: var(--login-ink);
 }
 
 .login-header p {
-    margin: 6px 0 0;
-    font-size: 15px;
+    margin: 8px 0 0;
+    font-size: 16px;
     color: var(--login-muted);
 }
 
@@ -273,6 +338,7 @@ a {
     padding: 0;
     font-size: 14px;
     font-weight: 600;
+    color: var(--login-ink);
 }
 
 .input-wrap {
@@ -283,7 +349,7 @@ a {
 
 .input-icon {
     position: absolute;
-    left: 14px;
+    left: 15px;
     width: 19px;
     height: 19px;
     stroke: var(--login-primary-deep);
@@ -292,10 +358,10 @@ a {
 
 .input-wrap input {
     width: 100%;
-    height: 48px;
-    padding: 0 44px 0 43px;
+    height: 52px;
+    padding: 0 46px 0 45px;
     border: 1.5px solid var(--login-line);
-    border-radius: 12px;
+    border-radius: 14px;
     background: var(--login-tint);
     font-size: 16px;
     color: var(--login-text);
@@ -319,13 +385,13 @@ a {
 
 .toggle-pass {
     position: absolute;
-    right: 7px;
-    width: 34px;
-    height: 34px;
+    right: 8px;
+    width: 36px;
+    height: 36px;
     display: grid;
     place-items: center;
     border: 0;
-    border-radius: 8px;
+    border-radius: 10px;
     background: transparent;
     color: var(--login-muted);
     cursor: pointer;
@@ -337,12 +403,12 @@ a {
 }
 
 .toggle-pass svg {
-    width: 19px;
-    height: 19px;
+    width: 20px;
+    height: 20px;
 }
 
 .perfil {
-    margin: 0 0 18px;
+    margin: 4px 0 20px;
     padding: 0;
     border: 0;
 }
@@ -350,7 +416,7 @@ a {
 .perfil-options {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
-    gap: 8px;
+    gap: 10px;
 }
 
 .perfil-chip {
@@ -366,34 +432,51 @@ a {
 }
 
 .perfil-chip span {
+    position: relative;
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 5px;
-    padding: 12px 4px 10px;
+    gap: 6px;
+    padding: 14px 4px 11px;
     border: 1.5px solid var(--login-line);
-    border-radius: 12px;
+    border-radius: 14px;
+    background: #fff;
     font-size: 13.5px;
     font-weight: 500;
     color: var(--login-muted);
-    transition: border-color 0.15s, background 0.15s, color 0.15s, box-shadow 0.15s;
+    transition: border-color 0.15s, background 0.15s, color 0.15s, box-shadow 0.15s, transform 0.15s;
 }
 
 .perfil-chip svg {
-    width: 22px;
-    height: 22px;
+    width: 23px;
+    height: 23px;
     stroke: currentColor;
 }
 
 .perfil-chip:hover span {
     border-color: #b6bdf0;
+    transform: translateY(-2px);
 }
 
 .perfil-chip input:checked + span {
     border-color: var(--login-primary);
     background: var(--login-tint);
     color: var(--login-primary-deep);
+    font-weight: 600;
     box-shadow: 0 0 0 3px rgba(93, 103, 255, 0.16);
+}
+
+/* Marca de selección */
+.perfil-chip input:checked + span::after {
+    content: '';
+    position: absolute;
+    top: -7px;
+    right: -7px;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    border: 2px solid #fff;
+    background: var(--login-primary-deep) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='3.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='5 12.5 10 17.5 19 7.5'/%3E%3C/svg%3E") center / 12px no-repeat;
 }
 
 .perfil-chip input:focus-visible + span {
@@ -403,41 +486,43 @@ a {
 
 .login-button {
     width: 100%;
-    height: 50px;
+    height: 54px;
     display: flex;
     align-items: center;
     justify-content: center;
     gap: 9px;
     border: 0;
-    border-radius: 12px;
+    border-radius: 14px;
     background: linear-gradient(90deg, var(--login-primary-deep), var(--login-primary));
     color: #fff;
-    font-size: 16px;
+    font-size: 17px;
     font-weight: 600;
     cursor: pointer;
-    transition: filter 0.15s, transform 0.1s;
+    box-shadow: 0 10px 22px -6px rgba(63, 73, 224, 0.55);
+    transition: filter 0.15s, transform 0.1s, box-shadow 0.15s;
 }
 
 .login-button::after {
     content: '';
-    width: 19px;
-    height: 19px;
+    width: 20px;
+    height: 20px;
     background: currentColor;
+    transition: transform 0.15s;
     -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cline x1='5' y1='12' x2='19' y2='12'/%3E%3Cpolyline points='12 5 19 12 12 19'/%3E%3C/svg%3E") center / contain no-repeat;
     mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cline x1='5' y1='12' x2='19' y2='12'/%3E%3Cpolyline points='12 5 19 12 12 19'/%3E%3C/svg%3E") center / contain no-repeat;
 }
 
 .login-button:hover {
-    filter: brightness(1.1);
+    filter: brightness(1.08);
+    box-shadow: 0 14px 26px -6px rgba(63, 73, 224, 0.62);
+}
+
+.login-button:hover::after {
+    transform: translateX(4px);
 }
 
 .login-button:active {
     transform: scale(0.99);
-}
-
-.login-button:focus-visible {
-    outline: 3px solid #b6bdf0;
-    outline-offset: 2px;
 }
 
 /* Mientras login.js verifica, la flecha se convierte en un spinner */
@@ -450,6 +535,7 @@ a {
     background: none;
     -webkit-mask: none;
     mask: none;
+    transform: none;
     border: 2.5px solid rgba(255, 255, 255, 0.4);
     border-top-color: #fff;
     border-radius: 50%;
@@ -477,15 +563,15 @@ a {
 }
 
 .register-link {
-    margin: 4px 0 0;
+    margin: 6px 0 0;
     text-align: center;
-    font-size: 14px;
+    font-size: 15px;
     color: var(--login-muted);
 }
 
 .register-link a {
     color: var(--login-primary-deep);
-    font-weight: 600;
+    font-weight: 700;
 }
 
 .register-link a:hover {
@@ -494,29 +580,29 @@ a {
 
 /* ---------- Pantallas pequeñas ---------- */
 
-@media (min-width: 861px) {
-    .login-stage {
-        position: sticky;
-        top: 0;
-        height: 100vh;
-        align-self: flex-start;
+@media (max-width: 960px) {
+    .login-nav { padding: 16px 18px 6px; }
+    .login-content {
+        grid-template-columns: 1fr;
+        gap: 28px;
+        padding: 6px 16px 28px;
     }
+    .login-stage { min-height: 300px; }
+    .stage-copy { padding: 26px; }
+    .stage-copy h2 { font-size: 40px; }
+    .stage-copy p { font-size: 15px; }
+    .record-wrap { right: -22%; bottom: -34%; width: 320px; }
+    .tonearm,
+    .sparkle-c,
+    .note { display: none; }
+    .login-panel { padding-right: 0; }
 }
 
-@media (max-width: 860px) {
-    .login-shell { flex-direction: column; }
-    .login-stage { flex: 0 0 250px; }
-    .stage-rings { top: 50%; left: 78%; }
-    .record { left: 78%; top: 50%; width: 230px; }
-    .stage-copy { left: 24px; right: auto; bottom: 22px; }
-    .stage-copy h2 { font-size: 34px; max-width: 8ch; }
-    .stage-copy p,
-    .sparkle-c,
-    .note-b,
-    .stage-rings i:nth-child(3) { display: none; }
-    .sparkle-a { left: auto; right: 6%; top: 12%; }
-    .login-panel { flex: 1 1 auto; padding-top: 20px; }
-    .login-edge { display: none; }
+@media (max-width: 520px) {
+    .login-page { padding: 8px; }
+    .login-shell { border-radius: 22px; }
+    .nav-actions { gap: 14px; }
+    .nav-pill { padding: 8px 15px; }
 }
 
 @media (max-width: 400px) {
@@ -525,8 +611,8 @@ a {
 
 @media (prefers-reduced-motion: reduce) {
     .record svg,
+    .pulse i,
     .sparkle,
-    .note,
-    .login-edge b,
-    .login-edge b::after { animation: none; }
+    .note { animation: none; }
+    .pulse { display: none; }
 }
