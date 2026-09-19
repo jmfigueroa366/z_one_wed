@@ -1,14 +1,14 @@
 :root {
-    --login-bg: #f5f7fc;
-    --login-panel: rgba(255, 255, 255, 0.88);
-    --login-text: #18233d;
-    --login-muted: #667085;
-    --login-line: rgba(138, 150, 180, 0.24);
-    --login-primary: #536dfe;
-    --login-secondary: #16a6c9;
-    --login-accent: #8b5cf6;
-    --login-danger: #c2415c;
-    --login-shadow: 0 24px 60px rgba(17, 24, 39, 0.18);
+    --login-bg: #f7f9ff;
+    --login-panel: rgba(255, 255, 255, 0.82);
+    --login-text: #1d2340;
+    --login-muted: #60708a;
+    --login-line: rgba(126, 141, 194, 0.18);
+    --login-primary: #5d67ff;
+    --login-secondary: #39b9ff;
+    --login-accent: #ff9bd7;
+    --login-danger: #ff5d7a;
+    --login-shadow: 0 20px 40px rgba(72, 89, 145, 0.12);
 }
 
 * {
@@ -21,9 +21,9 @@ body {
     font-family: 'Segoe UI', Arial, sans-serif;
     color: var(--login-text);
     background:
-        radial-gradient(circle at top left, rgba(83, 109, 254, 0.2), transparent 28%),
-        radial-gradient(circle at bottom right, rgba(22, 166, 201, 0.18), transparent 26%),
-        linear-gradient(135deg, #f8faff 0%, #edf4fb 100%);
+        radial-gradient(circle at 15% 15%, rgba(93, 103, 255, 0.10), transparent 22%),
+        radial-gradient(circle at 85% 90%, rgba(57, 185, 255, 0.08), transparent 20%),
+        linear-gradient(135deg, #f9faff 0%, #f2f6ff 100%);
 }
 
 button,
@@ -48,11 +48,10 @@ a {
     position: relative;
     width: min(100%, 470px);
     padding: 32px 28px 26px;
-    background: rgba(255, 255, 255, 0.72);
-    backdrop-filter: blur(16px);
-    border: 1px solid rgba(255, 255, 255, 0.6);
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.9), rgba(245, 249, 255, 0.8));
+    border: 1px solid rgba(123, 142, 255, 0.18);
     border-radius: 28px;
-    box-shadow: var(--login-shadow);
+    box-shadow: var(--login-shadow), 0 0 28px rgba(94, 99, 255, 0.08);
     overflow: hidden;
     animation: login-reveal 0.7s ease both;
 }
@@ -74,6 +73,7 @@ a {
     font-weight: 900;
     letter-spacing: -0.08em;
     color: var(--login-text);
+    text-shadow: 0 0 16px rgba(94, 99, 255, 0.12);
 }
 
 .brand-mark {
@@ -82,7 +82,7 @@ a {
 
 .eyebrow {
     margin: 0 0 12px;
-    color: #839dff;
+    color: #a7b5ff;
     font-size: 0.75rem;
     letter-spacing: 0.16em;
     text-transform: uppercase;
@@ -94,6 +94,7 @@ a {
     font-size: clamp(2.2rem, 5vw, 3.3rem);
     letter-spacing: -0.07em;
     line-height: 1;
+    color: var(--login-text);
 }
 
 .login-header p:last-child {
@@ -127,7 +128,7 @@ a {
     height: 50px;
     padding: 0 14px;
     color: var(--login-text);
-    background: rgba(255, 255, 255, 0.78);
+    background: rgba(255, 255, 255, 0.75);
     border: 1px solid var(--login-line);
     border-radius: 14px;
     outline: none;
@@ -161,10 +162,10 @@ a {
     margin-top: 8px;
     padding: 0 20px;
     color: white;
-    background: linear-gradient(135deg, var(--login-primary), var(--login-secondary));
+    background: linear-gradient(135deg, var(--login-primary), var(--login-secondary), #ffb766);
     border: 0;
     border-radius: 14px;
-    box-shadow: 0 16px 26px rgba(79, 112, 255, 0.24);
+    box-shadow: 0 16px 28px rgba(93, 103, 255, 0.18);
     cursor: pointer;
     font-weight: 800;
     letter-spacing: 0.02em;
@@ -210,13 +211,13 @@ a {
     margin-top: 0;
     color: var(--login-text);
     background: rgba(255, 255, 255, 0.7);
-    border: 1px solid rgba(83, 109, 254, 0.18);
-    box-shadow: none;
+    border: 1px solid rgba(94, 99, 255, 0.12);
+    box-shadow: inset 0 0 18px rgba(255,255,255,0.02);
 }
 
 .login-button-secondary:hover {
-    background: rgba(83, 109, 254, 0.06);
-    box-shadow: 0 10px 18px rgba(83, 109, 254, 0.08);
+    background: rgba(94, 99, 255, 0.06);
+    box-shadow: 0 10px 18px rgba(94, 99, 255, 0.08);
 }
 
 .login-button-secondary::before {
