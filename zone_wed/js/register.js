@@ -1,8 +1,5 @@
-// Clave donde se conserva la cuenta creada en este navegador.
-const registered_user_key = 'usuario_registrado'; 
-// Guarda el nombre de la "clave" que se usará en localStorage para 
-// almacenar los datos del usuario registrado. Usar una constante evita 
-// errores de tipeo si se repite el nombre en otras partes del código.
+// Clave donde se conservan las cuentas creadas en este navegador.
+const registered_user_key = 'usuario_registrado';
 
 const form = document.getElementById('registerForm');
 // Busca en el HTML el elemento con id="registerForm" (el formulario de registro)
@@ -14,12 +11,13 @@ const register_message = document.getElementById('registerMessage');
 
 function obtenerUsuarioRegistrado() {
     try {
-        const dato = localStorage.getItem('usuario_registrado');
-        if (!dato) return null;
-        const usuario = JSON.parse(dato);
-        return usuario && typeof usuario === 'object' ? usuario : null;
+        const dato = localStorage.getItem(registered_user_key);
+        if (!dato) return [];
+        const usuarios = JSON.parse(dato);
+        // Convierte la cuenta guardada con la versión anterior en una lista.
+        return Array.isArray(usuarios) ? usuarios : [usuarios];
     } catch (error) {
-        return null;
+        return [];
     }
 }
 
@@ -45,7 +43,7 @@ if (form) {
         // Igual que arriba, pero para el campo de correo electrónico.
 
         const password = document.getElementById('password').value.trim();
-        const rol = document.getElementById('rol')?.value || 'productor';
+        const rol = document.getElementById('rol')?.value || 'cliente';
         // Igual que arriba, pero para el campo de contraseña.
 
         if (!nombre || !email || !password) {
@@ -63,17 +61,17 @@ if (form) {
             // guardando datos si faltan campos.
         }
 
-        const usuario_existente = obtenerUsuarioRegistrado();
-        const nombre_duplicado = usuario_existente &&
-            usuario_existente.nombre &&
-            usuario_existente.nombre.toLowerCase() === nombre.toLowerCase();
-        const email_duplicado = usuario_existente &&
-            usuario_existente.email &&
-            usuario_existente.email.toLowerCase() === email.toLowerCase();
+        const usuarios_existentes = obtenerUsuarioRegistrado();
+        const nombre_normalizado = nombre.toLowerCase();
+        const email_normalizado = email.toLowerCase();
+        const usuario_duplicado = usuarios_existentes.some((usuario_existente) =>
+            usuario_existente.nombre?.toLowerCase() === nombre_normalizado ||
+            usuario_existente.email?.toLowerCase() === email_normalizado
+        );
 
-        if (nombre_duplicado || email_duplicado) {
+        if (usuario_duplicado) {
             if (register_message) {
-                register_message.textContent = '❌ Este usuario o correo ya está registrado. Elige otro.';
+                register_message.textContent = '❌ No se puede repetir el nombre ni el usuario/correo.';
                 register_message.classList.add('error');
             }
             return;
@@ -89,8 +87,7 @@ if (form) {
         // datos capturados. Es la forma abreviada de escribir:
         // { nombre: nombre, email: email, password: password }
 
-        // JSON permite guardar varios campos dentro de una sola entrada.
-        localStorage.setItem(registered_user_key, JSON.stringify(usuario));
+        localStorage.setItem(registered_user_key, JSON.stringify([...usuarios_existentes, usuario]));
         // localStorage solo puede guardar texto (strings), por eso el objeto
         // "usuario" se convierte a texto en formato JSON con JSON.stringify().
         // Luego se guarda en el navegador usando la clave "usuario_registrado".
