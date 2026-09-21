@@ -72,12 +72,14 @@ export const UsuarioRepo = {
     
     //Borrador; la cuenta existe, pero no se puede volver a entrar
     desactivar(id) {
-        if (!this.porId(id)) return null;
+        if (!this.porId(id)) 
+            return null;
         return Storage.actualizar(COLECCION, id, { activo: false });
     },
 
     activar(id) {
         if (!this.porId(id))
-            return Storage.actualizar(COLECCION, id, {activo:true});
+            return null;
+        return Storage.actualizar(COLECCION, id, {activo:true});
     },
 };
