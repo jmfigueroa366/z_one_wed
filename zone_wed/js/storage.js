@@ -68,6 +68,34 @@ export const Storage = {
         return this._guardarLista(coleccion, lista);
     }, 
 
+    //Obtener valores para objetos unicos
+    obtenerValor(clave) {
+        try {
+            const crudo = localStorage.getItem(PREFIJO + clave);
+            return crudo ? JSON.parse(crudo) : null;
+        } catch (error) {
+            console.error (`[storage] No se pudo leer" ${clave}":`, error);
+            return null;
+        }
+    },
+
+    guardarValor(clave, valor) {
+        try {
+            localStorage.setItem(PREFIJO + clave, JSON.stringify(valor));
+            return true;
+        } catch (error) {
+            console.error (`[storage] No se puede guardar" ${clave}":`, error);
+        }
+    },
+
+    eliminarValor(clave) {
+        try {
+            localStorage.removeItem(PREFIJO + clave);
+        } catch (error) {
+            console.error (`[storage] No se pudo eliminar" ${clave}":`, error);
+        }
+    },
+    
     //Contador de ids. Nota: Siempre se genera un id unico
     //El contador tiene su propia clave: '<coleccion>.__nextId'
     _contadorKey(coleccion) {
