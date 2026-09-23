@@ -2,9 +2,9 @@
 //Una sesion es un bloque de tiempo reservado en una sala con un colaborador. 
 //Se ancla a un id de sala y del colaborador, ambos deben existir
 
-import { Storage } from './storage';
-import { SalaRepo } from './salaRepo';
-import { ColaboradorRepo } from './colaboradorRepo';
+import { Storage } from './storage.js';
+import { SalaRepo } from './salaRepo.js';
+import { ColaboradorRepo } from './colaboradorRepo.js';
 
 const COLECCION ='sesiones';
 
@@ -22,7 +22,6 @@ export const SesionRepo = {
     },
 
     //Sesiones que ocupan agenda, todas las confirmadas 
-
     activas() {
         return Storage.buscar(COLECCION, (s) => s.estado == ESTADOS_SESION.CONFIRMADA || s.estado === ESTADOS_SESION.COMPLETADA);
     },
@@ -33,7 +32,7 @@ export const SesionRepo = {
 
     //Sesiones de la misma sala 
     deUnaSala(salaId) {
-        return Storage.buscar(COLECCION, (s) => s.salaId === salaId);
+        return Storage.buscar(COLECCION, (s) => s.sala_id === salaId);
     },
 
     //Sesiones entre dos fechas por ISO
@@ -43,8 +42,8 @@ export const SesionRepo = {
     
     crear(datos) {
         const titulo = String (datos?.titulo || '').trim();
-        const salaId = Number(datos?.sala_Id);
-        const colaboradorId = Number(datos?.colaborador_Id);
+        const salaId = Number(datos?.sala_id);
+        const colaboradorId = Number(datos?.colaborador_id);
         const fecha = String(datos?.fecha ||'');
         const horaInicio = String(datos?.hora_inicio ||'');
         const horaFin = String(datos?.hora_fin ||'');
@@ -55,7 +54,7 @@ export const SesionRepo = {
         if (!ColaboradorRepo.porId(colaboradorId)) throw new Error ('El colaborador seleccionado no existe');
         if (!fecha) throw new Error ('La fecha es obligatoria');
         if (!horaInicio || ! horaFin) throw new Error ('La hora de inicio y fin son obligatoria');
-        if (!horaFin <= horaInicio) throw new Error ('La hora de fin debe ser despues de la hora de inicio');
+        if (horaFin <= horaInicio) throw new Error ('La hora de fin debe ser despues de la hora de inicio');
 
         return Storage.crear(COLECCION, {
             titulo,

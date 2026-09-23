@@ -2,8 +2,8 @@
 //El email es ÚNICO, El rol debe existir (ROLES) y si es colaborador, debe tener perfil válido
 //"Borrado": se desactiva, no se elimina.
 
-import { Storage } from './storage';
-import { ROLES, esRolValido, esPerfilValido } from './roles';
+import { Storage } from './storage.js';
+import { ROLES, esRolValido, esPerfilValido } from './roles.js';
 
 const COLECCION ='usuarios';
 

@@ -1,6 +1,6 @@
 //Datos de prueba del sistema. Las contraseñas están en texto plano 
 
-import { Storage } from '../storage.js';
+import { Storage } from './storage.js';
 
 // Fecha local ISO (yyyy-mm-dd) para no fallar con zonas horarias.
 function fechaLocalISO(fecha) {
@@ -25,6 +25,7 @@ const SEED = {
         { nombre: 'Dirección Z-ONE', email: 'admin@z-one.com', password: 'admin123', rol: 'administrador', activo: true },
         { nombre: 'Lúa Ferreira', email: 'lua@z-one.com', password: 'colab123', rol: 'colaborador', perfil: 'artista', activo: true },
         { nombre: 'Cliente Zeta', email: 'cliente@z-one.com', password: 'cliente123', rol: 'cliente', activo: true },
+        { nombre: 'Mario', email: 'mario@z-one.com', password: 'colab123', rol: 'colaborador', perfil: 'ingeniero', activo: true },
     ],
 
     //Salas de grabación de la productora
@@ -36,21 +37,22 @@ const SEED = {
 
     //Colaboradores
     colaboradores: [
-        { nombre: 'Lúa Ferreira', especialidad: 'Canto', activo: true },
+        { nombre: 'Lúa Ferreira', especialidad: 'Canto', usuario_id: 2, activo: true },
         { nombre: 'Batey Norte', especialidad: 'Producción', activo: true },
         { nombre: 'Nova Lima', especialidad: 'Canto', activo: true },
         { nombre: 'Leo Norte', especialidad: 'Producción', activo: true },
         { nombre: 'Alma Beats', especialidad: 'Composición', activo: true },
         { nombre: 'Ecos del Sur', especialidad: 'Instrumental', activo: false },
+        { nombre: 'Mario', especialidad: 'Ingeniero de sonido', usuario_id: 4, activo: true },
     ],
 
     //Solicitudes con estados variados, repartidas en 3 semanas
     solicitudes: [
-        { colaborador_id: 1, sala_id: 1, fecha: enDias(0), franja: '10:00-12:00', estado: 'enviada' },
+        { colaborador_id: 1, sala_id: 1, fecha: enDias(0), franja: '10:00-12:00', estado: 'solicitud' },
         { colaborador_id: 2, sala_id: 3, fecha: enDias(1), franja: '15:00-18:00', estado: 'en_negociacion' },
         { colaborador_id: 3, sala_id: 2, fecha: enDias(2), franja: '09:00-11:00', estado: 'confirmada' },
         { colaborador_id: 4, sala_id: 1, fecha: enDias(-1), franja: '14:00-16:00', estado: 'rechazada' },
-        { colaborador_id: 5, sala_id: 2, fecha: enDias(3), franja: '18:00-20:00', estado: 'enviada' },
+        { colaborador_id: 5, sala_id: 2, fecha: enDias(3), franja: '18:00-20:00', estado: 'solicitud' },
         { colaborador_id: 1, sala_id: 3, fecha: enDias(-4), franja: '11:00-13:00', estado: 'confirmada' },
         { colaborador_id: 3, sala_id: 1, fecha: enDias(-6), franja: '10:00-12:00', estado: 'expirada' },
         { colaborador_id: 2, sala_id: 2, fecha: enDias(5), franja: '16:00-19:00', estado: 'en_negociacion' },

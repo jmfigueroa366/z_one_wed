@@ -1,6 +1,6 @@
 //Reglas de negocios de las salas de grabacion. Las desactivas no aparecen en la listas de reserva
 
-import { Storage } from './storage';
+import { Storage } from './storage.js';
 
 const COLECCION = 'salas';
 
