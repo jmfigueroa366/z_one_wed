@@ -1,98 +1,93 @@
 const session_key = 'zone_usuario';
 const role_key = 'zone_rol_usuario';
+const modern_session_key = 'z_one.sesion';
 
-function obtenerRolUsuario() {
-    const rol = localStorage.getItem(role_key);
+function obtenerSesionActual() {
+    try {
+        const crudo = localStorage.getItem(modern_session_key);
+        if (crudo) {
+            const parsed = JSON.parse(crudo);
+            if (parsed && parsed.nombre) {
+                return parsed;
+            }
+        }
+    } catch (e) {
+        // Fallback a almacenamiento plano
+    }
+
+    const nombre = localStorage.getItem(session_key);
+    if (!nombre) return null;
+
+    const rol = localStorage.getItem(role_key) || 'cliente';
     return {
+        id: null,
+        nombre: nombre,
+        email: '',
+        rol: rol,
+        perfil: null
+    };
+}
+
+function formatoRol(rol, perfil) {
+    const mapa = {
         colaborador: 'Colaborador',
         cliente: 'Cliente',
         administrador: 'Administrador'
-    }[rol] || 'Cliente';
+    };
+    const rolTexto = mapa[rol] || rol || 'Cliente';
+    if (perfil) {
+        return `${rolTexto} (${perfil.charAt(0).toUpperCase() + perfil.slice(1)})`;
+    }
+    return rolTexto;
 }
- 
+
 /* ---------- Guard de sesión ---------- */
-// Si no hay usuario "logueado" en localStorage, se devuelve al login.
 function protegerPagina() {
-    const usuario = localStorage.getItem(session_key);
-    if (!usuario) {
+    const sesion = obtenerSesionActual();
+    if (!sesion) {
         window.location.href = 'login.html';
         return null;
     }
-    return usuario;
+    return sesion;
 }
- 
+
 /* ---------- Mostrar usuario actual ---------- */
-function mostrarUsuarioActual(usuario) {
-    if (!usuario) return;
-    const rol = obtenerRolUsuario();
+function mostrarUsuarioActual(sesion) {
+    if (!sesion) return;
+    const usuario = sesion.nombre;
+    const etiquetaRol = formatoRol(sesion.rol, sesion.perfil);
+
     // welcomeUser: el "Hola, ___" del encabezado
     const saludo = document.getElementById('welcomeUser');
     if (saludo) saludo.textContent = usuario;
+
     // userBadge: la insignia de usuario junto al botón de cerrar sesión
     const insignia = document.getElementById('userBadge');
-    if (insignia) insignia.textContent = `${usuario} · ${rol}`;
-    // usuarioActual: por si alguna página futura usa este id en vez de los de arriba
+    if (insignia) insignia.textContent = `${usuario} · ${etiquetaRol}`;
+
+    // usuarioActual: respaldo por si alguna página lo utiliza
     const etiqueta = document.getElementById('usuarioActual');
     if (etiqueta) etiqueta.textContent = usuario;
+
     const espacioRol = document.getElementById('spaceRole');
-    if (espacioRol) espacioRol.textContent = `Acceso de ${rol.toLowerCase()}`;
+    if (espacioRol) espacioRol.textContent = `Acceso de ${sesion.rol ? sesion.rol.toLowerCase() : 'usuario'}`;
 }
- 
+
 /* ---------- Cerrar sesión ---------- */
 function activarLogout() {
     const btnLogout = document.getElementById('btnLogout');
     if (!btnLogout) return;
- 
+
     btnLogout.addEventListener('click', () => {
+        localStorage.removeItem(modern_session_key);
         localStorage.removeItem(session_key);
         localStorage.removeItem(role_key);
         window.location.href = 'login.html';
     });
 }
- 
-/* ---------- Resaltar la página actual en el menú ---------- 
-// Nota: las 9 páginas ya traen la clase "active" puesta a mano en el
-// enlace correspondiente, así que esto es un respaldo por si en el
-// futuro se generan los enlaces dinámicamente con data-page.
-function resaltarPaginaActiva() {
-    const pagina_actual = window.location.pathname.split('/').pop() || 'menu_principal.html';
- 
-    document.querySelectorAll('[data-page]').forEach((enlace) => {
-        if (enlace.dataset.page === pagina_actual) {
-            enlace.classList.add('is-active');
-        }
-    });
-}*/
- 
-/* ---------- Menú hamburguesa en pantallas pequeñas ---------- 
-// Nota: solo se activa si la página tiene #navToggle y #navPrincipal.
-// Ninguna de mis 9 páginas los trae todavía; no rompe nada si no existen.
-function activarMenuMovil() {
-    const boton = document.getElementById('navToggle');
-    const nav = document.getElementById('navPrincipal');
-    if (!boton || !nav) return;
- 
-    boton.addEventListener('click', () => {
-        const abierto = nav.classList.toggle('is-open');
-        boton.setAttribute('aria-expanded', String(abierto));
-    });
- 
-    nav.querySelectorAll('a').forEach((enlace) => {
-        enlace.addEventListener('click', () => {
-            nav.classList.remove('is-open');
-            boton.setAttribute('aria-expanded', 'false');
-        });
-    });
-}*/
- 
-const usuario = protegerPagina();
-if (usuario) {
-    mostrarUsuarioActual(usuario);
+
+const sesionActiva = protegerPagina();
+if (sesionActiva) {
+    mostrarUsuarioActual(sesionActiva);
     activarLogout();
-    if (typeof resaltarPaginaActiva === 'function') {
-        resaltarPaginaActiva();
-    }
-    if (typeof activarMenuMovil === 'function') {
-        activarMenuMovil();
-    }
 }

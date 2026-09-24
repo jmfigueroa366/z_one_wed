@@ -1,9 +1,4 @@
-/* interacciones.js — Persona B
-   Como todavía no existe guardado.js (Persona A no lo ha creado), este
-   archivo trae sus propias funciones genéricas de guardado con
-   localStorage, para no bloquear el trabajo. Cuando exista guardado.js
-   real, estas dos funciones se pueden borrar de aquí y usar las suyas.
-*/
+/* interacciones.js — Gestión de interacciones y catálogo de Z-ONE */
 function guardarDato(clave, datos) {
     localStorage.setItem(clave, JSON.stringify(datos));
 }
@@ -11,8 +6,7 @@ function obtenerDatos(clave) {
     const crudo = localStorage.getItem(clave);
     return crudo ? JSON.parse(crudo) : [];
 }
-/* Confirmación simple reutilizable para Guardar / Eliminar,
-   pedida en el plan de trabajo para las pantallas de Persona B. */
+/* Confirmación reutilizable para acciones del usuario */
 function confirmarAccion(mensaje) {
     return window.confirm(mensaje);
 }
