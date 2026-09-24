@@ -17,7 +17,6 @@ function obtenerUsuarioRegistrado() {
         return Array.isArray(usuarios) ? usuarios : [usuarios];
     } catch (error) {
         return [];
-        return [];
     }
 }
 
@@ -44,7 +43,6 @@ if (form) {
 
         const password = document.getElementById('password').value.trim();
         const rol = document.getElementById('rol')?.value || 'cliente';
-        const rol = document.getElementById('rol')?.value || 'cliente';
         // Igual que arriba, pero para el campo de contraseña.
 
         if (!nombre || !email || !password) {
@@ -69,15 +67,7 @@ if (form) {
             usuario_existente.nombre?.toLowerCase() === nombre_normalizado ||
             usuario_existente.email?.toLowerCase() === email_normalizado
         );
-        const usuarios_existentes = obtenerUsuarioRegistrado();
-        const nombre_normalizado = nombre.toLowerCase();
-        const email_normalizado = email.toLowerCase();
-        const usuario_duplicado = usuarios_existentes.some((usuario_existente) =>
-            usuario_existente.nombre?.toLowerCase() === nombre_normalizado ||
-            usuario_existente.email?.toLowerCase() === email_normalizado
-        );
 
-        if (usuario_duplicado) {
         if (usuario_duplicado) {
             if (register_message) {
                 register_message.textContent = 'No se puede repetir el nombre ni el usuario/correo.';

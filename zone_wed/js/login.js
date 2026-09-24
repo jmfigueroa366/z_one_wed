@@ -32,18 +32,12 @@ function resetLoginMessage() {
 
 // La cuenta registrada se compara con lo escrito en el formulario.
 function obtenerUsuariosRegistrados() {
-function obtenerUsuariosRegistrados() {
     try {
         const dato = localStorage.getItem(registered_user_key);
         if (!dato) return [];
         const usuarios = JSON.parse(dato);
         return Array.isArray(usuarios) ? usuarios : [usuarios];
-        const dato = localStorage.getItem(registered_user_key);
-        if (!dato) return [];
-        const usuarios = JSON.parse(dato);
-        return Array.isArray(usuarios) ? usuarios : [usuarios];
     } catch (error) {
-        return [];
         return [];
     }
 }
@@ -73,13 +67,10 @@ if (form) {
             password === usuarioRegistrado.password &&
             rolSeleccionado === usuarioRegistrado.rol
         );
-        const credenciales_validas = cuenta &&
-            rolSeleccionado;
-            rolSeleccionado;
+        const credenciales_validas = Boolean(cuenta && rolSeleccionado);
 
         if (credenciales_validas) {
             localStorage.setItem(session_key, cuenta.nombre);
-            localStorage.setItem(role_key, cuenta.rol);
             localStorage.setItem(role_key, cuenta.rol);
             redirectToMenu();
             return;

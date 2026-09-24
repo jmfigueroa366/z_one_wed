@@ -1,6 +1,6 @@
 //Datos de prueba del sistema. Las contraseñas están en texto plano 
 
-import { Storage } from '../storage.js';
+import { Storage } from './storage.js';
 
 // Fecha local ISO (yyyy-mm-dd) para no fallar con zonas horarias.
 function fechaLocalISO(fecha) {

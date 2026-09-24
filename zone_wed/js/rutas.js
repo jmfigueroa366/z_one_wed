@@ -1,9 +1,9 @@
 export const RUTAS = {
-    LOGIN: '/html/login.html',
-    MENU_PRINCIPAL: '/html/menu_principal.html',
-    INDEX: '/html/index.html',
+    LOGIN: 'login.html',
+    MENU_PRINCIPAL: 'menu_principal.html',
+    INDEX: 'index.html',
 
-    PANEL_ADMIN: '/panel-admin/dashboard.html',
-    PANEL_COLABORADOR: '/panel-colaborador/dashboard.html',
-    PANEL_CLIENTE: '/panel-cliente/dashboard.html',
+    PANEL_ADMIN: 'menu_principal.html',
+    PANEL_COLABORADOR: 'menu_principal.html',
+    PANEL_CLIENTE: 'menu_principal.html',
 };

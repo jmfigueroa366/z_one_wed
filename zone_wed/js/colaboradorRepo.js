@@ -1,6 +1,6 @@
 //Reglas de negocios de los colaboradores
 
-import { Storage } from './storage';
+import { Storage } from './storage.js';
 
 const COLECCION = 'colaboradores';
 
