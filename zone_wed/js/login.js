@@ -1,12 +1,35 @@
 import { animate, stagger } from './motion.js';
+import { Auth } from './auth.js';
+import { UsuarioRepo } from './usuarioRepo.js';
+import { Seed } from './speed.js';
+import { RUTAS } from './rutas.js';
+
+// Asegurar datos semilla (cuentas base)
+Seed.aplicar();
+
+// Migrar cuentas legacy si existen en usuario_registrado
+try {
+    const legacy = JSON.parse(localStorage.getItem('usuario_registrado') || '[]');
+    const listaLegacy = Array.isArray(legacy) ? legacy : [legacy];
+    listaLegacy.forEach((u) => {
+        if (u && u.email && !UsuarioRepo.existeEmail(u.email)) {
+            UsuarioRepo.crear({
+                nombre: u.nombre || u.email,
+                email: u.email,
+                password: u.password || '123456',
+                rol: u.rol || 'cliente',
+                perfil: u.perfil || null,
+            });
+        }
+    });
+} catch (e) {
+    // Si no hay datos válidos legacy, se ignora
+}
 
 const form = document.getElementById('loginForm');
 const mensaje = document.getElementById('mensaje');
 const btn_login = document.getElementById('btnLogin');
 const btn_menu = document.getElementById('btnMenu');
-const session_key = 'zone_usuario';
-const role_key = 'zone_rol_usuario';
-const registered_user_key = 'usuario_registrado';
 
 const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
@@ -20,74 +43,51 @@ if (!prefersReducedMotion) {
     });
 }
 
-function redirectToMenu() {
-    window.location.href = 'menu_principal.html';
-}
-
 function resetLoginMessage() {
     if (!mensaje) return;
     mensaje.textContent = '';
     mensaje.className = 'mensaje';
 }
 
-// La cuenta registrada se compara con lo escrito en el formulario.
-function obtenerUsuariosRegistrados() {
-function obtenerUsuariosRegistrados() {
-    try {
-        const dato = localStorage.getItem(registered_user_key);
-        if (!dato) return [];
-        const usuarios = JSON.parse(dato);
-        return Array.isArray(usuarios) ? usuarios : [usuarios];
-        const dato = localStorage.getItem(registered_user_key);
-        if (!dato) return [];
-        const usuarios = JSON.parse(dato);
-        return Array.isArray(usuarios) ? usuarios : [usuarios];
-    } catch (error) {
-        return [];
-        return [];
-    }
-}
-
-const usuario_en_sesion = localStorage.getItem(session_key);
-if (usuario_en_sesion) {
-    redirectToMenu();
+// Si ya hay sesión activa, redirigir al menú
+if (Auth.estaAutenticado()) {
+    window.location.href = RUTAS.MENU_PRINCIPAL;
 }
 
 if (form) {
     form.addEventListener('submit', function (e) {
         e.preventDefault();
 
-        const usuario = document.getElementById('usuario').value.trim();
-        const password = document.getElementById('password').value.trim();
+        const identificador = document.getElementById('usuario')?.value.trim() || '';
+        const password = document.getElementById('password')?.value.trim() || '';
         const rolSeleccionado = document.getElementById('rol')?.value || '';
 
         resetLoginMessage();
+
+        if (!rolSeleccionado) {
+            if (mensaje) {
+                mensaje.textContent = '❌ Selecciona un perfil para continuar';
+                mensaje.classList.add('error');
+            }
+            return;
+        }
+
         if (btn_login) {
             btn_login.disabled = true;
             btn_login.textContent = 'Verificando...';
         }
 
-        const cuentas = obtenerUsuariosRegistrados();
-        const cuenta = cuentas.find((usuarioRegistrado) =>
-            (usuario === usuarioRegistrado.nombre || usuario === usuarioRegistrado.email) &&
-            password === usuarioRegistrado.password &&
-            rolSeleccionado === usuarioRegistrado.rol
-        );
-        const credenciales_validas = cuenta &&
-            rolSeleccionado;
-            rolSeleccionado;
+        // Autenticación con UsuarioRepo (busca por nombre o correo, valida password y rol)
+        const cuenta = UsuarioRepo.autenticar(identificador, password, rolSeleccionado);
 
-        if (credenciales_validas) {
-            localStorage.setItem(session_key, cuenta.nombre);
-            localStorage.setItem(role_key, cuenta.rol);
-            localStorage.setItem(role_key, cuenta.rol);
-            redirectToMenu();
+        if (cuenta) {
+            Auth.iniciarSesion(cuenta);
+            window.location.href = RUTAS.MENU_PRINCIPAL;
             return;
         }
 
         if (mensaje) {
-            const detalle = rolSeleccionado ? '❌ Usuario, contraseña o perfil incorrectos' : '❌ Selecciona un perfil para continuar';
-            mensaje.textContent = detalle;
+            mensaje.textContent = '❌ Usuario, contraseña o perfil incorrectos';
             mensaje.classList.add('error');
         }
 
@@ -99,6 +99,6 @@ if (form) {
 }
 
 if (btn_menu) {
-    btn_menu.setAttribute('href', 'index.html');
+    btn_menu.setAttribute('href', RUTAS.INDEX);
     btn_menu.setAttribute('data-role', 'menu');
 }
