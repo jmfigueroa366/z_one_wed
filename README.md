@@ -4,7 +4,7 @@
 
 ### Sistema de gestión integral para una productora musical
 
-**Universidad Popular del Cesar** · Programación wed · Exposoftware · Septiembre de 2026
+**Universidad Popular del Cesar** · Programación wed · Septiembre de 2026
 
 ![Estado](https://img.shields.io/badge/estado-en%20desarrollo-orange?style=for-the-badge)
 
@@ -207,7 +207,7 @@ z_one_wed/
 
 **Requisitos previos:** [Node.js](https://nodejs.org) (LTS), [Docker](https://www.docker.com/) y [Git](https://git-scm.com/).
 
-**1. Clonar** (fuera de OneDrive, para no dañar la carpeta `.git`)
+**1. Clonar** ( para no dañar la carpeta `.git`)
 ```bash
 git clone https://github.com/jmfigueroa366/z_one_wed.git
 cd z_one_wed
@@ -369,6 +369,6 @@ Proyecto académico de la Universidad Popular del Cesar. Todos los derechos rese
 
 <div align="center">
 
-**Z-ONE** · Universidad Popular del Cesar · Programación 2 · Exposoftware · 2026
+**Z-ONE** · Universidad Popular del Cesar · Programación wed · 2026
 
 </div>
