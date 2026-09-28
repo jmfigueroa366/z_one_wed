@@ -1,6 +1,6 @@
-//Datos de prueba del sistema. Las contraseñas están en texto plano 
+// Datos de prueba del sistema.
 
-import { Storage } from '../storage.js';
+import { Storage } from './storage.js';
 
 // Fecha local ISO (yyyy-mm-dd) para no fallar con zonas horarias.
 function fechaLocalISO(fecha) {
@@ -19,22 +19,21 @@ function enDias(offset) {
 }
 
 const SEED = {
-
-    //Usuarios: uno por rol, para poder entrar y probar. ids: 1 = administrador, 2 = colaborador, 3 = cliente
+    // Usuarios: uno por rol, para poder entrar y probar.
     usuarios: [
         { nombre: 'Dirección Z-ONE', email: 'admin@z-one.com', password: 'admin123', rol: 'administrador', activo: true },
         { nombre: 'Lúa Ferreira', email: 'lua@z-one.com', password: 'colab123', rol: 'colaborador', perfil: 'artista', activo: true },
         { nombre: 'Cliente Zeta', email: 'cliente@z-one.com', password: 'cliente123', rol: 'cliente', activo: true },
     ],
 
-    //Salas de grabación de la productora
+    // Salas de grabación de la productora
     salas: [
         { nombre: 'Cabina A', precio_hora: 40000, activo: true },
         { nombre: 'Cabina B', precio_hora: 47000, activo: true },
         { nombre: 'Sala de mezcla', precio_hora: 60000, activo: true },
     ],
 
-    //Colaboradores
+    // Colaboradores
     colaboradores: [
         { nombre: 'Lúa Ferreira', especialidad: 'Canto', activo: true },
         { nombre: 'Batey Norte', especialidad: 'Producción', activo: true },
@@ -44,7 +43,7 @@ const SEED = {
         { nombre: 'Ecos del Sur', especialidad: 'Instrumental', activo: false },
     ],
 
-    //Solicitudes con estados variados, repartidas en 3 semanas
+    // Solicitudes con estados variados, repartidas en 3 semanas
     solicitudes: [
         { colaborador_id: 1, sala_id: 1, fecha: enDias(0), franja: '10:00-12:00', estado: 'enviada' },
         { colaborador_id: 2, sala_id: 3, fecha: enDias(1), franja: '15:00-18:00', estado: 'en_negociacion' },
@@ -56,7 +55,7 @@ const SEED = {
         { colaborador_id: 2, sala_id: 2, fecha: enDias(5), franja: '16:00-19:00', estado: 'en_negociacion' },
     ],
 
-    //Sesiones: pasadas (completadas) y futuras (confirmadas)
+    // Sesiones: pasadas (completadas) y futuras (confirmadas)
     sesiones: [
         { titulo: 'Grabación Lúa', sala_id: 1, colaborador_id: 1, fecha: enDias(-3), hora_inicio: '10:00', hora_fin: '12:00', estado: 'completada' },
         { titulo: 'Mezcla Batey Norte', sala_id: 3, colaborador_id: 2, fecha: enDias(-2), hora_inicio: '15:00', hora_fin: '18:00', estado: 'completada' },
@@ -67,7 +66,7 @@ const SEED = {
         { titulo: 'Grabación Lúa 2', sala_id: 1, colaborador_id: 1, fecha: enDias(-5), hora_inicio: '11:00', hora_fin: '13:00', estado: 'cancelada' },
     ],
 
-    //Órdenes de servicio vinculadas a sesiones completadas. Estado 'facturada' suma ingresos del mes
+    // Órdenes de servicio vinculadas a sesiones completadas
     ordenes_servicio: [
         { sesion_id: 1, descripcion: 'Grabación Cabina A', total: 80000, estado: 'pagada', fecha_emision: enDias(-3) },
         { sesion_id: 2, descripcion: 'Mezcla Sala de mezcla', total: 180000, estado: 'facturada', fecha_emision: enDias(-2) },
@@ -76,9 +75,8 @@ const SEED = {
     ],
 };
 
-//Api pública: Seed.aplicar() llena todas las colecciones vacías
+// Api pública: Seed.aplicar() llena todas las colecciones vacías
 export const Seed = {
-
     aplicar() {
         Object.entries(SEED).forEach(([coleccion, datos]) => {
             Storage.sembrar(coleccion, datos);

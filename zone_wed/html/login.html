@@ -106,13 +106,12 @@
                                 </div>
                             </div>
 
-                            <!-- login.js lee este campo con id="rol". Las opciones de abajo lo actualizan. -->
-                            <input type="hidden" id="rol" name="rol" value="">
+                            <input type="hidden" id="rol" name="rol" value="colaborador">
                             <fieldset class="perfil">
                                 <legend>Ingresar como</legend>
                                 <div class="perfil-options">
                                     <label class="perfil-chip">
-                                        <input type="radio" name="perfil" value="colaborador">
+                                        <input type="radio" name="perfil" value="colaborador" checked>
                                         <span>
                                             <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
                                             Colaborador
@@ -145,7 +144,7 @@
             </section>
         </div>
     </main>
-    <script type="module" src="../js/login.js"></script>
+    <script src="../js/login.js"></script>
     <script>
 // Detalles visuales del login. La lógica de inicio de sesión sigue en login.js.
 (function () {
