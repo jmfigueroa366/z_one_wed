@@ -1,7 +1,9 @@
 import { UsuarioRepo } from './usuarioRepo.js';
+import { ROLES } from './roles.js';
 
 const form = document.getElementById('registerForm');
 const register_message = document.getElementById('registerMessage');
+const roles_publicos = [ROLES.CLIENTE, ROLES.COLABORADOR];
 
 if (form) {
     form.addEventListener('submit', async (event) => {
@@ -15,6 +17,14 @@ if (form) {
         if (!nombre || !email || !password) {
             if (register_message) {
                 register_message.textContent = 'Completa todos los campos.';
+                register_message.classList.add('error');
+            }
+            return;
+        }
+
+        if (!roles_publicos.includes(rol)) {
+            if (register_message) {
+                register_message.textContent = 'El perfil seleccionado no está disponible para el registro.';
                 register_message.classList.add('error');
             }
             return;
