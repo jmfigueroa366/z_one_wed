@@ -4,6 +4,7 @@ export const RUTAS = {
     INDEX: '/html/index.html',
 
     PANEL_ADMIN: '/html/menu_principal.html',
+    PANEL_COORDINADOR: '/html/menu_principal.html',
     PANEL_COLABORADOR: '/html/menu_principal.html',
     PANEL_CLIENTE: '/html/menu_principal.html',
 };

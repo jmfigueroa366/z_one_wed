@@ -85,5 +85,15 @@ export const Seed = {
         Object.entries(SEED).forEach(([coleccion, datos]) => {
             Storage.sembrar(coleccion, datos);
         });
+
+        if (!Storage.buscar('usuarios', (usuario) => usuario.email === 'coordinador@z-one.com').length) {
+            Storage.crear('usuarios', {
+                nombre: 'Camila Ríos',
+                email: 'coordinador@z-one.com',
+                password: 'coordinador123',
+                rol: 'coordinador',
+                activo: true,
+            });
+        }
     },
 };

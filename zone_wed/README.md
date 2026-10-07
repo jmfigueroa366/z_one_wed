@@ -1,26 +1,40 @@
 # Z-ONE
-Sistema web de gestión para una productora musical.
 
-## Dónde se guardan los datos
+Prototipo de gestión para producción musical, con espacios diferenciados para administración, coordinación, colaboración y clientes.
 
-Los datos se guardan en el `localStorage` del navegador, no en un servidor ni en una base de datos. Se pueden revisar desde DevTools del navegador en **Application > Local Storage** usando el origen de la página.
+## Ejecución local
 
-| Clave | Qué guarda | Archivo que la usa |
+Sirve la carpeta `zone_wed/` desde un servidor HTTP estático y abre `html/login.html`. Los módulos ES del navegador no deben abrirse con `file://`.
+
+## Cuentas de demostración
+
+| Perfil | Usuario | Contraseña |
 | --- | --- | --- |
-| `usuario_registrado` | Nombre, correo y contraseña creados en el registro | `js/register.js`, `js/login.js` |
-| `zone_usuario` | Nombre del usuario que inició sesión | `js/login.js`, `js/menu.js` |
-| `zone_perfil_usuario` | Nombre, correo y rol del perfil del menú | `js/menu.js` |
-| `zone_artistas` | Arreglo de artistas registrados | `js/menu.js` |
-| `zone_producciones` | Arreglo de proyectos de producción | `js/menu.js` |
-| `zone_catalogo` | Arreglo de canciones, versiones y álbumes | `js/interacciones.js` |
-| `zone_sesiones` | Arreglo de sesiones de grabación | `js/interacciones.js` |
-| `zone_agenda` | Arreglo de eventos de agenda | `js/interacciones.js` |
+| Administrador | `admin@z-one.com` | `admin123` |
+| Coordinador | `coordinador@z-one.com` | `coordinador123` |
+| Colaborador | `lua@z-one.com` | `colab123` |
+| Cliente | `cliente@z-one.com` | `cliente123` |
 
-## Guía rápida de JavaScript
+Las cuentas semilla se crean si no existen. El registro público permite Cliente y Colaborador; Administrador y Coordinador son perfiles de demostración, no seleccionables durante el registro.
 
-- `register.js`: toma los valores del formulario, crea el objeto `usuario` y lo convierte a texto con `JSON.stringify` antes de guardarlo en `usuario_registrado`.
-- `login.js`: lee la cuenta con `localStorage.getItem`, convierte el texto con `JSON.parse`, compara nombre o correo y contraseña, y guarda el nombre activo en `zone_usuario`.
-- `menu.js`: verifica `zone_usuario`; si no existe, devuelve al login. `obtenerRegistros` lee arreglos y `guardarRegistros` los vuelve a guardar después de agregar artistas o producciones.
-- `interacciones.js`: `obtenerDatos` lee cualquier arreglo guardado, `guardarDato` lo persiste y `pintarTabla` reconstruye la tabla del catálogo después de cada registro.
+## Arquitectura actual
 
-Para limpiar las pruebas, abre la consola del navegador y ejecuta `localStorage.clear()`.
+- `js/roles.js`: roles, matriz central de 18 capacidades y comprobación de permisos.
+- `js/navegacionRoles.js`: divisiones y rutas visibles por perfil.
+- `js/solicitudService.js`: reglas del flujo, propiedad de registros, invitaciones, contraofertas, confirmaciones, cancelación, notificaciones y auditoría.
+- `js/solicitudRepo.js`: lectura, creación y actualización de solicitudes; adapta registros seed antiguos.
+- `js/storage.js`: adaptador de persistencia local. Puede reemplazarse por llamadas a una API cuando se integre Oracle.
+- `html/solicitudes.html` y `js/solicitudes.js`: interfaz de solicitudes, invitaciones y actividad.
+- `html/permisos.html` y `js/permisos.js`: matriz visible por rol y reglas de notificación.
+
+## Flujo disponible
+
+Cliente o Colaborador crea una solicitud futura con sala, horario y uno o más profesionales. Las invitaciones vencen en 72 horas. Cada Colaborador invitado puede aceptar, rechazar o enviar una contraoferta; quien creó la solicitud puede aceptarla. Al aceptar todos los invitados, la solicitud se confirma automáticamente. Administración y Coordinación pueden confirmarla manualmente; Administración puede forzar una aceptación indicando el motivo.
+
+El sistema rechaza horarios que se solapen con sesiones o solicitudes ya confirmadas para la misma sala. Cliente o Colaborador puede cancelar sus propias solicitudes con al menos 24 horas de anticipación. Las acciones relevantes generan notificaciones locales y entradas de auditoría.
+
+## Alcance y seguridad
+
+Los datos se guardan en `localStorage` y solo existen en ese navegador. La matriz y los guards controlan la navegación del prototipo, pero no proporcionan seguridad real: un usuario puede editar datos locales. Antes de producción, la autenticación, permisos, límites de tarifas, transiciones de estado, notificaciones y auditoría deben validarse en una API; Oracle debe quedar detrás de esa API.
+
+La primera fase no incluye aún entregables, hilos, liquidaciones/facturas, aprobaciones reales de colaboradores, splits ni recordatorios automáticos. Las pantallas anteriores de Catálogo, Sesiones, Agenda, Estadísticas y Chatbot conservan comportamiento de demostración y no están conectadas al nuevo modelo de solicitudes.

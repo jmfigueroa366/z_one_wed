@@ -5,7 +5,60 @@
    Usa las mismas variables de :root que ya define style.css. */
  
 .dashboard-shell {
+    --app-bg: #100d1b;
+    --app-panel: #1b1728;
+    --app-panel-raised: #231d34;
+    --app-sidebar: #100c1d;
+    --app-text: #f2effb;
+    --app-muted: #a69ebd;
+    --app-line: rgba(216, 203, 255, 0.11);
+    --app-primary: #a477ff;
+    --app-accent: #f04fa6;
+    --app-warm: #f2b84b;
+    color: var(--app-text);
+    background:
+        radial-gradient(ellipse at 72% 0%, rgba(93, 49, 170, 0.22), transparent 38%),
+        linear-gradient(145deg, #100d1b 0%, #151023 52%, #110d19 100%);
     display: flex;
+    min-height: 100vh;
+}
+
+.dashboard-shell[data-theme="noche"] {
+    --app-bg: #101215;
+    --app-panel: #191b20;
+    --app-panel-raised: #22252b;
+    --app-sidebar: #121419;
+    --app-text: #f2f3f5;
+    --app-muted: #a2a8b3;
+    --app-line: rgba(225, 232, 242, 0.1);
+    --app-primary: #8d9aad;
+    --app-accent: #d9a94d;
+    --app-warm: #e9b95c;
+    background: linear-gradient(145deg, #111318, #17191e 58%, #111318);
+}
+
+.dashboard-shell[data-theme="ambar"] {
+    --app-bg: #18120f;
+    --app-panel: #241a17;
+    --app-panel-raised: #30221c;
+    --app-sidebar: #17110f;
+    --app-text: #f8f0e9;
+    --app-muted: #c0a99b;
+    --app-line: rgba(255, 221, 192, 0.12);
+    --app-primary: #e5a64d;
+    --app-accent: #e36f72;
+    --app-warm: #f0c45e;
+    background: linear-gradient(145deg, #17110f, #211713 58%, #17110f);
+}
+
+.workspace-page {
+    min-height: 100vh;
+    color: var(--app-text);
+    background: #100d1b;
+    font-family: 'Manrope', 'Segoe UI', sans-serif;
+}
+
+.workspace-page .dashboard-shell {
     min-height: 100vh;
 }
 
@@ -15,11 +68,12 @@
  
 /* ---------- Sidebar ---------- */
 .sidebar {
-    width: 260px;
+    width: 258px;
     flex-shrink: 0;
-    background: var(--text);
-    color: #f3f5f9;
-    padding: 24px 18px;
+    background: var(--app-sidebar);
+    color: var(--app-text);
+    border-right: 1px solid var(--app-line);
+    padding: 22px 16px 18px;
     display: flex;
     flex-direction: column;
     gap: 22px;
@@ -32,11 +86,12 @@
     display: flex;
     align-items: center;
     gap: 2px;
-    color: #f3f5f9;
+    color: var(--app-text);
+    text-decoration: none;
 }
  
 .sidebar-brand .brand-mark {
-    color: var(--secondary);
+    color: var(--app-accent);
 }
  
 .sidebar-nav {
@@ -71,16 +126,16 @@
 }
  
 .sidebar-nav .nav-item {
-    color: #c9d0e0;
-    padding: 10px 12px;
+    color: #d4cfe1;
+    padding: 9px 11px;
     border-radius: 8px;
-    font-weight: 600;
-    transition: background .2s ease, color .2s ease, transform .2s ease;
+    font-weight: 650;
+    transition: background .18s ease, color .18s ease, transform .18s ease;
 }
  
 .sidebar-nav .nav-item:hover,
 .sidebar-nav .nav-item.active {
-    background: rgba(83, 109, 254, 0.22);
+    background: linear-gradient(100deg, rgba(127, 85, 226, 0.5), rgba(215, 63, 154, 0.4));
     color: #fff;
 }
 
@@ -90,28 +145,47 @@
  
 .sidebar-card {
     margin-top: auto;
-    background: rgba(255, 255, 255, 0.06);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    border-radius: 12px;
-    padding: 16px 14px;
+    background: var(--app-panel);
+    border: 1px solid var(--app-line);
+    border-radius: 8px;
+    padding: 13px 12px;
 }
  
 .sidebar-card small {
     display: block;
-    color: #9aa3ba;
+    color: var(--app-muted);
     margin-bottom: 6px;
 }
  
 .sidebar-card strong {
     font-size: 1rem;
-    color: #f3f5f9;
+    color: var(--app-text);
 }
  
 /* ---------- Panel principal ---------- */
 .main-panel {
     flex: 1;
     min-width: 0;
-    padding: 26px 30px 36px;
+    padding: 22px clamp(18px, 3vw, 42px) 40px;
+    color: var(--app-text);
+}
+
+.workspace-page .main-panel h1,
+.workspace-page .main-panel h2,
+.workspace-page .main-panel h3,
+.workspace-page .main-panel h4,
+.workspace-page .main-panel p {
+    color: var(--app-text);
+}
+
+.workspace-page .main-panel .page-head p,
+.workspace-page .main-panel .field-hint,
+.workspace-page .main-panel .eyebrow {
+    color: var(--app-muted);
+}
+
+.workspace-page .main-panel .eyebrow.small {
+    color: var(--app-primary);
 }
  
 /* Encabezado superior de cada página interna (distinto del .topbar
@@ -128,22 +202,22 @@
  
 .user-badge {
     font-size: 0.9rem;
-    color: var(--muted);
+    color: var(--app-muted);
     margin-right: 10px;
 }
  
 .btn-logout {
-    background: #fff;
-    color: var(--text);
-    border: 1px solid var(--line);
-    border-radius: 10px;
+    background: var(--app-panel);
+    color: var(--app-text);
+    border: 1px solid var(--app-line);
+    border-radius: 8px;
     padding: 9px 16px;
     font-weight: 700;
     cursor: pointer;
 }
  
 .btn-logout:hover {
-    border-color: var(--primary);
+    border-color: var(--app-primary);
 }
 
 .btn-logout:focus-visible,
@@ -177,17 +251,113 @@
  
 /* ---------- Tarjeta genérica de contenido ---------- */
 .panel-card {
-    background: var(--panel);
-    border: 1px solid var(--line);
-    border-radius: 16px;
-    padding: 22px;
-    box-shadow: 0 8px 18px rgba(24, 35, 61, 0.05);
+    background: var(--app-panel);
+    border: 1px solid var(--app-line);
+    border-radius: 8px;
+    padding: 20px;
+    box-shadow: 0 16px 34px rgba(0, 0, 0, 0.14);
 }
  
 .panel-card h3,
 .panel-card .section-heading h3 {
     margin: 0;
-    color: var(--text);
+    color: var(--app-text);
+}
+
+.workspace-page .summary-card,
+.workspace-page .information-grid article {
+    background: var(--app-panel);
+    border: 1px solid var(--app-line);
+    border-radius: 8px;
+    color: var(--app-text);
+    box-shadow: none;
+}
+
+.workspace-page .summary-card p,
+.workspace-page .information-grid article p,
+.workspace-page .summary-card .card-note {
+    color: var(--app-muted);
+}
+
+.workspace-page .summary-card strong,
+.workspace-page .information-grid article h4 {
+    color: var(--app-text);
+}
+
+.workspace-page .summary-card.summary-card-primary {
+    border-color: color-mix(in srgb, var(--app-accent) 55%, transparent);
+}
+
+.workspace-page .hero-panel {
+    background: linear-gradient(110deg, rgba(101, 57, 165, 0.42), rgba(47, 34, 73, 0.76));
+    border: 1px solid var(--app-line);
+    border-left: 4px solid var(--app-accent);
+    border-radius: 8px;
+    color: var(--app-text);
+}
+
+.workspace-page .btn-primary,
+.workspace-page .form-button {
+    background: linear-gradient(105deg, var(--app-primary), var(--app-accent));
+    border-radius: 8px;
+    box-shadow: 0 10px 24px rgba(176, 76, 190, 0.18);
+}
+
+.role-hero-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 9px;
+    margin-top: 16px;
+}
+
+.role-hero-actions a {
+    display: inline-flex;
+    min-height: 40px;
+    align-items: center;
+    justify-content: center;
+    padding: 0 14px;
+    text-decoration: none;
+}
+
+.role-hero-actions a.btn-logout {
+    color: var(--app-text);
+}
+
+.workspace-page .form-row input,
+.workspace-page .form-row select,
+.workspace-page .form-row textarea {
+    background: var(--app-panel-raised);
+    border-color: var(--app-line);
+    color: var(--app-text);
+}
+
+.theme-switch {
+    display: inline-flex;
+    align-items: center;
+    gap: 3px;
+    padding: 3px;
+    border: 1px solid var(--app-line);
+    border-radius: 8px;
+    background: var(--app-panel);
+}
+
+.theme-switch button {
+    min-height: 34px;
+    padding: 0 10px;
+    border: 0;
+    border-radius: 6px;
+    background: transparent;
+    color: var(--app-muted);
+    cursor: pointer;
+}
+
+.theme-switch button[aria-pressed="true"] {
+    background: var(--app-panel-raised);
+    color: var(--app-text);
+}
+
+.workspace-page .topbar-actions {
+    flex-wrap: wrap;
 }
  
 .section-heading {
@@ -250,8 +420,9 @@
     }
 
     .sidebar-nav {
-        grid-template-columns: repeat(2, minmax(0, 1fr));
+        grid-template-columns: minmax(0, 1fr);
         gap: 6px;
+        max-height: 42vh;
     }
 
     .sidebar-nav-group {
@@ -288,5 +459,22 @@
     .sidebar-nav .nav-item {
         animation: none;
         transition: none;
+    }
+}
+
+@media (max-width: 480px) {
+    .theme-switch {
+        width: 100%;
+        justify-content: space-between;
+    }
+
+    .theme-switch button {
+        flex: 1;
+        padding: 0 6px;
+    }
+
+    .workspace-page .topbar-actions {
+        width: 100%;
+        justify-content: space-between;
     }
 }

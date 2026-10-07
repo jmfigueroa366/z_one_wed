@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Z-ONE | Matriz de permisos</title>
+    <link rel="stylesheet" href="../css/style.css">
+    <link rel="stylesheet" href="../css/dashboard.css">
+    <link rel="stylesheet" href="../css/solicitudes.css">
+</head>
+<body class="workspace-page">
+    <div class="dashboard-shell">
+        <aside class="sidebar">
+            <a class="sidebar-brand" href="menu_principal.html" aria-label="Z-ONE, ir al inicio">
+                <span class="brand-mark">Z-</span><span>ONE</span>
+            </a>
+            <nav class="sidebar-nav" aria-label="Navegación del espacio"></nav>
+            <div class="sidebar-card">
+                <small>Espacio activo</small>
+                <strong id="sidebarRole">Producción musical</strong>
+            </div>
+        </aside>
+        <main class="main-panel">
+            <header class="topbar workspace-topbar">
+                <div>
+                    <p class="eyebrow" id="rolePanelLabel">CONTROL DE ACCESO</p>
+                    <h1>Control de acceso</h1>
+                </div>
+                <div class="topbar-actions">
+                    <span class="user-badge" id="userBadge">Usuario</span>
+                    <button class="btn-logout" id="btnLogout" type="button">Cerrar sesión</button>
+                </div>
+            </header>
+
+            <section class="page-head">
+                <div>
+                    <p class="eyebrow small">ACCESO POR PERFIL</p>
+                    <h2 id="permissionsTitle">Matriz de permisos</h2>
+                    <p>Las capacidades se definen en una sola matriz y se aplican a la navegación de la demo.</p>
+                </div>
+            </section>
+
+            <div class="security-notice" role="note">
+                <strong>Importante</strong>
+                <span>Esta matriz controla la interfaz local. Ocultar una sección no sustituye la autorización en servidor; al conectar Oracle, las reglas deben validarse también en la API.</span>
+            </div>
+
+            <section class="panel-card permission-panel" aria-labelledby="permissionsTitle">
+                <div class="table-scroll">
+                    <table class="permission-table">
+                        <thead id="permissionHead"></thead>
+                        <tbody id="permissionBody"></tbody>
+                    </table>
+                </div>
+            </section>
+
+            <section class="panel-card audit-preview-panel">
+                <div class="section-heading">
+                    <p class="eyebrow small">TRAZABILIDAD</p>
+                    <h2>Actividad reciente</h2>
+                </div>
+                <div class="table-scroll">
+                    <table class="permission-table notification-table">
+                        <thead>
+                            <tr><th>Fecha</th><th>Evento</th><th>Perfil</th><th>Detalle</th></tr>
+                        </thead>
+                        <tbody id="activityBody"></tbody>
+                    </table>
+                </div>
+            </section>
+        </main>
+    </div>
+    <script type="module" src="../js/menu.js"></script>
+    <script type="module" src="../js/permisos.js"></script>
+</body>
+</html>

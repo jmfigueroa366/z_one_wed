@@ -10,6 +10,7 @@ import {
     panelDeRol,
     esRolValido,
     esPerfilValido,
+    tienePermiso,
 } from './roles.js';
 import { Session } from './session.js';
 import { RouteGuard } from './route-guard.js';
@@ -21,7 +22,10 @@ export const Auth = {
 
     //Sesion
     usuarioActual: () => Session.obtener(),
-    iniciarSesion: (usuario) => Session.guardar(usuario),
+    iniciarSesion(usuario) {
+        const { password, ...datos_sesion } = usuario;
+        Session.guardar(datos_sesion);
+    },
     estaAutenticado: () => Session.obtener() !== null,
 
     // Cierra la sesión (solo borra la sesión, sin navegar)
@@ -48,4 +52,5 @@ export const Auth = {
     panelDeRol,
     esRolValido,
     esPerfilValido,
+    tienePermiso: (rol, permisoId) => tienePermiso(rol, permisoId),
 };
