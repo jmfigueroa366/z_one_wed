@@ -34,7 +34,7 @@ export const Storage = {
             localStorage.setItem(PREFIJO + coleccion, JSON.stringify(lista));
             return true;
         } catch (error) {
-            console.error(`[storage] No se pudo leer)" ${coleccion}":`, error);
+            console.error(`[storage] No se pudo guardar" ${coleccion}":`, error);
             return false;
         }
     },

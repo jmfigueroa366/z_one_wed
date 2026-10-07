@@ -1,0 +1,18 @@
+# Node
+node_modules/
+
+# Sistema
+Thumbs.db
+.DS_Store
+Desktop.ini
+
+# Editor
+.vscode/*.log
+
+# Entorno / secretos
+.env
+.env.*
+
+# Copias temporales
+*.bak
+*.tmp

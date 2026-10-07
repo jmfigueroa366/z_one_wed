@@ -64,5 +64,4 @@ export const SolicitudRepo = {
     
     confirmar: (id) => SolicitudRepo.cambiarEstado(id, ESTADOS_SOLICITUD.CONFIRMADA),
     rechazar: (id) => SolicitudRepo.cambiarEstado(id, ESTADOS_SOLICITUD.RECHAZADA),
-    };
-}
+};

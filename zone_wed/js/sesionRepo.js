@@ -23,7 +23,7 @@ export const SesionRepo = {
 
     //Sesiones que ocupan agenda, todas las confirmadas 
     activas() {
-        return Storage.buscar(COLECCION, (s) => s.estado == ESTADOS_SESION.CONFIRMADA || s.estado === ESTADOS_SESION.COMPLETADA);
+        return Storage.buscar(COLECCION, (s) => s.estado === ESTADOS_SESION.CONFIRMADA || s.estado === ESTADOS_SESION.COMPLETADA);
     },
 
     porId(id) {

@@ -20,7 +20,7 @@ function enDias(offset) {
 
 const SEED = {
 
-    //Usuarios: uno por rol, para poder entrar y probar. ids: 1 = administrador, 2 = colaborador, 3 = cliente
+    //Usuarios: uno por rol, para poder entrar y probar. ids: 1 = administrador, 2 = Lúa (colaborador), 3 = cliente, 4 = Mario (colaborador)
     usuarios: [
         { nombre: 'Dirección Z-ONE', email: 'admin@z-one.com', password: 'admin123', rol: 'administrador', activo: true },
         { nombre: 'Lúa Ferreira', email: 'lua@z-one.com', password: 'colab123', rol: 'colaborador', perfil: 'artista', activo: true },
