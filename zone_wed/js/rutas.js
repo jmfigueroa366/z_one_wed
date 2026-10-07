@@ -3,7 +3,7 @@ export const RUTAS = {
     MENU_PRINCIPAL: '/html/menu_principal.html',
     INDEX: '/html/index.html',
 
-    PANEL_ADMIN: '/panel-admin/dashboard.html',
-    PANEL_COLABORADOR: '/panel-colaborador/dashboard.html',
-    PANEL_CLIENTE: '/panel-cliente/dashboard.html',
+    PANEL_ADMIN: '/html/menu_principal.html',
+    PANEL_COLABORADOR: '/html/menu_principal.html',
+    PANEL_CLIENTE: '/html/menu_principal.html',
 };
