@@ -44,6 +44,7 @@ if (form) {
 
         const usuario = document.getElementById('usuario').value.trim();
         const password = document.getElementById('password').value.trim();
+        const rol = document.getElementById('rol').value;
 
         resetLoginMessage();
         if (btn_login) {
@@ -51,7 +52,7 @@ if (form) {
             btn_login.textContent = 'Verificando...';
         }
 
-        const usuarioValido = await UsuarioRepo.autenticar(usuario, password);
+        const usuarioValido = await UsuarioRepo.autenticar(usuario, password, rol);
 
         if (usuarioValido) {
             Auth.iniciarSesion(usuarioValido);
@@ -60,7 +61,7 @@ if (form) {
         }
 
         if (mensaje) {
-            mensaje.textContent = '❌ Usuario o contraseña incorrectos';
+            mensaje.textContent = 'Usuario, contraseña o perfil incorrectos.';
             mensaje.classList.add('error');
         }
 
