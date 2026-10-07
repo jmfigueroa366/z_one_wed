@@ -33,6 +33,7 @@ export const ACCESOS_PANEL = {
     admin: { ruta: RUTAS.PANEL_ADMIN, roles: [ROLES.ADMINISTRADOR] },
     colaborador: { ruta: RUTAS.PANEL_COLABORADOR, roles: [ROLES.COLABORADOR] },
     cliente: { ruta: RUTAS.PANEL_CLIENTE, roles: [ROLES.CLIENTE] },
+    operaciones: { ruta: RUTAS.MENU_PRINCIPAL, roles: Object.values(ROLES) },
 };
 
 // ¿Puede este rol entrar a este panel? (defensivo)

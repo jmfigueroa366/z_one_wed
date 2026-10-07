@@ -1,10 +1,8 @@
 import { Auth } from './auth.js';
 
-const usuario_actual = Auth.usuarioActual();
+const usuario_actual = Auth.requierePanel('operaciones');
 
-if (!usuario_actual) {
-    window.location.href = 'login.html';
-} else {
+if (usuario_actual) {
     const nombre = usuario_actual.nombre;
     const rol = Auth.etiquetaRol(usuario_actual.rol);
 
