@@ -33,21 +33,13 @@ function redirectSegunRol(rol) {
     window.location.href = Auth.panelDeRol(rol);
 }
 
-// El campo "usuario" acepta email o nombre
-function buscarCuenta(identificador) {
-    const normal = String(identificador || '').toLowerCase();
-    if (normal.includes('@'))
-        return UsuarioRepo.porEmail(normal);
-    return UsuarioRepo.todas().find((u) => u.nombre?.toLowerCase() === normal) || null;
-}
-
 //Si ya hay alguien dentro, que vaya directo a su panel
 if (Auth.estaAutenticado()) {
     redirectSegunRol(Auth.usuarioActual().rol);
 }
 
 if (form) {
-    form.addEventListener('submit', function (e) {
+    form.addEventListener('submit', async function (e) {
         e.preventDefault();
 
         const usuario = document.getElementById('usuario').value.trim();
@@ -59,12 +51,11 @@ if (form) {
             btn_login.textContent = 'Verificando...';
         }
 
-        const cuenta = buscarCuenta(usuario);
-        const usuarioValido = cuenta && UsuarioRepo.autenticar(cuenta.email, password);
+        const usuarioValido = await UsuarioRepo.autenticar(usuario, password);
 
         if (usuarioValido) {
-            Auth.iniciarSesion(cuenta);
-            redirectSegunRol(cuenta.rol);
+            Auth.iniciarSesion(usuarioValido);
+            redirectSegunRol(usuarioValido.rol);
             return;
         }
 

@@ -4,6 +4,7 @@
 
 import { Storage } from './storage.js';
 import { ROLES, esRolValido, esPerfilValido } from './roles.js';
+import { Crypto } from './crypto.js';
 
 const COLECCION ='usuarios';
 
@@ -36,38 +37,75 @@ export const UsuarioRepo = {
         return this.porEmail(email) !== null;
     },
 
-    //Valida los datos y crea el usuario
-    crear(datos) {
-        const nombre = String (datos?.nombre || '').trim();
+    // Buscar por nombre
+    porNombre(nombre) {
+        const busqueda = String(nombre || '').trim().toLowerCase();
+        return Storage.buscar(COLECCION, (u) => u.nombre && u.nombre.toLowerCase() === busqueda)[0] || null;
+    },
+
+    existeNombre(nombre) {
+        return this.porNombre(nombre) !== null;
+    },
+
+    // Buscar por nombre de usuario O por email
+    buscarPorIdentificador(identificador) {
+        const busqueda = String(identificador || '').trim().toLowerCase();
+        if (!busqueda) return null;
+        return Storage.buscar(COLECCION, (u) =>
+            (u.email && u.email.toLowerCase() === busqueda) ||
+            (u.nombre && u.nombre.toLowerCase() === busqueda)
+        )[0] || null;
+    },
+
+    async crear(datos) {
+        const nombre = String(datos?.nombre || '').trim();
         const email = normalizarEmail(datos?.email);
-        const password = String(datos?.password||'');
+        const password = String(datos?.password || '');
         const rol = datos?.rol;
         const perfil = datos?.perfil;
 
-        if (!nombre) throw new Error ('El nombre es obligatorio');
-        if (!email.includes('@')) throw new Error ('El email no es valido');
-        if (password.length <6) throw new Error ('Por lo menos 6 caracteres');
-        if (!esRolValido(rol)) throw new Error ('El rol no es valido');
-        if (rol === ROLES.COLABORADOR && !esPerfilValido(perfil)) throw new Error ('Un colaborador debe tener un perfil valido');
-        if (this.existeEmail(email)) throw new Error ('Ya existe el usuario con ese email');
+        if (!nombre) throw new Error('El nombre es obligatorio');
+        if (password.length < 8) throw new Error('La contraseña debe tener al menos 8 caracteres');
+        if (!esRolValido(rol)) throw new Error('El rol no es válido');
+        if (rol === ROLES.COLABORADOR && !esPerfilValido(perfil)) throw new Error('Un colaborador debe tener un perfil válido');
+        if (!email.includes('@')) throw new Error('El email no es válido');
+        if (email && this.existeEmail(email)) throw new Error('Ya existe el usuario con ese email');
+        if (this.existeNombre(nombre)) throw new Error('Ya existe el usuario con ese nombre');
+
+        const passwordHash = await Crypto.hashPassword(password);
 
         return Storage.crear(COLECCION, {
             nombre,
             email,
-            password,
+            password: passwordHash,
             rol,
             perfil: rol === ROLES.COLABORADOR ? perfil : null,
             activo: true,
         });
     },
 
-    //Autentica el usuario para el inicio de sesion
-    autenticar(email, password) {
-        const usuario = this.porEmail(email);
-        if (usuario && usuario.password === password && usuario.activo !== false) {
-            return usuario;
+    // Autentica el usuario para el inicio de sesión por correo o nombre
+    async autenticar(identificador, password, rolRequerido) {
+        const usuario = this.buscarPorIdentificador(identificador);
+        if (!usuario || usuario.activo === false) {
+            return null;
         }
-        return null;
+        const passwordGuardada = String(usuario.password || '');
+        const esHash = passwordGuardada.includes(':');
+        const passwordValida = esHash
+            ? await Crypto.verifyPassword(password, passwordGuardada)
+            : passwordGuardada === String(password);
+        if (!passwordValida) {
+            return null;
+        }
+        if (rolRequerido && usuario.rol !== rolRequerido) {
+            return null;
+        }
+        if (!esHash) {
+            const passwordHash = await Crypto.hashPassword(password);
+            return Storage.actualizar(COLECCION, usuario.id, { password: passwordHash });
+        }
+        return usuario;
     },
     
     //Borrador; la cuenta existe, pero no se puede volver a entrar
