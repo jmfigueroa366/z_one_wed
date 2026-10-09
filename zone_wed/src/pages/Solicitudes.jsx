@@ -1,8 +1,10 @@
 // CAPA: Presentación
 import { useMemo, useState } from 'react';
-import { colaboradorRepo } from '../repositories/colaboradorRepo.js';
-import { salaRepo } from '../repositories/salaRepo.js';
+import { useColaboradores } from '../hooks/useColaboradores.js';
+import { useSalas } from '../hooks/useSalas.js';
+import { useSolicitudes } from '../hooks/useSolicitudes.js';
 import { SolicitudService } from '../services/solicitudService.js';
+import { formatearFecha, formatearMoneda } from '../utils/helpers.js';
 import '../styles/solicitudes.css';
 
 const ETIQUETAS_ESTADO = {
@@ -12,16 +14,6 @@ const ETIQUETAS_ESTADO = {
     rechazada: 'Rechazada',
     expirada: 'Expirada',
 };
-
-function formatearFecha(fecha) {
-    if (!fecha) return 'Fecha pendiente';
-    return new Intl.DateTimeFormat('es', {
-        weekday: 'short',
-        day: 'numeric',
-        month: 'short',
-        year: 'numeric',
-    }).format(new Date(`${fecha}T00:00:00`));
-}
 
 function duracionFranja(franja) {
     const horas = String(franja ?? '').match(/(\d{1,2}):(\d{2})\s*-\s*(\d{1,2}):(\d{2})/);
@@ -33,9 +25,9 @@ function duracionFranja(franja) {
 }
 
 export default function Solicitudes() {
-    const [solicitudes, setSolicitudes] = useState(() => SolicitudService.listar());
-    const [colaboradores] = useState(() => colaboradorRepo.listar());
-    const [salas] = useState(() => salaRepo.listar());
+    const [solicitudes, setSolicitudes] = useSolicitudes();
+    const [colaboradores] = useColaboradores();
+    const [salas] = useSalas();
     const [filtroEstado, setFiltroEstado] = useState('abiertas');
     const [mensaje, setMensaje] = useState('');
     const [error, setError] = useState('');
@@ -134,7 +126,7 @@ export default function Solicitudes() {
                                     <div className="request-card-main">
                                         <div className="request-card-heading">
                                             <div>
-                                                <p className="workspace-eyebrow">{formatearFecha(solicitud.fecha)}</p>
+                                                <p className="workspace-eyebrow">{formatearFecha(solicitud.fecha, { weekday: 'short', day: 'numeric' }) || 'Fecha pendiente'}</p>
                                                 <h3>{obtenerColaborador(solicitud.colaborador_id)}</h3>
                                             </div>
                                             <span className={`operations-status status-${solicitud.estado}`}>
@@ -145,11 +137,7 @@ export default function Solicitudes() {
                                             <span><strong>Sala</strong>{obtenerSala(solicitud.sala_id)}</span>
                                             <span><strong>Horario</strong>{solicitud.franja || 'Por coordinar'}</span>
                                             {estimado !== null && (
-                                                <span><strong>Estimado de sala</strong>{new Intl.NumberFormat('es-CO', {
-                                                    style: 'currency',
-                                                    currency: 'COP',
-                                                    maximumFractionDigits: 0,
-                                                }).format(estimado)}</span>
+                                                <span><strong>Estimado de sala</strong>{formatearMoneda(estimado)}</span>
                                             )}
                                         </div>
                                         {puedeGestionar && (

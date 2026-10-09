@@ -1,6 +1,6 @@
 // CAPA: Presentación
 import { useMemo, useState } from 'react';
-import { ArtistaService } from '../services/artistaService.js';
+import { useArtistas } from '../hooks/useArtistas.js';
 import '../styles/artistas.css';
 
 const ESPECIALIDADES = ['Pop', 'Vallenato', 'Urbano', 'Rock', 'Salsa', 'Canto', 'Otro'];
@@ -16,7 +16,7 @@ function iniciales(nombre) {
 }
 
 export default function Artistas() {
-    const [artistas, setArtistas] = useState(() => ArtistaService.listar());
+    const [artistas, setArtistas] = useArtistas();
     const [busqueda, setBusqueda] = useState('');
     const [filtroGenero, setFiltroGenero] = useState('Todos');
     const [formulario, setFormulario] = useState({

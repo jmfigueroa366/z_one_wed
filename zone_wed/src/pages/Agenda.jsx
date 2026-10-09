@@ -1,9 +1,10 @@
 // CAPA: Presentación
 import { useMemo, useState } from 'react';
-import { colaboradorRepo } from '../repositories/colaboradorRepo.js';
-import { salaRepo } from '../repositories/salaRepo.js';
-import { SolicitudService } from '../services/solicitudService.js';
-import { SesionService } from '../services/sesionService.js';
+import { useColaboradores } from '../hooks/useColaboradores.js';
+import { useSalas } from '../hooks/useSalas.js';
+import { useSesiones } from '../hooks/useSesiones.js';
+import { useSolicitudes } from '../hooks/useSolicitudes.js';
+import { formatearFecha } from '../utils/helpers.js';
 import '../styles/agenda.css';
 
 const ETIQUETAS_ESTADO = {
@@ -14,27 +15,19 @@ const ETIQUETAS_ESTADO = {
     cancelada: 'Cancelada',
 };
 
-function formatearFecha(fecha) {
-    if (!fecha) return 'Fecha pendiente';
-    return new Intl.DateTimeFormat('es', {
-        weekday: 'short',
-        day: 'numeric',
-        month: 'short',
-        year: 'numeric',
-    }).format(new Date(`${fecha}T00:00:00`));
-}
-
 function nombreColaborador(id, colaboradores) {
     return colaboradores.find((colaborador) => String(colaborador.id) === String(id))?.nombre ?? 'Sin asignar';
 }
 
 export default function Agenda() {
-    const [sesiones] = useState(() => SesionService.listar());
-    const [reservasConfirmadas] = useState(() =>
-        SolicitudService.listar().filter((solicitud) => solicitud.estado === 'confirmada')
+    const [sesiones] = useSesiones();
+    const [solicitudes] = useSolicitudes();
+    const [salas] = useSalas();
+    const [colaboradores] = useColaboradores();
+    const reservasConfirmadas = useMemo(
+        () => solicitudes.filter((solicitud) => solicitud.estado === 'confirmada'),
+        [solicitudes]
     );
-    const [salas] = useState(() => salaRepo.listar());
-    const [colaboradores] = useState(() => colaboradorRepo.listar());
     const [filtroEstado, setFiltroEstado] = useState('todas');
     const [filtroFecha, setFiltroFecha] = useState('');
 
@@ -136,7 +129,7 @@ export default function Agenda() {
                             <tbody>
                                 {sesionesFiltradas.map((sesion) => (
                                     <tr key={sesion.eventoId}>
-                                        <td><strong>{formatearFecha(sesion.fecha)}</strong><span>{sesion.hora_inicio ?? 'Hora pendiente'}{sesion.hora_fin ? ` – ${sesion.hora_fin}` : ''}</span></td>
+                                        <td><strong>{formatearFecha(sesion.fecha, { weekday: 'short', day: 'numeric' }) || 'Fecha pendiente'}</strong><span>{sesion.hora_inicio ?? 'Hora pendiente'}{sesion.hora_fin ? ` – ${sesion.hora_fin}` : ''}</span></td>
                                         <td><span className="operations-event-type">{sesion.tipo}</span>{sesion.titulo || 'Sesión sin título'}</td>
                                         <td>{obtenerSala(sesion.sala_id)}</td>
                                         <td>{nombreColaborador(sesion.colaborador_id, colaboradores)}</td>

@@ -1,8 +1,8 @@
 // CAPA: Presentación
-import { useState } from 'react';
 import { Link } from 'react-router-dom';
+import { useSalas } from '../hooks/useSalas.js';
 import { RUTAS } from '../config/rutas.js';
-import { CatalogoService } from '../services/catalogoService.js';
+import { formatearMoneda } from '../utils/helpers.js';
 import '../styles/catalogo.css';
 
 const SERVICIOS = [
@@ -13,13 +13,8 @@ const SERVICIOS = [
 ];
 
 export default function Catalogo() {
-    const [salas] = useState(() => CatalogoService.listarSalas());
+    const [salas] = useSalas();
     const salasActivas = salas.filter((sala) => sala.activo !== false);
-    const formatoMoneda = new Intl.NumberFormat('es-CO', {
-        style: 'currency',
-        currency: 'COP',
-        maximumFractionDigits: 0,
-    });
 
     return (
         <main className="workspace-content operations-page catalog-page" data-page="catalogo">
@@ -53,7 +48,7 @@ export default function Catalogo() {
                                     </div>
                                     <p>Espacio del estudio disponible para coordinar sesiones de producción musical.</p>
                                     <div className="catalog-room-price">
-                                        <strong>{formatoMoneda.format(Number(sala.precio_hora) || 0)}</strong>
+                                        <strong>{formatearMoneda(sala.precio_hora)}</strong>
                                         <span>por hora</span>
                                     </div>
                                     <Link className="catalog-book-link" to={`${RUTAS.SESIONES}#crear`}>

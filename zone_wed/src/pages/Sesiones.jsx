@@ -1,8 +1,10 @@
 // CAPA: Presentación
 import { useEffect, useMemo, useState } from 'react';
-import { colaboradorRepo } from '../repositories/colaboradorRepo.js';
-import { salaRepo } from '../repositories/salaRepo.js';
+import { useColaboradores } from '../hooks/useColaboradores.js';
+import { useSalas } from '../hooks/useSalas.js';
+import { useSesiones } from '../hooks/useSesiones.js';
 import { SesionService } from '../services/sesionService.js';
+import { formatearFecha } from '../utils/helpers.js';
 import '../styles/sesiones.css';
 
 function fechaLocal(fecha = new Date()) {
@@ -20,15 +22,6 @@ function sumarHoras(hora, horas) {
     return `${String(horaFin).padStart(2, '0')}:${String(minutosFin).padStart(2, '0')}`;
 }
 
-function formatearFecha(fecha) {
-    if (!fecha) return 'Sin fecha';
-    return new Intl.DateTimeFormat('es', {
-        day: 'numeric',
-        month: 'short',
-        year: 'numeric',
-    }).format(new Date(`${fecha}T00:00:00`));
-}
-
 const ESTADOS = {
     confirmada: 'Confirmada',
     pendiente: 'Pendiente',
@@ -38,11 +31,9 @@ const ESTADOS = {
 };
 
 export default function Sesiones() {
-    const [sesiones, setSesiones] = useState(() => SesionService.listar());
-    const [salas] = useState(() => salaRepo.listar().filter((sala) => sala.activo !== false));
-    const [colaboradores] = useState(() =>
-        colaboradorRepo.listar().filter((colaborador) => colaborador.activo !== false)
-    );
+    const [sesiones, setSesiones] = useSesiones();
+    const [salas] = useSalas(true);
+    const [colaboradores] = useColaboradores(true);
     const [filtro, setFiltro] = useState('todas');
     const [mensaje, setMensaje] = useState('');
     const [error, setError] = useState('');
@@ -185,7 +176,7 @@ export default function Sesiones() {
                                     {sesionesFiltradas.map((sesion) => (
                                         <tr key={sesion.id}>
                                             <td>
-                                                <strong>{formatearFecha(sesion.fecha)}</strong>
+                                                <strong>{formatearFecha(sesion.fecha, { day: 'numeric' }) || 'Sin fecha'}</strong>
                                                 <span>{sesion.hora_inicio ?? '--:--'}–{sesion.hora_fin ?? '--:--'}</span>
                                             </td>
                                             <td>{sesion.titulo || sesion.tipo || 'Sesión de estudio'}</td>

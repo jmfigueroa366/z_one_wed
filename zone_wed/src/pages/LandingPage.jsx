@@ -4,13 +4,8 @@ import anime from 'animejs';
 import { Link } from 'react-router-dom';
 import { RUTAS } from '../config/rutas.js';
 import { salaRepo } from '../repositories/salaRepo.js';
+import { formatearMoneda } from '../utils/helpers.js';
 import '../styles/landing.css';
-
-const FORMATO_MONEDA = new Intl.NumberFormat('es-CO', {
-    style: 'currency',
-    currency: 'COP',
-    maximumFractionDigits: 0,
-});
 
 export default function LandingPage() {
     const landingRef = useRef(null);
@@ -294,7 +289,7 @@ export default function LandingPage() {
                                     <h3>{sala.nombre}</h3>
                                     <p>Disponible para reservar</p>
                                 </div>
-                                <strong>{FORMATO_MONEDA.format(Number(sala.precio_hora) || 0)}<small> / hora</small></strong>
+                                <strong>{formatearMoneda(sala.precio_hora)}<small> / hora</small></strong>
                             </div>
                             <Link className="landing-space-link" to={`${RUTAS.SESIONES}#crear`}>
                                 Reservar este espacio <span aria-hidden="true">→</span>
