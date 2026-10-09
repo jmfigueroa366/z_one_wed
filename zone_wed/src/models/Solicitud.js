@@ -5,6 +5,7 @@ export function crearSolicitud(data = {}) {
         id: data.id ?? null,
         colaborador_id: data.colaborador_id ?? null,
         usuario_id: data.usuario_id ?? null,
+        solicitante_nombre: data.solicitante_nombre ?? null,
         sala_id: data.sala_id ?? null,
         tipo: data.tipo ?? 'grabacion',
         fecha: data.fecha ?? null,

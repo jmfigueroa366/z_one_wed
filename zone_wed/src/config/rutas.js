@@ -13,6 +13,7 @@ export const RUTAS = Object.freeze({
     ESTADISTICAS: '/estadisticas',
     PERMISOS: '/permisos',
     PRODUCTORES: '/productores',
+    PROYECTOS: '/proyectos',
     SESIONES: '/sesiones',
     SOLICITUDES: '/solicitudes',
 });
@@ -39,12 +40,15 @@ export const rutasPorRol = Object.freeze({
         RUTAS.CHATBOT,
         RUTAS.CONFIGURACION,
         RUTAS.SESIONES,
+        RUTAS.SOLICITUDES,
     ],
     [ROLES.CLIENTE]: [
         RUTAS.MENU_PRINCIPAL,
         RUTAS.CATALOGO,
         RUTAS.CONFIGURACION,
+        RUTAS.PROYECTOS,
         RUTAS.SESIONES,
+        RUTAS.SOLICITUDES,
     ],
 });
 

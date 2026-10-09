@@ -10,6 +10,7 @@ export const PERMISOS = Object.freeze({
     VER_CATALOGO: 'ver_catalogo',
     VER_ESTADISTICAS: 'ver_estadisticas',
     GESTIONAR_USUARIOS: 'gestionar_usuarios',
+    GESTIONAR_PROYECTOS: 'gestionar_proyectos',
 });
 
 export const permisosPorRol = Object.freeze({
@@ -34,6 +35,8 @@ export const permisosPorRol = Object.freeze({
         PERMISOS.VER_DASHBOARD,
         PERMISOS.VER_AGENDA,
         PERMISOS.VER_CATALOGO,
+        PERMISOS.VER_SOLICITUDES,
+        PERMISOS.GESTIONAR_PROYECTOS,
     ],
 });
 

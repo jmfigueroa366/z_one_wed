@@ -64,6 +64,19 @@ export const SEED = {
         { titulo: 'Grabación Lúa 2', sala_id: 1, colaborador_id: 1, fecha: enDias(-5), hora_inicio: '11:00', hora_fin: '13:00', estado: 'cancelada' },
     ],
 
+    proyectos: [
+        { nombre: 'Mi primer álbum', usuario_id: 3 },
+        { nombre: 'Sencillos 2026', usuario_id: 3 },
+    ],
+
+    canciones: [
+        { proyecto_id: 1, nombre: 'Amanecer', duracion: 3 },
+        { proyecto_id: 1, nombre: 'Ritmo del alma', duracion: 4 },
+        { proyecto_id: 1, nombre: 'Sin título', duracion: 2 },
+        { proyecto_id: 2, nombre: 'Noche azul', duracion: 3 },
+        { proyecto_id: 2, nombre: 'Contigo', duracion: 3 },
+    ],
+
     ordenes_servicio: [
         { sesion_id: 1, descripcion: 'Grabación Cabina A', total: 80000, estado: 'pagada', fecha_emision: enDias(-3) },
         { sesion_id: 2, descripcion: 'Mezcla Sala de mezcla', total: 180000, estado: 'facturada', fecha_emision: enDias(-2) },

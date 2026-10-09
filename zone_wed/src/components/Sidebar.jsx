@@ -11,6 +11,7 @@ const NAVEGACION = [
     { ruta: RUTAS.ARTISTAS, etiqueta: 'Artistas' },
     { ruta: RUTAS.PRODUCTORES, etiqueta: 'Productores' },
     { ruta: RUTAS.CATALOGO, etiqueta: 'Catálogo' },
+    { ruta: RUTAS.PROYECTOS, etiqueta: 'Mis proyectos' },
     { ruta: RUTAS.SESIONES, etiqueta: 'Sesiones' },
     { ruta: RUTAS.ESTADISTICAS, etiqueta: 'Estadísticas' },
     { ruta: RUTAS.PERMISOS, etiqueta: 'Permisos' },

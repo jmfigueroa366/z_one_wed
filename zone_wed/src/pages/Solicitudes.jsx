@@ -1,30 +1,17 @@
 // CAPA: Presentación
 import { useMemo, useState } from 'react';
+import { useAuth } from '../context/AuthContext.jsx';
+import { esAdministrador } from '../config/roles.js';
 import { useColaboradores } from '../hooks/useColaboradores.js';
 import { useSalas } from '../hooks/useSalas.js';
 import { useSolicitudes } from '../hooks/useSolicitudes.js';
 import { SolicitudService } from '../services/solicitudService.js';
+import { etiquetaEstado, etiquetaTipo, estimadoSala } from '../utils/solicitudes.js';
 import { formatearFecha, formatearMoneda } from '../utils/helpers.js';
+import MisSolicitudes from '../components/MisSolicitudes.jsx';
 import '../styles/solicitudes.css';
 
-const ETIQUETAS_ESTADO = {
-    solicitud: 'Nueva',
-    en_negociacion: 'En negociación',
-    confirmada: 'Confirmada',
-    rechazada: 'Rechazada',
-    expirada: 'Expirada',
-};
-
-function duracionFranja(franja) {
-    const horas = String(franja ?? '').match(/(\d{1,2}):(\d{2})\s*-\s*(\d{1,2}):(\d{2})/);
-    if (!horas) return '';
-    const inicio = Number(horas[1]) * 60 + Number(horas[2]);
-    let fin = Number(horas[3]) * 60 + Number(horas[4]);
-    if (fin < inicio) fin += 24 * 60;
-    return Math.max(0, (fin - inicio) / 60);
-}
-
-export default function Solicitudes() {
+function BandejaSolicitudes() {
     const [solicitudes] = useSolicitudes();
     const [colaboradores] = useColaboradores();
     const [salas] = useSalas();
@@ -47,6 +34,9 @@ export default function Solicitudes() {
     const obtenerSala = (id) =>
         salas.find((sala) => String(sala.id) === String(id))?.nombre ?? 'Sala no disponible';
 
+    const nombreSolicitante = (solicitud) =>
+        solicitud.solicitante_nombre ?? obtenerColaborador(solicitud.colaborador_id);
+
     const cambiarEstado = (id, estado) => {
         setError('');
         setMensaje('');
@@ -58,7 +48,7 @@ export default function Solicitudes() {
                 throw new Error('No se encontró la solicitud. Actualiza la página e inténtalo de nuevo.');
             }
 
-            setMensaje(`Solicitud actualizada: ${ETIQUETAS_ESTADO[estado]}.`);
+            setMensaje(`Solicitud actualizada: ${etiquetaEstado(estado)}.`);
         } catch (errorActualizacion) {
             setError(errorActualizacion instanceof Error ? errorActualizacion.message : 'No se pudo actualizar la solicitud.');
         } finally {
@@ -114,8 +104,7 @@ export default function Solicitudes() {
                     <div className="request-list">
                         {solicitudesFiltradas.map((solicitud) => {
                             const sala = salas.find((item) => String(item.id) === String(solicitud.sala_id));
-                            const horas = duracionFranja(solicitud.franja);
-                            const estimado = sala && horas ? sala.precio_hora * horas : null;
+                            const estimado = estimadoSala(sala, solicitud.franja);
                             const puedeGestionar = ['solicitud', 'en_negociacion'].includes(solicitud.estado);
 
                             return (
@@ -124,21 +113,22 @@ export default function Solicitudes() {
                                         <div className="request-card-heading">
                                             <div>
                                                 <p className="workspace-eyebrow">{formatearFecha(solicitud.fecha, { weekday: 'short', day: 'numeric' }) || 'Fecha pendiente'}</p>
-                                                <h3>{obtenerColaborador(solicitud.colaborador_id)}</h3>
+                                                <h3>{nombreSolicitante(solicitud)}</h3>
                                             </div>
                                             <span className={`operations-status status-${solicitud.estado}`}>
-                                                {ETIQUETAS_ESTADO[solicitud.estado] ?? solicitud.estado}
+                                                {etiquetaEstado(solicitud.estado)}
                                             </span>
                                         </div>
                                         <div className="request-details">
                                             <span><strong>Sala</strong>{obtenerSala(solicitud.sala_id)}</span>
+                                            <span><strong>Tipo</strong>{etiquetaTipo(solicitud.tipo)}</span>
                                             <span><strong>Horario</strong>{solicitud.franja || 'Por coordinar'}</span>
                                             {estimado !== null && (
                                                 <span><strong>Estimado de sala</strong>{formatearMoneda(estimado)}</span>
                                             )}
                                         </div>
                                         {puedeGestionar && (
-                                            <div className="request-actions" aria-label={`Acciones para solicitud de ${obtenerColaborador(solicitud.colaborador_id)}`}>
+                                            <div className="request-actions" aria-label={`Acciones para solicitud de ${nombreSolicitante(solicitud)}`}>
                                                 <button
                                                     className="request-action request-action-primary"
                                                     disabled={actualizando === solicitud.id}
@@ -178,4 +168,10 @@ export default function Solicitudes() {
             </section>
         </main>
     );
+}
+
+export default function Solicitudes() {
+    const { usuario } = useAuth();
+
+    return esAdministrador(usuario) ? <BandejaSolicitudes /> : <MisSolicitudes />;
 }

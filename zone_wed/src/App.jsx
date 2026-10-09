@@ -8,6 +8,7 @@ import LandingPage from './pages/LandingPage.jsx';
 import Login from './pages/Login.jsx';
 import Register from './pages/Register.jsx';
 import MenuPrincipal from './pages/MenuPrincipal.jsx';
+import MisProyectos from './pages/MisProyectos.jsx';
 import Agenda from './pages/Agenda.jsx';
 import Artistas from './pages/Artistas.jsx';
 import Catalogo from './pages/Catalogo.jsx';
@@ -42,6 +43,7 @@ export default function App() {
                         <Route path={RUTAS.ESTADISTICAS} element={<Estadisticas />} />
                         <Route path={RUTAS.PERMISOS} element={<Permisos />} />
                         <Route path={RUTAS.PRODUCTORES} element={<Productores />} />
+                        <Route path={RUTAS.PROYECTOS} element={<MisProyectos />} />
                         <Route path={RUTAS.SESIONES} element={<Sesiones />} />
                         <Route path={RUTAS.SOLICITUDES} element={<Solicitudes />} />
                     </Route>
