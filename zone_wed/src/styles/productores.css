@@ -1,0 +1,220 @@
+/* CAPA: Presentación */
+.producers-page .page-heading {
+    border-left: 3px solid #c08ce8;
+    padding-left: 18px;
+}
+
+.producers-card {
+    padding: 24px;
+    background: rgba(27, 23, 40, 0.82);
+    border: 1px solid rgba(216, 203, 255, 0.11);
+    border-radius: 14px;
+}
+
+.producers-section-heading h2 {
+    margin: 0;
+    color: #f2effb;
+    font-size: 1.2rem;
+}
+
+.producers-section-heading .workspace-eyebrow {
+    margin-bottom: 6px;
+}
+
+.record-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+    gap: 14px;
+    margin: 18px 0 28px;
+}
+
+.record-card {
+    display: grid;
+    gap: 6px;
+    padding: 16px;
+    background: rgba(255, 255, 255, 0.035);
+    border: 1px solid rgba(216, 203, 255, 0.12);
+    border-radius: 11px;
+    transition: border-color 0.18s ease, transform 0.18s ease;
+}
+
+.record-card:hover,
+.record-card:focus-within {
+    border-color: #c08ce8;
+    transform: translateY(-2px);
+}
+
+.record-card strong {
+    color: #f2effb;
+}
+
+.record-card span,
+.producers-empty {
+    color: #a69ebd;
+    font-size: 0.9rem;
+}
+
+.registration-heading {
+    margin-top: 26px;
+    padding-top: 22px;
+    border-top: 1px solid rgba(216, 203, 255, 0.1);
+}
+
+.producer-form {
+    display: grid;
+    max-width: 620px;
+    gap: 16px;
+    margin-top: 16px;
+}
+
+.producer-form-row {
+    display: grid;
+    gap: 8px;
+}
+
+.producer-form-row label {
+    color: #e6e0f2;
+    font-size: 0.92rem;
+    font-weight: 650;
+}
+
+.producer-form-row input,
+.producer-form-row select {
+    width: 100%;
+    padding: 12px 13px;
+    color: #f2effb;
+    background: #171322;
+    border: 1px solid rgba(216, 203, 255, 0.15);
+    border-radius: 9px;
+    font: inherit;
+}
+
+.producer-form-row input:focus,
+.producer-form-row select:focus {
+    outline: 2px solid rgba(192, 140, 232, 0.45);
+    outline-offset: 1px;
+}
+
+.producer-form-row input[type="file"] {
+    padding: 9px;
+    font-size: 0.82rem;
+}
+
+.producer-form-row input[type="file"]::file-selector-button {
+    margin-right: 10px;
+    padding: 7px 10px;
+    color: #f2effb;
+    background: rgba(147, 101, 242, 0.2);
+    border: 1px solid rgba(164, 119, 255, 0.4);
+    border-radius: 7px;
+    cursor: pointer;
+}
+
+.producer-image-hint {
+    color: #8f87a4;
+    font-size: 0.76rem;
+    line-height: 1.5;
+}
+
+.producer-image-preview {
+    width: 108px;
+    height: 108px;
+    margin-top: 5px;
+    border: 1px solid rgba(216, 203, 255, 0.17);
+    border-radius: 12px;
+    object-fit: cover;
+}
+
+.producer-record-card {
+    display: flex;
+    min-width: 0;
+    align-items: center;
+    gap: 13px;
+    padding: 13px;
+    background: rgba(255, 255, 255, 0.035);
+    border: 1px solid rgba(216, 203, 255, 0.12);
+    border-radius: 11px;
+    transition: border-color 0.18s ease, transform 0.18s ease;
+}
+
+.producer-record-card:hover,
+.producer-record-card:focus-within {
+    border-color: #c08ce8;
+    transform: translateY(-2px);
+}
+
+.producer-record-card > div {
+    display: grid;
+    min-width: 0;
+    gap: 5px;
+}
+
+.producer-record-card strong {
+    overflow-wrap: anywhere;
+    color: #f2effb;
+}
+
+.producer-record-card > div > span {
+    color: #a69ebd;
+    font-size: 0.84rem;
+}
+
+.producer-record-image,
+.producer-record-placeholder {
+    display: grid;
+    width: 58px;
+    height: 58px;
+    flex: 0 0 58px;
+    place-items: center;
+    border: 1px solid rgba(192, 140, 232, 0.23);
+    border-radius: 10px;
+}
+
+.producer-record-image {
+    object-fit: cover;
+}
+
+.producer-record-placeholder {
+    color: #dbcaff;
+    background:
+        radial-gradient(circle at 30% 20%, rgba(240, 79, 166, 0.26), transparent 55%),
+        rgba(147, 101, 242, 0.16);
+    font-size: 1rem;
+    font-weight: 800;
+    letter-spacing: -0.04em;
+}
+
+.producer-submit {
+    width: fit-content;
+    margin-top: 4px;
+    padding: 11px 16px;
+    color: #fff;
+    background: linear-gradient(135deg, #a477ff, #c05ed5);
+    border: 0;
+    border-radius: 9px;
+    font: inherit;
+    font-weight: 700;
+    cursor: pointer;
+}
+
+.producer-submit:hover {
+    filter: brightness(1.08);
+}
+
+.producer-submit:disabled {
+    opacity: 0.65;
+    cursor: wait;
+}
+
+.producer-error {
+    margin: 0;
+    color: #ff9a9a;
+    font-size: 0.9rem;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .record-card,
+    .producer-record-card {
+        transition: none;
+    }
+}
