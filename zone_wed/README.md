@@ -4,7 +4,23 @@ Prototipo de gestión para producción musical, con espacios diferenciados para 
 
 ## Ejecución local
 
-Sirve la carpeta `zone_wed/` desde un servidor HTTP estático y abre `html/login.html`. Los módulos ES del navegador no deben abrirse con `file://`.
+Desde `zone_wed/`, instala las dependencias y levanta Vite:
+
+```sh
+npm install
+npm run dev
+```
+
+Abre la URL que muestra Vite; la ruta inicial redirige a `/login`. También puedes generar la versión de producción con `npm run build` y probarla con `npm run preview`.
+
+## Estructura React
+
+- `src/pages/`, `src/components/`, `src/hooks/` y `src/context/` contienen la capa de presentación.
+- `src/services/` contiene los casos de uso de aplicación.
+- `src/models/`, `src/config/` y `src/utils/` contienen el dominio.
+- `src/repositories/`, `src/infrastructure/` y `src/data/` contienen persistencia e infraestructura.
+- `App.jsx` define las rutas React; `index.html` es el único documento de entrada de Vite.
+- Las pantallas y servicios siguen como esqueletos pendientes de migrar.
 
 ## Cuentas de demostración
 
@@ -16,22 +32,6 @@ Sirve la carpeta `zone_wed/` desde un servidor HTTP estático y abre `html/login
 | Cliente | `cliente@z-one.com` | `cliente123` |
 
 Las cuentas semilla se crean si no existen. El registro público permite Cliente y Colaborador; Administrador y Coordinador son perfiles de demostración, no seleccionables durante el registro.
-
-## Arquitectura actual
-
-- `js/roles.js`: roles, matriz central de 18 capacidades y comprobación de permisos.
-- `js/navegacionRoles.js`: divisiones y rutas visibles por perfil.
-- `js/solicitudService.js`: reglas del flujo, propiedad de registros, invitaciones, contraofertas, confirmaciones, cancelación, notificaciones y auditoría.
-- `js/solicitudRepo.js`: lectura, creación y actualización de solicitudes; adapta registros seed antiguos.
-- `js/storage.js`: adaptador de persistencia local. Puede reemplazarse por llamadas a una API cuando se integre Oracle.
-- `html/solicitudes.html` y `js/solicitudes.js`: interfaz de solicitudes, invitaciones y actividad.
-- `html/permisos.html` y `js/permisos.js`: matriz visible por rol y reglas de notificación.
-
-## Flujo disponible
-
-Cliente o Colaborador crea una solicitud futura con sala, horario y uno o más profesionales. Las invitaciones vencen en 72 horas. Cada Colaborador invitado puede aceptar, rechazar o enviar una contraoferta; quien creó la solicitud puede aceptarla. Al aceptar todos los invitados, la solicitud se confirma automáticamente. Administración y Coordinación pueden confirmarla manualmente; Administración puede forzar una aceptación indicando el motivo.
-
-El sistema rechaza horarios que se solapen con sesiones o solicitudes ya confirmadas para la misma sala. Cliente o Colaborador puede cancelar sus propias solicitudes con al menos 24 horas de anticipación. Las acciones relevantes generan notificaciones locales y entradas de auditoría.
 
 ## Alcance y seguridad
 

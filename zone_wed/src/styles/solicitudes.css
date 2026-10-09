@@ -1,0 +1,109 @@
+/* CAPA: Presentación */
+.workspace-content[data-page="solicitudes"] .operations-heading {
+    border-left-color: #e57878;
+}
+
+.request-list {
+    display: grid;
+    gap: 12px;
+}
+
+.request-card {
+    padding: 18px;
+    background: rgba(255, 255, 255, 0.025);
+    border: 1px solid rgba(216, 203, 255, 0.1);
+    border-radius: 12px;
+}
+
+.request-card-main {
+    display: grid;
+    gap: 16px;
+}
+
+.request-card-heading {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 12px;
+}
+
+.request-card-heading .workspace-eyebrow {
+    margin-bottom: 6px;
+}
+
+.request-card-heading h3 {
+    margin: 0;
+    color: #f2effb;
+    font-size: 1rem;
+}
+
+.request-details {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px 26px;
+}
+
+.request-details span {
+    display: grid;
+    gap: 4px;
+    color: #dcd6e9;
+    font-size: 0.85rem;
+}
+
+.request-details strong {
+    color: #8f87a4;
+    font-size: 0.68rem;
+    font-weight: 750;
+    letter-spacing: 0.07em;
+    text-transform: uppercase;
+}
+
+.request-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    padding-top: 13px;
+    border-top: 1px solid rgba(216, 203, 255, 0.09);
+}
+
+.request-action {
+    min-height: 36px;
+    padding: 7px 11px;
+    color: #d5cdec;
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(216, 203, 255, 0.16);
+    border-radius: 8px;
+    font: inherit;
+    font-size: 0.78rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: filter 0.16s ease, border-color 0.16s ease;
+}
+
+.request-action:hover:not(:disabled) {
+    filter: brightness(1.15);
+    border-color: rgba(192, 148, 255, 0.5);
+}
+
+.request-action:disabled {
+    opacity: 0.55;
+    cursor: wait;
+}
+
+.request-action-primary {
+    color: #d8f5e5;
+    background: rgba(70, 169, 116, 0.13);
+    border-color: rgba(70, 169, 116, 0.3);
+}
+
+.request-action-danger {
+    color: #f2b2bc;
+    background: rgba(217, 87, 110, 0.1);
+    border-color: rgba(217, 87, 110, 0.25);
+}
+
+@media (max-width: 520px) {
+    .request-card-heading {
+        flex-direction: column;
+    }
+}
