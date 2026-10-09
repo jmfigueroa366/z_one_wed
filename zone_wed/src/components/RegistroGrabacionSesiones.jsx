@@ -45,8 +45,8 @@ export default function RegistroGrabacionSesiones({ productor, onCerrar }) {
         [canciones, cancion_id]
     );
     const proyectoDeCancion = useMemo(
-        () => proyectos.find((p) => p.canciones?.some((c) => String(c) === String(cancion_id))),
-        [proyectos, cancion_id]
+        () => proyectos.find((p) => String(p.id) === String(cancion?.proyecto_id)) ?? null,
+        [proyectos, cancion]
     );
 
     const elegirCancion = (id) => {
@@ -215,14 +215,15 @@ export default function RegistroGrabacionSesiones({ productor, onCerrar }) {
                                 onChange={(event) => elegirCancion(event.target.value)}
                             >
                                 <option value="">Elegir canción…</option>
-                                {canciones.map((c) => (
-                                    <option key={c.id} value={c.id}>
-                                        {c.nombre}
-                                        {proyectos.find((p) => p.canciones?.some((id) => String(id) === String(c.id)))
-                                            ? ` · ${proyectos.find((p) => p.canciones?.some((id) => String(id) === String(c.id))).nombre}`
-                                            : ''}
-                                    </option>
-                                ))}
+                                {canciones.map((c) => {
+                                    const proyecto = proyectos.find((p) => String(p.id) === String(c.proyecto_id));
+                                    return (
+                                        <option key={c.id} value={c.id}>
+                                            {c.nombre}
+                                            {proyecto ? ` · ${proyecto.nombre}` : ''}
+                                        </option>
+                                    );
+                                })}
                             </select>
                         </div>
                         <div>

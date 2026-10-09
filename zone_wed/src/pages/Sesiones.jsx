@@ -45,7 +45,7 @@ export default function Sesiones() {
     const detalleCancion = (id) => {
         const cancion = canciones.find((c) => String(c.id) === String(id));
         if (!cancion) return null;
-        const proyecto = proyectos.find((p) => p.canciones?.some((cId) => String(cId) === String(cancion.id)));
+        const proyecto = proyectos.find((p) => String(p.id) === String(cancion.proyecto_id));
         const partes = Array.isArray(cancion.partes) && cancion.partes.length > 0 ? ` · ${cancion.partes.join(', ')}` : '';
         return `${cancion.nombre}${proyecto ? ` · ${proyecto.nombre}` : ''}${partes}`;
     };
@@ -122,13 +122,8 @@ export default function Sesiones() {
                                             </td>
                                             <td>
                                                 {sesion.titulo || sesion.tipo || 'Sesión de estudio'}
-                                                {obtenerDetalleCancion(sesion.cancion_id) && (
-                                                    <span className="sessions-cancion">
-                                                        {(() => {
-                                                            const [nombreCancion, nombreProyecto, partes] = obtenerDetalleCancion(sesion.cancion_id);
-                                                            return `${nombreCancion}${nombreProyecto ? ` · ${nombreProyecto}` : ''}${partes}`;
-                                                        })()}
-                                                    </span>
+                                                {detalleCancion(sesion.cancion_id) && (
+                                                    <span className="sessions-cancion">{detalleCancion(sesion.cancion_id)}</span>
                                                 )}
                                             </td>
                                             <td>{obtenerNombreSala(sesion.sala_id)}</td>
