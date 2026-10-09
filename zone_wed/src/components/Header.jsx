@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext.jsx';
 import { RUTAS } from '../config/rutas.js';
 import Notificaciones from './Notificaciones.jsx';
+import '../styles/tailwind.css';
 
 export default function Header() {
     const navigate = useNavigate();
@@ -14,14 +15,18 @@ export default function Header() {
     };
 
     return (
-        <header className="workspace-header">
+        <header className="flex min-h-[82px] items-center justify-between gap-4 border-b border-border px-5 py-4 sm:px-8">
             <div>
-                <p className="workspace-eyebrow">Z-ONE · ESTUDIO</p>
-                <p className="workspace-user">{usuario?.nombre ?? 'Usuario'}</p>
+                <p className="text-[0.7rem] font-extrabold uppercase tracking-[0.12em] text-accent">Z-ONE · ESTUDIO</p>
+                <p className="font-semibold text-texto-soft">{usuario?.nombre ?? 'Usuario'}</p>
             </div>
-            <div className="workspace-header-actions">
+            <div className="flex items-center gap-2.5">
                 <Notificaciones />
-                <button className="workspace-logout" type="button" onClick={manejarCierreSesion}>
+                <button
+                    className="rounded-xl border border-border bg-white/[0.04] px-3.5 py-2 text-sm font-semibold text-texto transition hover:border-accent/60"
+                    type="button"
+                    onClick={manejarCierreSesion}
+                >
                     Cerrar sesión
                 </button>
             </div>

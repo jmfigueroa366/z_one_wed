@@ -19,8 +19,8 @@ import {
     seSolapan,
 } from '../utils/solicitudes.js';
 import { formatearFecha, formatearMoneda } from '../utils/helpers.js';
+import { clasePillEstado } from '../styles/clases.js';
 import '../styles/tailwind.css';
-import '../styles/solicitudes.css';
 
 const FORM_INICIAL = {
     tipo: TIPOS_SOLICITUD.GRABACION,
@@ -177,8 +177,8 @@ export default function MisSolicitudes() {
                 <p>Solicita una cabina para grabar, mezclar, masterizar, ensayar o producir. El administrador la confirmará.</p>
             </header>
 
-            {mensaje && <p className="operations-feedback" role="status">{mensaje}</p>}
-            {error && <p className="operations-feedback operations-feedback-error" role="alert">{error}</p>}
+            {mensaje && <p className="mt-4 rounded-xl border border-exito/30 bg-exito/10 px-4 py-3 text-sm text-exito-soft" role="status">{mensaje}</p>}
+            {error && <p className="mt-4 rounded-xl border border-peligro/30 bg-peligro/10 px-4 py-3 text-sm text-peligro-soft" role="alert">{error}</p>}
 
             <section className="mx-auto mb-8 max-w-3xl rounded-2xl border border-border bg-surface p-6 shadow-lg shadow-black/20">
                 <h2 className="mb-4 text-xl font-semibold text-texto">Nueva solicitud</h2>
@@ -361,34 +361,34 @@ export default function MisSolicitudes() {
                 </div>
 
                 {misSolicitudes.length ? (
-                    <div className="request-list">
+                    <div className="grid gap-4">
                         {misSolicitudes.map((solicitud) => {
                             const sala = salas.find((sala) => String(sala.id) === String(solicitud.sala_id));
                             const estimado = estimadoSala(sala, solicitud.franja);
 
                             return (
-                                <article className="request-card" key={solicitud.id}>
-                                    <div className="request-card-main">
-                                        <div className="request-card-heading">
+                                <article className="rounded-2xl border border-border bg-white/[0.02] p-5" key={solicitud.id}>
+                                    <div>
+                                        <div className="flex flex-wrap items-start justify-between gap-3">
                                             <div>
                                                 <p className="workspace-eyebrow">{formatearFecha(solicitud.fecha, { weekday: 'short', day: 'numeric' }) || 'Fecha pendiente'}</p>
-                                                <h3>{etiquetaTipo(solicitud.tipo)}</h3>
+                                                <h3 className="mt-1 text-lg font-bold text-texto-soft">{etiquetaTipo(solicitud.tipo)}</h3>
                                             </div>
-                                            <span className={`operations-status status-${solicitud.estado}`}>
+                                            <span className={clasePillEstado(solicitud.estado)}>
                                                 {etiquetaEstado(solicitud.estado)}
                                             </span>
                                         </div>
-                                        <div className="request-details">
-                                            <span><strong>Sala</strong>{obtenerSala(solicitud.sala_id)}</span>
-                                            <span><strong>Horario</strong>{solicitud.franja || 'Por coordinar'}</span>
+                                        <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+                                            <span className="grid gap-0.5 text-sm text-texto"><strong className="text-xs font-bold uppercase tracking-wider text-sutil">Sala</strong>{obtenerSala(solicitud.sala_id)}</span>
+                                            <span className="grid gap-0.5 text-sm text-texto"><strong className="text-xs font-bold uppercase tracking-wider text-sutil">Horario</strong>{solicitud.franja || 'Por coordinar'}</span>
                                             {nombreCancionDe(solicitud) && (
-                                                <span><strong>Canción</strong>{nombreCancionDe(solicitud)}</span>
+                                                <span className="grid gap-0.5 text-sm text-texto"><strong className="text-xs font-bold uppercase tracking-wider text-sutil">Canción</strong>{nombreCancionDe(solicitud)}</span>
                                             )}
                                             {(solicitud.partes ?? []).length > 0 && (
-                                                <span><strong>Partes</strong>{solicitud.partes.join(', ')}</span>
+                                                <span className="grid gap-0.5 text-sm text-texto"><strong className="text-xs font-bold uppercase tracking-wider text-sutil">Partes</strong>{solicitud.partes.join(', ')}</span>
                                             )}
                                             {estimado !== null && (
-                                                <span><strong>Estimado</strong>{formatearMoneda(estimado)}</span>
+                                                <span className="grid gap-0.5 text-sm text-texto"><strong className="text-xs font-bold uppercase tracking-wider text-sutil">Estimado</strong>{formatearMoneda(estimado)}</span>
                                             )}
                                         </div>
                                     </div>

@@ -3,6 +3,7 @@ import { useMemo, useState } from 'react';
 import { CancionService } from '../services/cancionService.js';
 import { ProyectoService } from '../services/proyectoService.js';
 import { SesionService } from '../services/sesionService.js';
+import GrabadorAudio from './GrabadorAudio.jsx';
 import { useSalas } from '../hooks/useSalas.js';
 import { useSesiones } from '../hooks/useSesiones.js';
 import { aMinutos, franjasOcupadas, seSolapan } from '../utils/solicitudes.js';
@@ -320,6 +321,20 @@ export default function RegistroGrabacionSesiones({ productor, onCerrar }) {
                                 </div>
                             </fieldset>
                         ))}
+                    </div>
+                )}
+
+                {cancion && (
+                    <div className="mb-5">
+                        <p className="mb-2 text-xs font-semibold tracking-widest uppercase text-sutil">
+                            Audio de las partes — graba la canción desde el micrófono
+                        </p>
+                        <div className="space-y-2">
+                            <GrabadorAudio cancionId={cancion.id} parte="" />
+                            {(cancion.partes ?? []).map((parte) => (
+                                <GrabadorAudio key={parte} cancionId={cancion.id} parte={parte} />
+                            ))}
+                        </div>
                     </div>
                 )}
 

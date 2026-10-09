@@ -7,6 +7,7 @@ import { useProyectos } from '../hooks/useProyectos.js';
 import { useCanciones } from '../hooks/useCanciones.js';
 import { ProyectoService } from '../services/proyectoService.js';
 import { CancionService } from '../services/cancionService.js';
+import AudioCancion from '../components/AudioCancion.jsx';
 import { formatearFecha } from '../utils/helpers.js';
 import '../styles/tailwind.css';
 
@@ -319,6 +320,7 @@ export default function MisProyectos() {
                                                         >
                                                             Partes{cantPartes > 0 ? ` (${cantPartes})` : ''}
                                                         </button>
+                                                        <AudioCancion cancion={cancion} estilo={estilos.botonSecundario} />
                                                         <button
                                                             className={estilos.botonPeligro}
                                                             onClick={() => eliminarCancion(cancion)}

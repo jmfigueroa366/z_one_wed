@@ -3,7 +3,8 @@ import { useMemo } from 'react';
 import { useSesiones } from '../hooks/useSesiones.js';
 import { useSolicitudes } from '../hooks/useSolicitudes.js';
 import { EstadisticasService } from '../services/estadisticasService.js';
-import '../styles/estadisticas.css';
+import { clasePillEstado } from '../styles/clases.js';
+import '../styles/tailwind.css';
 
 const etiquetasEstado = {
     completada: 'Completada',
@@ -31,59 +32,69 @@ export default function Estadisticas() {
 
     return (
         <main className="workspace-content" data-page="estadisticas">
-            <header className="page-heading">
+            <header className="page-heading border-l-4 border-exito/70 pl-4">
                 <p className="workspace-eyebrow">ESPACIO DE TRABAJO</p>
                 <h1>Estadísticas</h1>
                 <p>Resumen de actividad del estudio.</p>
             </header>
 
-            <section className="estadisticas-grid" aria-label="Métricas generales de Z-ONE">
+            <section className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4" aria-label="Métricas generales de Z-ONE">
                 {cards.map((card) => (
-                    <article key={card.label} className="stat-card">
-                        <span>{card.label}</span>
-                        <strong>{card.valor}</strong>
-                        <small>{card.detalle}</small>
+                    <article key={card.label} className="flex flex-col gap-2 rounded-2xl border border-border bg-surface/70 p-5">
+                        <span className="text-xs font-bold uppercase tracking-wider text-sutil">{card.label}</span>
+                        <strong className="text-4xl font-extrabold leading-none text-texto-soft">{card.valor}</strong>
+                        <small className="text-sm text-sutil">{card.detalle}</small>
                     </article>
                 ))}
             </section>
 
-            <section className="estadisticas-panels">
-                <article className="panel-block">
-                    <header>
-                        <h2>Sesiones recientes</h2>
-                    </header>
-                    <ul className="list-block">
-                        {ultimasSesiones.map((sesion) => (
-                            <li key={sesion.id ?? `${sesion.titulo}-${sesion.fecha}`}>
-                                <div>
-                                    <strong>{sesion.titulo}</strong>
-                                    <small>{sesion.fecha} · {sesion.hora_inicio} - {sesion.hora_fin}</small>
-                                </div>
-                                <span className={`pill estado-${sesion.estado}`}>
-                                    {etiquetasEstado[sesion.estado] ?? sesion.estado}
-                                </span>
-                            </li>
-                        ))}
-                    </ul>
+            <section className="mt-6 grid gap-4 lg:grid-cols-2">
+                <article className="rounded-3xl border border-border bg-surface/70 p-6">
+                    <h2 className="mb-5 text-lg font-bold text-texto-soft">Sesiones recientes</h2>
+                    {ultimasSesiones.length ? (
+                        <ul className="grid gap-3.5">
+                            {ultimasSesiones.map((sesion) => (
+                                <li
+                                    key={sesion.id ?? `${sesion.titulo}-${sesion.fecha}`}
+                                    className="flex items-center justify-between gap-3 border-b border-border/50 pb-3.5 last:border-0 last:pb-0"
+                                >
+                                    <div className="min-w-0">
+                                        <strong className="block truncate text-texto-soft">{sesion.titulo}</strong>
+                                        <small className="text-sutil">{sesion.fecha} · {sesion.hora_inicio} - {sesion.hora_fin}</small>
+                                    </div>
+                                    <span className={clasePillEstado(sesion.estado)}>
+                                        {etiquetasEstado[sesion.estado] ?? sesion.estado}
+                                    </span>
+                                </li>
+                            ))}
+                        </ul>
+                    ) : (
+                        <p className="text-sm text-sutil">Aún no hay sesiones registradas.</p>
+                    )}
                 </article>
 
-                <article className="panel-block">
-                    <header>
-                        <h2>Solicitudes activas</h2>
-                    </header>
-                    <ul className="list-block">
-                        {ultimasSolicitudes.map((solicitud) => (
-                            <li key={solicitud.id ?? `${solicitud.colaborador_id}-${solicitud.fecha}`}>
-                                <div>
-                                    <strong>Colaborador #{solicitud.colaborador_id}</strong>
-                                    <small>{solicitud.fecha} · {solicitud.franja}</small>
-                                </div>
-                                <span className={`pill estado-${solicitud.estado}`}>
-                                    {etiquetasEstado[solicitud.estado] ?? solicitud.estado}
-                                </span>
-                            </li>
-                        ))}
-                    </ul>
+                <article className="rounded-3xl border border-border bg-surface/70 p-6">
+                    <h2 className="mb-5 text-lg font-bold text-texto-soft">Solicitudes activas</h2>
+                    {ultimasSolicitudes.length ? (
+                        <ul className="grid gap-3.5">
+                            {ultimasSolicitudes.map((solicitud) => (
+                                <li
+                                    key={solicitud.id ?? `${solicitud.colaborador_id}-${solicitud.fecha}`}
+                                    className="flex items-center justify-between gap-3 border-b border-border/50 pb-3.5 last:border-0 last:pb-0"
+                                >
+                                    <div className="min-w-0">
+                                        <strong className="block truncate text-texto-soft">Colaborador #{solicitud.colaborador_id}</strong>
+                                        <small className="text-sutil">{solicitud.fecha} · {solicitud.franja}</small>
+                                    </div>
+                                    <span className={clasePillEstado(solicitud.estado)}>
+                                        {etiquetasEstado[solicitud.estado] ?? solicitud.estado}
+                                    </span>
+                                </li>
+                            ))}
+                        </ul>
+                    ) : (
+                        <p className="text-sm text-sutil">Aún no hay solicitudes registradas.</p>
+                    )}
                 </article>
             </section>
         </main>

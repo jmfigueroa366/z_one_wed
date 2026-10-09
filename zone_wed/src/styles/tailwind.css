@@ -8,16 +8,25 @@
 @import "tailwindcss/utilities.css" layer(utilities);
 
 @theme {
+    --font-sans: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+
     --color-bg: #100d1b;
+    --color-bg-2: #140f23;
     --color-surface: #171527;
     --color-surface-2: #211e38;
     --color-surface-3: #2b2747;
     --color-border: #2d2a45;
     --color-accent: #a477ff;
+    --color-accent-soft: #c094ff;
     --color-magenta: #f04fa6;
     --color-texto: #f2effb;
+    --color-texto-soft: #f7f4ff;
     --color-sutil: #a69ebd;
     --color-exito: #7be0b0;
+    --color-exito-soft: #9ce0bc;
     --color-peligro: #ff8a8a;
+    --color-peligro-soft: #f2a4b1;
     --color-aviso: #ffd166;
+    --color-aviso-soft: #f2d390;
+    --color-info: #9ecbff;
 }

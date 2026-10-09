@@ -1,14 +1,17 @@
 // CAPA: Presentación
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
+import anime from 'animejs';
 import FormularioArtista from '../components/FormularioArtista.jsx';
 import TarjetaArtista from '../components/TarjetaArtista.jsx';
 import { useArtistas } from '../hooks/useArtistas.js';
-import '../styles/artistas.css';
+import { CAMPO, ETIQUETA } from '../styles/clases.js';
+import '../styles/tailwind.css';
 
 export default function Artistas() {
     const [artistas] = useArtistas();
     const [busqueda, setBusqueda] = useState('');
     const [filtroGenero, setFiltroGenero] = useState('Todos');
+    const gridRef = useRef(null);
 
     const generos = useMemo(
         () => [...new Set(artistas.map((artista) => artista.especialidad).filter(Boolean))].sort(),
@@ -21,47 +24,68 @@ export default function Artistas() {
         return coincideBusqueda && (filtroGenero === 'Todos' || artista.especialidad === filtroGenero);
     }), [artistas, busqueda, filtroGenero]);
 
+    useEffect(() => {
+        const grid = gridRef.current;
+        if (!grid || window.matchMedia('(prefers-reduced-motion: reduce)').matches) return undefined;
+
+        const animacion = anime({
+            targets: grid.children,
+            opacity: [0, 1],
+            translateY: [18, 0],
+            duration: 480,
+            delay: anime.stagger(70),
+            easing: 'easeOutCubic',
+        });
+
+        return () => animacion.pause();
+    }, [artistasFiltrados]);
+
     return (
-        <main className="workspace-content artists-page" data-page="artistas">
-            <header className="page-heading artists-heading">
+        <main className="workspace-content" data-page="artistas">
+            <header className="page-heading border-l-4 border-magenta pl-4">
                 <p className="workspace-eyebrow">TALENTO Z-ONE</p>
                 <h1>Artistas</h1>
                 <p>Conoce a las voces vinculadas al estudio y organiza sus perfiles para próximas sesiones.</p>
             </header>
 
-            <section className="artists-summary" aria-label="Resumen de artistas">
-                <div>
-                    <span>Artistas activos</span>
-                    <strong>{artistas.length}</strong>
+            <section className="mt-6 grid gap-4 sm:grid-cols-2" aria-label="Resumen de artistas">
+                <div className="rounded-2xl border border-border bg-surface/70 px-5 py-4">
+                    <span className="text-sm text-sutil">Artistas activos</span>
+                    <strong className="mt-1 block text-3xl font-black text-texto-soft">{artistas.length}</strong>
                 </div>
-                <div>
-                    <span>Géneros y estilos</span>
-                    <strong>{generos.length}</strong>
+                <div className="rounded-2xl border border-border bg-surface/70 px-5 py-4">
+                    <span className="text-sm text-sutil">Géneros y estilos</span>
+                    <strong className="mt-1 block text-3xl font-black text-accent-soft">{generos.length}</strong>
                 </div>
             </section>
 
-            <section className="artists-directory" aria-labelledby="artists-directory-title">
-                <div className="artists-section-heading">
+            <section className="mt-6 rounded-3xl border border-border bg-surface/70 p-6" aria-labelledby="artists-directory-title">
+                <div className="flex flex-wrap items-end justify-between gap-4">
                     <div>
                         <p className="workspace-eyebrow">DIRECTORIO</p>
-                        <h2 id="artists-directory-title">Talento del estudio</h2>
+                        <h2 id="artists-directory-title" className="mt-1 text-xl font-bold tracking-tight text-texto-soft">
+                            Talento del estudio
+                        </h2>
                     </div>
-                    <span className="artists-count">{artistasFiltrados.length} perfiles</span>
+                    <span className="rounded-full border border-accent/40 bg-accent/10 px-3 py-1.5 text-xs font-bold text-accent-soft">
+                        {artistasFiltrados.length} perfiles
+                    </span>
                 </div>
 
-                <div className="artists-filters">
-                    <label className="artists-search">
-                        <span>Buscar artista</span>
+                <div className="mt-4 grid gap-4 sm:grid-cols-2">
+                    <label>
+                        <span className={ETIQUETA}>Buscar artista</span>
                         <input
+                            className={CAMPO}
                             type="search"
                             value={busqueda}
                             onChange={(event) => setBusqueda(event.target.value)}
                             placeholder="Nombre o género"
                         />
                     </label>
-                    <label className="artists-genre-filter">
-                        <span>Género o estilo</span>
-                        <select value={filtroGenero} onChange={(event) => setFiltroGenero(event.target.value)}>
+                    <label>
+                        <span className={ETIQUETA}>Género o estilo</span>
+                        <select className={CAMPO} value={filtroGenero} onChange={(event) => setFiltroGenero(event.target.value)}>
                             <option value="Todos">Todos los estilos</option>
                             {generos.map((genero) => <option key={genero} value={genero}>{genero}</option>)}
                         </select>
@@ -69,22 +93,24 @@ export default function Artistas() {
                 </div>
 
                 {artistasFiltrados.length ? (
-                    <div className="artists-card-grid">
+                    <div className="mt-5 grid gap-4 sm:grid-cols-2 lg:grid-cols-3" ref={gridRef}>
                         {artistasFiltrados.map((artista, index) => (
                             <TarjetaArtista key={artista.id ?? artista.nombre} artista={artista} index={index} />
                         ))}
                     </div>
                 ) : (
-                    <p className="artists-empty">No hay artistas que coincidan con la búsqueda.</p>
+                    <p className="py-4 text-center text-sutil">No hay artistas que coincidan con la búsqueda.</p>
                 )}
             </section>
 
-            <FormularioArtista
-                onRegistrado={() => {
-                    setFiltroGenero('Todos');
-                    setBusqueda('');
-                }}
-            />
+            <div className="mt-6">
+                <FormularioArtista
+                    onRegistrado={() => {
+                        setFiltroGenero('Todos');
+                        setBusqueda('');
+                    }}
+                />
+            </div>
         </main>
     );
 }

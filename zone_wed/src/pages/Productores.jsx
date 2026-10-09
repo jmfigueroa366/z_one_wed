@@ -3,9 +3,20 @@ import { useState } from 'react';
 import RegistroGrabacionSesiones from '../components/RegistroGrabacionSesiones.jsx';
 import { useProductores } from '../hooks/useProductores.js';
 import { ProductorService } from '../services/productorService.js';
-import '../styles/productores.css';
+import { BOTON_PRIMARIO, CAMPO } from '../styles/clases.js';
+import '../styles/tailwind.css';
 
 const ESPECIALIDADES = ['Grabación', 'Mezcla', 'Masterización', 'Producción musical'];
+
+function iniciales(nombre) {
+    return String(nombre ?? '')
+        .trim()
+        .split(/\s+/)
+        .slice(0, 2)
+        .map((parte) => parte[0] ?? '')
+        .join('')
+        .toLocaleUpperCase();
+}
 
 export default function Productores() {
     const [productores] = useProductores();
@@ -72,35 +83,48 @@ export default function Productores() {
     };
 
     return (
-        <main className="workspace-content producers-page" data-page="productores">
-            <header className="page-heading">
+        <main className="workspace-content" data-page="productores">
+            <header className="page-heading border-l-4 border-[#c08ce8] pl-4">
                 <p className="workspace-eyebrow">GESTIÓN DE PRODUCTORES</p>
                 <h1>Productores registrados</h1>
                 <p>El equipo técnico detrás de cada sesión y lanzamiento.</p>
             </header>
 
-            <section className="producers-card" aria-labelledby="producers-list-title">
-                <div className="producers-section-heading">
+            <section className="mt-6 rounded-3xl border border-border bg-surface/70 p-6" aria-labelledby="producers-list-title">
+                <div>
                     <p className="workspace-eyebrow">GESTIÓN DE PRODUCTORES</p>
-                    <h2 id="producers-list-title">Productores registrados</h2>
+                    <h2 id="producers-list-title" className="mt-1 text-xl font-bold tracking-tight text-texto-soft">
+                        Productores registrados
+                    </h2>
                 </div>
 
                 {productores.length > 0 ? (
-                    <div className="record-grid">
+                    <div className="mt-5 grid gap-3.5 sm:grid-cols-2 lg:grid-cols-3">
                         {productores.map((productor) => (
-                            <article className="producer-record-card" key={productor.id}>
+                            <article
+                                className="flex min-w-0 items-center gap-3.5 rounded-xl border border-border bg-white/[0.035] p-3.5 transition hover:-translate-y-0.5 hover:border-[#c08ce8]"
+                                key={productor.id}
+                            >
                                 {productor.imagen ? (
-                                    <img className="producer-record-image" src={productor.imagen} alt={`Retrato de ${productor.nombre}`} />
+                                    <img
+                                        className="h-14 w-14 flex-none rounded-xl border border-[#c08ce8]/25 object-cover"
+                                        src={productor.imagen}
+                                        alt={`Retrato de ${productor.nombre}`}
+                                    />
                                 ) : (
-                                    <span className="producer-record-placeholder" aria-hidden="true">
-                                        {productor.nombre.split(/\s+/).slice(0, 2).map((parte) => parte[0]).join('').toLocaleUpperCase()}
+                                    <span
+                                        className="grid h-14 w-14 flex-none place-items-center rounded-xl border border-[#c08ce8]/25 text-base font-black tracking-tight text-[#dbcaff]"
+                                        style={{ background: 'radial-gradient(circle at 30% 20%, rgba(240, 79, 166, 0.26), transparent 55%), rgba(147, 101, 242, 0.16)' }}
+                                        aria-hidden="true"
+                                    >
+                                        {iniciales(productor.nombre)}
                                     </span>
                                 )}
-                                <div>
-                                    <strong>{productor.nombre}</strong>
-                                    <span>{productor.especialidad}</span>
+                                <div className="grid min-w-0 flex-1 gap-1">
+                                    <strong className="break-words text-texto-soft">{productor.nombre}</strong>
+                                    <span className="text-sm text-sutil">{productor.especialidad}</span>
                                     <button
-                                        className="producer-record-action"
+                                        className="mt-0.5 w-fit rounded-lg border border-accent/30 bg-accent/10 px-2.5 py-1.5 text-xs font-bold text-texto transition hover:border-accent/60 hover:brightness-110"
                                         type="button"
                                         onClick={() => setProductorGrabacion(productor)}
                                     >
@@ -111,18 +135,19 @@ export default function Productores() {
                         ))}
                     </div>
                 ) : (
-                    <p className="producers-empty">Todavía no hay productores registrados.</p>
+                    <p className="py-3 text-sutil">Todavía no hay productores registrados.</p>
                 )}
 
-                <div className="producers-section-heading registration-heading">
+                <div className="mt-6 border-t border-border pt-5">
                     <p className="workspace-eyebrow">NUEVO REGISTRO</p>
-                    <h2>Registrar productor</h2>
+                    <h2 className="mt-1 text-xl font-bold tracking-tight text-texto-soft">Registrar productor</h2>
                 </div>
 
-                <form className="producer-form" onSubmit={manejarRegistro}>
-                    <div className="producer-form-row">
-                        <label htmlFor="producer-name">Nombre del productor</label>
+                <form className="mt-4 grid max-w-2xl gap-4" onSubmit={manejarRegistro}>
+                    <div className="grid gap-2">
+                        <label className="text-sm font-semibold text-texto" htmlFor="producer-name">Nombre del productor</label>
                         <input
+                            className={CAMPO}
                             id="producer-name"
                             name="nombre"
                             type="text"
@@ -132,9 +157,10 @@ export default function Productores() {
                             required
                         />
                     </div>
-                    <div className="producer-form-row">
-                        <label htmlFor="producer-specialty">Especialidad</label>
+                    <div className="grid gap-2">
+                        <label className="text-sm font-semibold text-texto" htmlFor="producer-specialty">Especialidad</label>
                         <select
+                            className={CAMPO}
                             id="producer-specialty"
                             name="especialidad"
                             value={formulario.especialidad}
@@ -145,22 +171,28 @@ export default function Productores() {
                             ))}
                         </select>
                     </div>
-                    <div className="producer-form-row">
-                        <label htmlFor="producer-image">Foto del productor (opcional)</label>
+                    <div className="grid gap-1.5">
+                        <label className="text-sm font-semibold text-texto" htmlFor="producer-image">Foto del productor (opcional)</label>
                         <input
+                            className={`${CAMPO} text-xs file:mr-3 file:cursor-pointer file:rounded-lg file:border file:border-accent/40 file:bg-accent/20 file:px-3 file:py-2 file:text-xs file:font-semibold file:text-texto`}
                             id="producer-image"
                             name="imagen"
                             type="file"
                             accept="image/png,image/jpeg,image/webp"
                             onChange={manejarImagen}
                         />
-                        <span className="producer-image-hint">JPG, PNG o WebP · máximo 1.5 MB. La foto se guarda en este navegador.</span>
+                        <span className="text-xs leading-5 text-sutil">JPG, PNG o WebP · máximo 1.5 MB. La foto se guarda en este navegador.</span>
                         {formulario.imagen && (
-                            <img className="producer-image-preview" src={formulario.imagen} alt="Vista previa del productor" />
+                            <img
+                                className="mt-1 rounded-xl border border-border object-cover"
+                                style={{ width: '108px', height: '108px' }}
+                                src={formulario.imagen}
+                                alt="Vista previa del productor"
+                            />
                         )}
                     </div>
-                    {error && <p className="producer-error" role="alert">{error}</p>}
-                    <button className="producer-submit" disabled={cargandoImagen} type="submit">
+                    {error && <p className="m-0 text-sm text-peligro-soft" role="alert">{error}</p>}
+                    <button className={`${BOTON_PRIMARIO} w-fit`} disabled={cargandoImagen} type="submit">
                         {cargandoImagen ? 'Cargando imagen…' : 'Registrar productor'}
                     </button>
                 </form>

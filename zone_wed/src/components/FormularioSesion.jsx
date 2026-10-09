@@ -1,6 +1,7 @@
 // CAPA: Presentación
 import { useState } from 'react';
 import { SesionService } from '../services/sesionService.js';
+import '../styles/tailwind.css';
 
 function fechaLocal(fecha = new Date()) {
     const anio = fecha.getFullYear();
@@ -16,6 +17,12 @@ function sumarHoras(hora, horas) {
     const minutosFin = totalMinutos % 60;
     return `${String(horaFin).padStart(2, '0')}:${String(minutosFin).padStart(2, '0')}`;
 }
+
+const CAMPO =
+    'w-full min-h-[42px] rounded-lg border border-border bg-surface-2 px-3 py-2 text-sm text-texto outline-none transition placeholder:text-sutil focus:border-accent focus:ring-2 focus:ring-accent/40 [&>option]:bg-surface-3 [&>option]:text-texto';
+const ETIQUETA = 'mb-1 block text-xs font-semibold text-[#e5e0ef]';
+const AYUDA = 'font-normal text-sutil';
+const FILA = 'grid gap-3 sm:grid-cols-2';
 
 export default function FormularioSesion({ salas, colaboradores }) {
     const [formulario, setFormulario] = useState({
@@ -75,20 +82,23 @@ export default function FormularioSesion({ salas, colaboradores }) {
     };
 
     return (
-        <section className="sessions-panel sessions-form-panel" id="crear">
-            <div className="sessions-panel-heading">
+        <section id="crear" className="scroll-mt-5 rounded-2xl border border-border bg-surface p-5">
+            <div className="mb-4 flex items-center justify-between gap-3">
                 <div>
                     <p className="workspace-eyebrow">NUEVA RESERVA</p>
-                    <h2>Crear sesión</h2>
+                    <h2 className="text-xl font-bold tracking-tight text-texto">Crear sesión</h2>
                 </div>
-                <span className="sessions-heading-icon" aria-hidden="true">◷</span>
+                <span className="grid h-9 w-9 shrink-0 place-items-center rounded-lg border border-accent/30 bg-accent/15 text-accent" aria-hidden="true">
+                    ◷
+                </span>
             </div>
-            <p className="sessions-form-intro">Completa los datos para registrar una sesión en la agenda del estudio.</p>
+            <p className="mb-4 text-sm leading-6 text-sutil">Completa los datos para registrar una sesión en la agenda del estudio.</p>
 
-            <form className="sessions-form" onSubmit={guardarSesion}>
-                <label>
-                    <span>Nombre de la sesión <small>(opcional)</small></span>
+            <form className="grid gap-4" onSubmit={guardarSesion}>
+                <label className="grid min-w-0 gap-2">
+                    <span className={ETIQUETA}>Nombre de la sesión <span className={AYUDA}>(opcional)</span></span>
                     <input
+                        className={CAMPO}
                         name="titulo"
                         onChange={cambiarCampo}
                         placeholder="Ej. Grabación de nuevo sencillo"
@@ -96,10 +106,10 @@ export default function FormularioSesion({ salas, colaboradores }) {
                     />
                 </label>
 
-                <div className="sessions-form-row">
-                    <label>
-                        <span>Tipo de sesión</span>
-                        <select name="tipo" onChange={cambiarCampo} value={formulario.tipo}>
+                <div className={FILA}>
+                    <label className="grid min-w-0 gap-2">
+                        <span className={ETIQUETA}>Tipo de sesión</span>
+                        <select className={CAMPO} name="tipo" onChange={cambiarCampo} value={formulario.tipo}>
                             <option>Grabación</option>
                             <option>Mezcla</option>
                             <option>Masterización</option>
@@ -107,9 +117,9 @@ export default function FormularioSesion({ salas, colaboradores }) {
                             <option>Producción</option>
                         </select>
                     </label>
-                    <label>
-                        <span>Estado</span>
-                        <select name="estado" onChange={cambiarCampo} value={formulario.estado}>
+                    <label className="grid min-w-0 gap-2">
+                        <span className={ETIQUETA}>Estado</span>
+                        <select className={CAMPO} name="estado" onChange={cambiarCampo} value={formulario.estado}>
                             <option value="pendiente">Pendiente</option>
                             <option value="confirmada">Confirmada</option>
                             <option value="cancelada">Cancelada</option>
@@ -117,10 +127,11 @@ export default function FormularioSesion({ salas, colaboradores }) {
                     </label>
                 </div>
 
-                <div className="sessions-form-row">
-                    <label>
-                        <span>Fecha</span>
+                <div className={FILA}>
+                    <label className="grid min-w-0 gap-2">
+                        <span className={ETIQUETA}>Fecha</span>
                         <input
+                            className={CAMPO}
                             min={fechaLocal()}
                             name="fecha"
                             onChange={cambiarCampo}
@@ -129,9 +140,10 @@ export default function FormularioSesion({ salas, colaboradores }) {
                             value={formulario.fecha}
                         />
                     </label>
-                    <label>
-                        <span>Hora de inicio</span>
+                    <label className="grid min-w-0 gap-2">
+                        <span className={ETIQUETA}>Hora de inicio</span>
                         <input
+                            className={CAMPO}
                             name="hora_inicio"
                             onChange={cambiarCampo}
                             required
@@ -141,10 +153,10 @@ export default function FormularioSesion({ salas, colaboradores }) {
                     </label>
                 </div>
 
-                <div className="sessions-form-row">
-                    <label>
-                        <span>Duración</span>
-                        <select name="duracion" onChange={cambiarCampo} value={formulario.duracion}>
+                <div className={FILA}>
+                    <label className="grid min-w-0 gap-2">
+                        <span className={ETIQUETA}>Duración</span>
+                        <select className={CAMPO} name="duracion" onChange={cambiarCampo} value={formulario.duracion}>
                             <option value="1">1 hora</option>
                             <option value="1.5">1 hora y media</option>
                             <option value="2">2 horas</option>
@@ -154,9 +166,9 @@ export default function FormularioSesion({ salas, colaboradores }) {
                             <option value="8">8 horas</option>
                         </select>
                     </label>
-                    <label>
-                        <span>Cabina</span>
-                        <select name="sala_id" onChange={cambiarCampo} required value={formulario.sala_id}>
+                    <label className="grid min-w-0 gap-2">
+                        <span className={ETIQUETA}>Cabina</span>
+                        <select className={CAMPO} name="sala_id" onChange={cambiarCampo} required value={formulario.sala_id}>
                             <option value="">Selecciona una cabina</option>
                             {salas.map((sala) => (
                                 <option key={sala.id} value={sala.id}>{sala.nombre}</option>
@@ -165,9 +177,10 @@ export default function FormularioSesion({ salas, colaboradores }) {
                     </label>
                 </div>
 
-                <label>
-                    <span>Artista / productor</span>
+                <label className="grid min-w-0 gap-2">
+                    <span className={ETIQUETA}>Artista / productor</span>
                     <select
+                        className={CAMPO}
                         name="colaborador_id"
                         onChange={cambiarCampo}
                         required
@@ -182,11 +195,20 @@ export default function FormularioSesion({ salas, colaboradores }) {
                     </select>
                 </label>
 
-                {mensaje && <p className="sessions-feedback sessions-feedback-success" role="status">{mensaje}</p>}
-                {error && <p className="sessions-feedback sessions-feedback-error" role="alert">{error}</p>}
+                {mensaje && (
+                    <p className="rounded-lg border border-exito/30 bg-exito/10 px-3 py-2 text-sm text-exito" role="status">{mensaje}</p>
+                )}
+                {error && (
+                    <p className="rounded-lg border border-peligro/30 bg-peligro/10 px-3 py-2 text-sm text-peligro" role="alert">{error}</p>
+                )}
 
-                <button className="sessions-submit" type="submit">Guardar sesión</button>
-                <p className="sessions-storage-note">Los datos quedan guardados en este navegador.</p>
+                <button
+                    className="min-h-[44px] rounded-lg bg-gradient-to-r from-[#9365f2] to-[#e34ba6] px-4 text-sm font-bold text-white transition hover:brightness-110"
+                    type="submit"
+                >
+                    Guardar sesión
+                </button>
+                <p className="text-center text-xs text-sutil/80">Los datos quedan guardados en este navegador.</p>
             </form>
         </section>
     );
