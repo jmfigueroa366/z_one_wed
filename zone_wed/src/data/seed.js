@@ -3,7 +3,7 @@
 
 // Incrementa este valor cuando cambie SEED para que los navegadores
 // con datos antiguos se repueblen automáticamente.
-export const SEED_VERSION = '2026-10-08-1';
+export const SEED_VERSION = '2026-10-08-2';
 
 function fechaLocalISO(fecha) {
     return (

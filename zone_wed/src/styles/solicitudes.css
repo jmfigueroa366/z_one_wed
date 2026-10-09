@@ -58,6 +58,60 @@
     text-transform: uppercase;
 }
 
+.operations-status {
+    display: inline-flex;
+    padding: 5px 8px;
+    border: 1px solid transparent;
+    border-radius: 999px;
+    font-size: 0.72rem;
+    font-weight: 700;
+    white-space: nowrap;
+}
+
+.status-confirmada,
+.status-en_proceso {
+    color: #9ce0bc;
+    background: rgba(70, 169, 116, 0.12);
+    border-color: rgba(70, 169, 116, 0.24);
+}
+
+.status-pendiente,
+.status-solicitud,
+.status-en_negociacion {
+    color: #f2d390;
+    background: rgba(212, 159, 62, 0.12);
+    border-color: rgba(212, 159, 62, 0.24);
+}
+
+.status-cancelada,
+.status-rechazada,
+.status-expirada {
+    color: #f2a4b1;
+    background: rgba(217, 87, 110, 0.12);
+    border-color: rgba(217, 87, 110, 0.24);
+}
+
+.operations-empty {
+    margin: 26px 0 8px;
+    color: #a69ebd;
+    text-align: center;
+}
+
+.operations-feedback {
+    margin: 0 0 14px;
+    padding: 12px 15px;
+    color: #9ce0bc;
+    background: rgba(70, 169, 116, 0.1);
+    border: 1px solid rgba(70, 169, 116, 0.24);
+    border-radius: 10px;
+}
+
+.operations-feedback-error {
+    color: #f2a4b1;
+    background: rgba(217, 87, 110, 0.1);
+    border-color: rgba(217, 87, 110, 0.24);
+}
+
 .request-actions {
     display: flex;
     flex-wrap: wrap;
