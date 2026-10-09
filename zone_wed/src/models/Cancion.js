@@ -6,6 +6,7 @@ export function crearCancion(data = {}) {
         proyecto_id: data.proyecto_id ?? null,
         nombre: data.nombre ?? '',
         duracion: data.duracion ?? null,
+        partes: data.partes ?? [],
         ...data,
     };
 }

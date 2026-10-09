@@ -1,6 +1,8 @@
 // CAPA: Presentación
 import { useMemo, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext.jsx';
+import { RUTAS } from '../config/rutas.js';
 import { useProyectos } from '../hooks/useProyectos.js';
 import { useCanciones } from '../hooks/useCanciones.js';
 import { ProyectoService } from '../services/proyectoService.js';
@@ -19,6 +21,64 @@ const estilos = {
 function duracionTexto(cancion) {
     if (!cancion.duracion) return '';
     return `${cancion.duracion} min`;
+}
+
+function PartesCancion({ cancion }) {
+    const [nuevaParte, setNuevaParte] = useState('');
+    const partes = cancion.partes ?? [];
+
+    const agregar = (evento) => {
+        evento.preventDefault();
+        const parte = nuevaParte.trim();
+        if (!parte || partes.some((item) => item.toLowerCase() === parte.toLowerCase())) {
+            setNuevaParte('');
+            return;
+        }
+        CancionService.actualizar(cancion.id, { partes: [...partes, parte] });
+        setNuevaParte('');
+    };
+
+    const quitar = (parte) => {
+        CancionService.actualizar(cancion.id, { partes: partes.filter((item) => item !== parte) });
+    };
+
+    return (
+        <div className="mt-3 border-t border-border pt-3">
+            {partes.length ? (
+                <div className="flex flex-wrap gap-2">
+                    {partes.map((parte) => (
+                        <span
+                            key={parte}
+                            className="inline-flex items-center gap-1 rounded-full border border-accent/40 bg-accent/10 px-2.5 py-1 text-xs text-texto"
+                        >
+                            {parte}
+                            <button
+                                className="text-sutil transition hover:text-peligro"
+                                onClick={() => quitar(parte)}
+                                type="button"
+                                aria-label={`Quitar parte ${parte}`}
+                            >
+                                ×
+                            </button>
+                        </span>
+                    ))}
+                </div>
+            ) : (
+                <p className="text-xs text-sutil">
+                    Sin partes definidas. Añade lo que grabarás en el estudio (ej. Vocales, Guitarra, Batería), así el estudio divide la grabación por cada audio.
+                </p>
+            )}
+            <form className="mt-3 flex gap-2" onSubmit={agregar} aria-label="Agregar parte de audio">
+                <input
+                    className={`${estilos.campo} flex-1 text-sm`}
+                    placeholder="Nueva parte (ej. Coros)"
+                    value={nuevaParte}
+                    onChange={(evento) => setNuevaParte(evento.target.value)}
+                />
+                <button className={`${estilos.botonPrimario} shrink-0`} type="submit">Agregar</button>
+            </form>
+        </div>
+    );
 }
 
 export default function MisProyectos() {
