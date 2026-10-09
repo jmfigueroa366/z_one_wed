@@ -1,9 +1,17 @@
 // CAPA: Presentación
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
+import { ReactiveStore } from '../infrastructure/reactiveStore.js';
 import { SolicitudService } from '../services/solicitudService.js';
 
 export function useSolicitudes() {
-    return useState(() => SolicitudService.listar());
+    const [solicitudes, setSolicitudes] = useState(() => SolicitudService.listar());
+
+    useEffect(
+        () => ReactiveStore.suscribirse(() => setSolicitudes(SolicitudService.listar())),
+        []
+    );
+
+    return [solicitudes, setSolicitudes];
 }
 
 export default useSolicitudes;

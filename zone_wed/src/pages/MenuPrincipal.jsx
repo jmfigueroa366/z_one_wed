@@ -1,120 +1,17 @@
 // CAPA: Presentación
 import { Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext.jsx';
-import { SesionService } from '../services/sesionService.js';
+import { useSesiones } from '../hooks/useSesiones.js';
+import { artistasDestacados } from '../data/artistasDestacados.js';
+import { productoresDestacados } from '../data/productoresDestacados.js';
 import { RUTAS, rutasPermitidasPorRol } from '../config/rutas.js';
 import '../styles/principal.css';
-
-const artistasDestacados = [
-    {
-        nombre: 'Shakira',
-        origen: 'Barranquilla, Colombia',
-        estilo: 'Pop latino · fusión',
-        historia: 'Cantautora colombiana nacida en Barranquilla, desarrolló una carrera internacional reconocida por combinar pop, rock y ritmos latinos. Sus canciones han llevado sonidos y expresiones de la música en español a públicos de todo el mundo.',
-        imagen: '/Imagenes/artistas/shakira.jpg',
-        textoAlternativo: 'Shakira en la gala de los Latin Grammy de 2023',
-        fotografia: 'Junta de Andalucía',
-        fuenteFotografia: 'https://commons.wikimedia.org/wiki/File:2023-11-16_Gala_de_los_Latin_Grammy,_03_(cropped)02.jpg',
-        licencia: 'CC BY-SA 2.0',
-        fuenteLicencia: 'https://creativecommons.org/licenses/by-sa/2.0/',
-    },
-    {
-        nombre: 'Luisra',
-        origen: 'Artista destacado',
-        estilo: 'Canción destacada · «Princesa»',
-        historia: 'La canción «Princesa», que compartiste como referencia, es el punto de partida para conocer la propuesta musical de Luisra en esta selección.',
-        iniciales: 'LR',
-        fotografia: null,
-    },
-    {
-        nombre: 'Carlos Vives',
-        origen: 'Santa Marta, Colombia',
-        estilo: 'Vallenato · pop latino',
-        historia: 'Cantante, compositor y actor samario, Carlos Vives ayudó a acercar el vallenato a nuevas audiencias al mezclar sus raíces caribeñas con pop y rock. Su trayectoria conecta la música tradicional colombiana con sonidos contemporáneos.',
-        imagen: '/Imagenes/artistas/carlos-vives.jpg',
-        textoAlternativo: 'Carlos Vives en el Foro Económico Mundial sobre América Latina de 2010',
-        fotografia: 'World Economic Forum / Edgar Alberto Domínguez Cataño',
-        fuenteFotografia: 'https://commons.wikimedia.org/wiki/File:Carlos_Vives_-_World_Economic_Forum_on_Latin_America_2010.jpg',
-        licencia: 'CC BY-SA 2.0',
-        fuenteLicencia: 'https://creativecommons.org/licenses/by-sa/2.0/',
-    },
-    {
-        nombre: 'Andrés Cepeda',
-        origen: 'Bogotá, Colombia',
-        estilo: 'Pop · balada · bolero',
-        historia: 'El cantante y compositor bogotano inició su camino musical como voz principal de Poligamia. Después desarrolló una carrera solista que explora el pop romántico, la balada y el bolero.',
-        imagen: '/Imagenes/artistas/andres-cepeda.jpg',
-        textoAlternativo: 'Retrato de Andrés Cepeda',
-        fotografia: 'SonyCOL',
-        fuenteFotografia: 'https://commons.wikimedia.org/wiki/File:AndresCepeda2018TVA.jpg',
-        licencia: 'CC BY-SA 4.0',
-        fuenteLicencia: 'https://creativecommons.org/licenses/by-sa/4.0/',
-    },
-    {
-        nombre: 'Jean Carlos Centeno',
-        origen: 'Cabimas, Venezuela · carrera en Colombia',
-        estilo: 'Cantante · compositor',
-        historia: 'Nacido en Venezuela y criado en Colombia, Jean Carlos Centeno se hizo conocido como cantante y compositor de vallenato. Su etapa con el Binomio de Oro de América y su carrera solista lo consolidaron como una de las voces destacadas del género.',
-        imagen: '/Imagenes/artistas/jean-carlos-centeno.jpg',
-        textoAlternativo: 'Jean Carlos Centeno durante un concierto vallenato',
-        fotografia: 'Lulema07',
-        fuenteFotografia: 'https://commons.wikimedia.org/wiki/File:Concierto_vallenato_JCC.jpg',
-        licencia: 'CC BY-SA 4.0',
-        fuenteLicencia: 'https://creativecommons.org/licenses/by-sa/4.0/',
-    },
-];
-
-const productoresDestacados = [
-    {
-        nombre: 'Quincy Jones',
-        origen: 'Chicago, Estados Unidos',
-        estilo: 'Producción · arreglos · composición',
-        historia: 'Productor, compositor y arreglista cuya carrera abarcó más de siete décadas. Su trabajo con Michael Jackson en álbumes como Off the Wall, Thriller y Bad, además de su trayectoria en jazz, cine y televisión, lo convirtió en una figura clave de la música popular.',
-        imagen: '/Imagenes/productores/quincy-jones.jpg',
-        textoAlternativo: 'Quincy Jones sentado frente a un piano',
-        credito: 'Foto proporcionada por ti',
-    },
-    {
-        nombre: 'Sam Phillips',
-        origen: 'Florence, Alabama · Sun Studio, Memphis',
-        estilo: 'Rock and roll · Sun Records',
-        historia: 'Fundó Sun Records y Sun Studio en Memphis. Desde allí produjo las primeras grabaciones de Elvis Presley y trabajó con figuras como Johnny Cash, Jerry Lee Lewis, Carl Perkins y Howlin’ Wolf, dejando una huella decisiva en los inicios del rock and roll.',
-        imagen: '/Imagenes/productores/sam-phillips.jpg',
-        textoAlternativo: 'Sam Phillips con Elvis Presley y Bob Neal en 1955',
-        credito: 'The Cash Box Publishing Co., Inc.',
-        fuenteFoto: 'https://commons.wikimedia.org/wiki/File:Sam_Phillips_in_1955_(cropped).jpg',
-        licencia: 'Dominio público',
-    },
-    {
-        nombre: 'Phil Spector',
-        origen: 'Bronx, Nueva York',
-        estilo: 'Pop · arreglos orquestales',
-        historia: 'Productor y compositor estadounidense asociado con la técnica de producción conocida como «Wall of Sound». Sus densos arreglos y capas instrumentales marcaron grabaciones pop de los años sesenta y colaboraciones posteriores con distintos artistas.',
-        imagen: '/Imagenes/productores/phil-spector.jpg',
-        textoAlternativo: 'Retrato de Phil Spector en 1965',
-        credito: 'New York World-Telegram and Sun · Library of Congress',
-        fuenteFoto: 'https://commons.wikimedia.org/wiki/File:Phil_Spector_in_1965.jpg',
-        licencia: 'Dominio público',
-    },
-    {
-        nombre: 'George Martin',
-        origen: 'Londres, Inglaterra',
-        estilo: 'Producción · arreglos · experimentación',
-        historia: 'Productor, arreglista y músico inglés, es recordado por su estrecha colaboración con The Beatles. Sus conocimientos musicales y su apertura a nuevas técnicas de grabación ayudaron a dar forma al sonido de sus álbumes y a sus arreglos orquestales.',
-        imagen: '/Imagenes/productores/george-martin.jpg',
-        textoAlternativo: 'George Martin tras bambalinas del espectáculo The Beatles LOVE',
-        credito: 'Adamsharp',
-        fuenteFoto: 'https://commons.wikimedia.org/wiki/File:George_Martin_-_backstage_at_LOVE.jpg',
-        licencia: 'CC BY-SA 3.0',
-        fuenteLicencia: 'https://creativecommons.org/licenses/by-sa/3.0/',
-    },
-];
 
 export default function MenuPrincipal() {
     const { usuario } = useAuth();
     const rutasPermitidas = rutasPermitidasPorRol(usuario?.rol);
     const puedeGestionarSesiones = rutasPermitidas.includes(RUTAS.SESIONES);
-    const sesiones = SesionService.listar();
+    const [sesiones] = useSesiones();
     const sesionesActivas = sesiones.filter((sesion) =>
         ['confirmada', 'en_proceso'].includes(sesion.estado)
     ).length;

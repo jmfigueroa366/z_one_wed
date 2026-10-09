@@ -1,19 +1,16 @@
 // CAPA: Presentación
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
+import { useProductores } from '../hooks/useProductores.js';
 import { ProductorService } from '../services/productorService.js';
 import '../styles/productores.css';
 
 const ESPECIALIDADES = ['Grabación', 'Mezcla', 'Masterización', 'Producción musical'];
 
 export default function Productores() {
-    const [productores, setProductores] = useState([]);
+    const [productores] = useProductores();
     const [formulario, setFormulario] = useState({ nombre: '', especialidad: ESPECIALIDADES[0], imagen: '' });
     const [error, setError] = useState('');
     const [cargandoImagen, setCargandoImagen] = useState(false);
-
-    useEffect(() => {
-        setProductores(ProductorService.listar());
-    }, []);
 
     const manejarCambio = (event) => {
         const { name, value } = event.target;
@@ -63,8 +60,7 @@ export default function Productores() {
         setError('');
 
         try {
-            const productor = ProductorService.crear(formulario);
-            setProductores((actuales) => [...actuales, productor]);
+            ProductorService.crear(formulario);
             setFormulario({ nombre: '', especialidad: ESPECIALIDADES[0], imagen: '' });
             const campoImagen = document.getElementById('producer-image');
             if (campoImagen) campoImagen.value = '';

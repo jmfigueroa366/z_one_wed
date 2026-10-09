@@ -1,8 +1,8 @@
 // CAPA: Presentación
 import { useMemo } from 'react';
+import { useSesiones } from '../hooks/useSesiones.js';
+import { useSolicitudes } from '../hooks/useSolicitudes.js';
 import { EstadisticasService } from '../services/estadisticasService.js';
-import { sesionRepo } from '../repositories/sesionRepo.js';
-import { solicitudRepo } from '../repositories/solicitudRepo.js';
 import '../styles/estadisticas.css';
 
 const etiquetasEstado = {
@@ -16,9 +16,11 @@ const etiquetasEstado = {
 };
 
 export default function Estadisticas() {
-    const resumen = useMemo(() => EstadisticasService.obtenerResumen(), []);
-    const sesiones = useMemo(() => [...sesionRepo.listar()].slice(0, 5), []);
-    const solicitudes = useMemo(() => [...solicitudRepo.listar()].slice(0, 5), []);
+    const [sesiones] = useSesiones();
+    const [solicitudes] = useSolicitudes();
+    const resumen = useMemo(() => EstadisticasService.obtenerResumen(), [sesiones, solicitudes]);
+    const ultimasSesiones = useMemo(() => [...sesiones].slice(0, 5), [sesiones]);
+    const ultimasSolicitudes = useMemo(() => [...solicitudes].slice(0, 5), [solicitudes]);
 
     const cards = [
         { label: 'Sesiones totales', valor: resumen.totalSesiones, detalle: 'Registro del estudio' },
@@ -51,7 +53,7 @@ export default function Estadisticas() {
                         <h2>Sesiones recientes</h2>
                     </header>
                     <ul className="list-block">
-                        {sesiones.map((sesion) => (
+                        {ultimasSesiones.map((sesion) => (
                             <li key={sesion.id ?? `${sesion.titulo}-${sesion.fecha}`}>
                                 <div>
                                     <strong>{sesion.titulo}</strong>
@@ -70,7 +72,7 @@ export default function Estadisticas() {
                         <h2>Solicitudes activas</h2>
                     </header>
                     <ul className="list-block">
-                        {solicitudes.map((solicitud) => (
+                        {ultimasSolicitudes.map((solicitud) => (
                             <li key={solicitud.id ?? `${solicitud.colaborador_id}-${solicitud.fecha}`}>
                                 <div>
                                     <strong>Colaborador #{solicitud.colaborador_id}</strong>

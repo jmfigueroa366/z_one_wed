@@ -25,7 +25,7 @@ function duracionFranja(franja) {
 }
 
 export default function Solicitudes() {
-    const [solicitudes, setSolicitudes] = useSolicitudes();
+    const [solicitudes] = useSolicitudes();
     const [colaboradores] = useColaboradores();
     const [salas] = useSalas();
     const [filtroEstado, setFiltroEstado] = useState('abiertas');
@@ -58,9 +58,6 @@ export default function Solicitudes() {
                 throw new Error('No se encontró la solicitud. Actualiza la página e inténtalo de nuevo.');
             }
 
-            setSolicitudes((actuales) => actuales.map((solicitud) =>
-                String(solicitud.id) === String(id) ? solicitudActualizada : solicitud
-            ));
             setMensaje(`Solicitud actualizada: ${ETIQUETAS_ESTADO[estado]}.`);
         } catch (errorActualizacion) {
             setError(errorActualizacion instanceof Error ? errorActualizacion.message : 'No se pudo actualizar la solicitud.');

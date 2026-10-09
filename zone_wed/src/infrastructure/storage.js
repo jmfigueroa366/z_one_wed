@@ -1,4 +1,5 @@
 // CAPA: Infraestructura
+import { ReactiveStore } from './reactiveStore.js';
 
 const STORAGE_PREFIX = 'z_one_wed_';
 
@@ -26,6 +27,7 @@ export const Storage = {
         }
 
         storage.setItem(getKey(clave), JSON.stringify(valor));
+        ReactiveStore.notificar();
         return valor;
     },
 
@@ -64,6 +66,7 @@ export const Storage = {
         }
 
         storage.setItem(getKey(clave), JSON.stringify(valor));
+        ReactiveStore.notificar();
         return valor;
     },
 
