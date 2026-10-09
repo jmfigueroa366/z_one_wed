@@ -1,0 +1,359 @@
+/* CAPA: Presentación */
+.artists-page {
+    display: grid;
+    gap: 22px;
+}
+
+.artists-heading {
+    margin-bottom: 0;
+    padding-left: 18px;
+    border-left: 3px solid #f04fa6;
+}
+
+.artists-summary {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 14px;
+}
+
+.artists-summary > div {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 14px;
+    padding: 18px 20px;
+    background: rgba(27, 23, 40, 0.82);
+    border: 1px solid rgba(216, 203, 255, 0.11);
+    border-radius: 13px;
+}
+
+.artists-summary span {
+    color: #a69ebd;
+    font-size: 0.88rem;
+}
+
+.artists-summary strong {
+    color: #f2effb;
+    font-size: 1.55rem;
+}
+
+.artists-directory,
+.artists-registration {
+    display: grid;
+    gap: 18px;
+    padding: clamp(18px, 3vw, 24px);
+    background:
+        radial-gradient(ellipse at 92% 0%, rgba(227, 75, 166, 0.09), transparent 38%),
+        rgba(27, 23, 40, 0.82);
+    border: 1px solid rgba(216, 203, 255, 0.11);
+    border-radius: 15px;
+}
+
+.artists-section-heading {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 14px;
+}
+
+.artists-section-heading .workspace-eyebrow {
+    margin-bottom: 6px;
+}
+
+.artists-section-heading h2 {
+    margin: 0;
+    color: #f2effb;
+    font-size: 1.3rem;
+    letter-spacing: -0.025em;
+}
+
+.artists-count {
+    flex: 0 0 auto;
+    padding: 7px 10px;
+    color: #f0b3d6;
+    background: rgba(227, 75, 166, 0.1);
+    border: 1px solid rgba(227, 75, 166, 0.24);
+    border-radius: 999px;
+    font-size: 0.72rem;
+    font-weight: 750;
+}
+
+.artists-filters {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(190px, 0.4fr);
+    gap: 12px;
+}
+
+.artists-search,
+.artists-genre-filter,
+.artist-form-field {
+    display: grid;
+    min-width: 0;
+    gap: 7px;
+    color: #e6e0f2;
+    font-size: 0.86rem;
+    font-weight: 650;
+}
+
+.artists-search input,
+.artists-genre-filter select,
+.artist-form-field input:not([type="file"]),
+.artist-form-field select,
+.artist-image-field input[type="file"] {
+    width: 100%;
+    min-height: 42px;
+    padding: 10px 12px;
+    color: #f2effb;
+    background: #171322;
+    border: 1px solid rgba(216, 203, 255, 0.15);
+    border-radius: 9px;
+    font: inherit;
+}
+
+.artists-search input:focus,
+.artists-genre-filter select:focus,
+.artist-form-field input:focus,
+.artist-form-field select:focus {
+    outline: 2px solid rgba(240, 79, 166, 0.38);
+    outline-offset: 1px;
+}
+
+.artists-card-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 220px), 1fr));
+    gap: 15px;
+}
+
+.artist-directory-card {
+    min-width: 0;
+    overflow: hidden;
+    background: linear-gradient(155deg, rgba(39, 32, 57, 0.96), rgba(20, 17, 31, 0.96));
+    border: 1px solid rgba(216, 203, 255, 0.12);
+    border-radius: 13px;
+    animation: artist-directory-enter 500ms cubic-bezier(0.2, 0.75, 0.25, 1) both;
+    animation-delay: calc(var(--artist-index, 0) * 55ms);
+    transition: transform 180ms ease, border-color 180ms ease, box-shadow 180ms ease;
+}
+
+.artist-directory-card:hover {
+    transform: translateY(-3px);
+    border-color: rgba(240, 79, 166, 0.4);
+    box-shadow: 0 14px 30px rgba(7, 5, 13, 0.2);
+}
+
+.artist-directory-portrait {
+    position: relative;
+    display: grid;
+    height: 190px;
+    place-items: center;
+    overflow: hidden;
+    background:
+        radial-gradient(ellipse at 50% 15%, rgba(227, 75, 166, 0.3), transparent 54%),
+        linear-gradient(145deg, #2a1d3c, #15111f 76%);
+}
+
+.artist-directory-portrait-1 {
+    background:
+        radial-gradient(ellipse at 72% 20%, rgba(83, 147, 218, 0.32), transparent 54%),
+        linear-gradient(145deg, #202d43, #15111f 76%);
+}
+
+.artist-directory-portrait-2 {
+    background:
+        radial-gradient(ellipse at 22% 12%, rgba(192, 140, 232, 0.32), transparent 54%),
+        linear-gradient(145deg, #34243c, #15111f 76%);
+}
+
+.artist-directory-portrait-3 {
+    background:
+        radial-gradient(ellipse at 74% 15%, rgba(211, 166, 75, 0.29), transparent 54%),
+        linear-gradient(145deg, #393028, #15111f 76%);
+}
+
+.artist-directory-portrait img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.artist-directory-initials {
+    color: rgba(247, 244, 255, 0.9);
+    font-size: 4.7rem;
+    font-weight: 850;
+    letter-spacing: -0.1em;
+    line-height: 1;
+}
+
+.artist-directory-status {
+    position: absolute;
+    right: 10px;
+    bottom: 10px;
+    padding: 6px 8px;
+    color: #a5ecc4;
+    background: rgba(17, 18, 26, 0.84);
+    border: 1px solid rgba(70, 169, 116, 0.28);
+    border-radius: 999px;
+    font-size: 0.66rem;
+    font-weight: 750;
+}
+
+.artist-directory-status span {
+    margin-right: 4px;
+    font-size: 0.58rem;
+}
+
+.artist-directory-body {
+    display: grid;
+    justify-items: start;
+    gap: 8px;
+    padding: 16px;
+}
+
+.artist-directory-body .workspace-eyebrow {
+    margin: 0;
+    font-size: 0.65rem;
+}
+
+.artist-directory-body h3 {
+    overflow-wrap: anywhere;
+    margin: 0;
+    color: #f7f4ff;
+    font-size: 1.12rem;
+}
+
+.artist-directory-genre {
+    padding: 6px 9px;
+    color: #f0c5df;
+    background: rgba(227, 75, 166, 0.1);
+    border-radius: 999px;
+    font-size: 0.7rem;
+    font-weight: 700;
+}
+
+.artist-directory-account {
+    color: #8f87a4;
+    font-size: 0.72rem;
+}
+
+.artists-empty {
+    margin: 12px 0;
+    color: #a69ebd;
+    text-align: center;
+}
+
+.artist-form {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    align-items: start;
+    gap: 16px;
+}
+
+.artist-image-field {
+    grid-column: 1 / -1;
+}
+
+.artist-image-field input[type="file"] {
+    padding: 8px;
+    font-size: 0.81rem;
+}
+
+.artist-image-field input[type="file"]::file-selector-button {
+    margin-right: 10px;
+    padding: 7px 10px;
+    color: #f2effb;
+    background: rgba(227, 75, 166, 0.14);
+    border: 1px solid rgba(227, 75, 166, 0.35);
+    border-radius: 7px;
+    cursor: pointer;
+}
+
+.artist-image-hint {
+    color: #8f87a4;
+    font-size: 0.76rem;
+    font-weight: 400;
+    line-height: 1.5;
+}
+
+.artist-image-preview {
+    width: 112px;
+    height: 112px;
+    margin-top: 5px;
+    border: 1px solid rgba(216, 203, 255, 0.17);
+    border-radius: 12px;
+    object-fit: cover;
+}
+
+.artist-form-message {
+    grid-column: 1 / -1;
+    margin: 0;
+    font-size: 0.88rem;
+}
+
+.artist-form-error {
+    color: #ff9a9a;
+}
+
+.artist-form-success {
+    color: #9ce0bc;
+}
+
+.artist-submit {
+    width: fit-content;
+    min-height: 42px;
+    padding: 10px 16px;
+    color: #fff;
+    background: linear-gradient(135deg, #a477ff, #d84caa);
+    border: 0;
+    border-radius: 9px;
+    font: inherit;
+    font-size: 0.88rem;
+    font-weight: 750;
+    cursor: pointer;
+    transition: filter 160ms ease;
+}
+
+.artist-submit:hover:not(:disabled) {
+    filter: brightness(1.1);
+}
+
+.artist-submit:disabled {
+    opacity: 0.65;
+    cursor: wait;
+}
+
+@keyframes artist-directory-enter {
+    from {
+        opacity: 0;
+        transform: translateY(12px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@media (max-width: 650px) {
+    .artists-filters,
+    .artist-form {
+        grid-template-columns: 1fr;
+    }
+
+    .artist-image-field,
+    .artist-form-message {
+        grid-column: 1;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .artist-directory-card,
+    .artist-submit {
+        animation: none;
+        transition: none;
+    }
+
+    .artist-directory-card:hover {
+        transform: none;
+    }
+}

@@ -1,0 +1,99 @@
+/* CAPA: Presentación */
+.configuration-page .page-heading {
+    border-left: 3px solid #9ba8c8;
+    padding-left: 18px;
+}
+
+.configuration-card {
+    max-width: 860px;
+    padding: 24px;
+    background: rgba(27, 23, 40, 0.82);
+    border: 1px solid rgba(216, 203, 255, 0.11);
+    border-radius: 14px;
+}
+
+.configuration-section-heading {
+    margin-bottom: 18px;
+}
+
+.configuration-section-heading .workspace-eyebrow,
+.configuration-section-heading h2 {
+    margin-top: 0;
+}
+
+.configuration-section-heading h2 {
+    margin-bottom: 0;
+    color: #f2effb;
+    font-size: 1.25rem;
+}
+
+.field-accordion {
+    display: grid;
+    gap: 10px;
+}
+
+.field-panel {
+    overflow: hidden;
+    border: 1px solid rgba(216, 203, 255, 0.12);
+    border-radius: 10px;
+    background: rgba(255, 255, 255, 0.025);
+}
+
+.field-panel-heading {
+    margin: 0;
+}
+
+.field-toggle {
+    display: flex;
+    width: 100%;
+    align-items: center;
+    justify-content: space-between;
+    padding: 14px 16px;
+    color: #f2effb;
+    background: transparent;
+    border: 0;
+    font: inherit;
+    font-weight: 700;
+    text-align: left;
+    cursor: pointer;
+}
+
+.field-toggle:hover,
+.field-panel.is-open .field-toggle {
+    color: #c0a5ff;
+}
+
+.field-content {
+    padding: 2px 16px 16px;
+}
+
+.field-content label {
+    display: grid;
+    gap: 8px;
+    color: #c9c2d8;
+    font-size: 0.92rem;
+    font-weight: 600;
+}
+
+.field-content input,
+.field-content select {
+    width: 100%;
+    padding: 12px;
+    color: #f2effb;
+    background: #171322;
+    border: 1px solid rgba(216, 203, 255, 0.15);
+    border-radius: 8px;
+    font: inherit;
+}
+
+.field-content input:focus,
+.field-content select:focus {
+    outline: 2px solid rgba(164, 119, 255, 0.5);
+    outline-offset: 1px;
+}
+
+@media (max-width: 560px) {
+    .configuration-card {
+        padding: 18px;
+    }
+}

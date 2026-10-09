@@ -1,0 +1,5 @@
+/* CAPA: Presentación */
+.workspace-content[data-page="chatbot"] .page-heading {
+    border-left: 3px solid #5cc8c1;
+    padding-left: 18px;
+}

@@ -1,0 +1,196 @@
+// CAPA: Presentación
+import { useMemo, useState } from 'react';
+import { colaboradorRepo } from '../repositories/colaboradorRepo.js';
+import { salaRepo } from '../repositories/salaRepo.js';
+import { SolicitudService } from '../services/solicitudService.js';
+import '../styles/solicitudes.css';
+
+const ETIQUETAS_ESTADO = {
+    solicitud: 'Nueva',
+    en_negociacion: 'En negociación',
+    confirmada: 'Confirmada',
+    rechazada: 'Rechazada',
+    expirada: 'Expirada',
+};
+
+function formatearFecha(fecha) {
+    if (!fecha) return 'Fecha pendiente';
+    return new Intl.DateTimeFormat('es', {
+        weekday: 'short',
+        day: 'numeric',
+        month: 'short',
+        year: 'numeric',
+    }).format(new Date(`${fecha}T00:00:00`));
+}
+
+function duracionFranja(franja) {
+    const horas = String(franja ?? '').match(/(\d{1,2}):(\d{2})\s*-\s*(\d{1,2}):(\d{2})/);
+    if (!horas) return '';
+    const inicio = Number(horas[1]) * 60 + Number(horas[2]);
+    let fin = Number(horas[3]) * 60 + Number(horas[4]);
+    if (fin < inicio) fin += 24 * 60;
+    return Math.max(0, (fin - inicio) / 60);
+}
+
+export default function Solicitudes() {
+    const [solicitudes, setSolicitudes] = useState(() => SolicitudService.listar());
+    const [colaboradores] = useState(() => colaboradorRepo.listar());
+    const [salas] = useState(() => salaRepo.listar());
+    const [filtroEstado, setFiltroEstado] = useState('abiertas');
+    const [mensaje, setMensaje] = useState('');
+    const [error, setError] = useState('');
+    const [actualizando, setActualizando] = useState(null);
+
+    const solicitudesFiltradas = useMemo(() => [...solicitudes]
+        .filter((solicitud) => {
+            if (filtroEstado === 'abiertas') return ['solicitud', 'en_negociacion'].includes(solicitud.estado);
+            return filtroEstado === 'todas' || solicitud.estado === filtroEstado;
+        })
+        .sort((a, b) => String(a.fecha ?? '').localeCompare(String(b.fecha ?? ''))),
+    [solicitudes, filtroEstado]);
+
+    const obtenerColaborador = (id) =>
+        colaboradores.find((colaborador) => String(colaborador.id) === String(id))?.nombre ?? 'Sin colaborador asignado';
+
+    const obtenerSala = (id) =>
+        salas.find((sala) => String(sala.id) === String(id))?.nombre ?? 'Sala no disponible';
+
+    const cambiarEstado = (id, estado) => {
+        setError('');
+        setMensaje('');
+        setActualizando(id);
+
+        try {
+            const solicitudActualizada = SolicitudService.actualizarEstado(id, estado);
+            if (!solicitudActualizada) {
+                throw new Error('No se encontró la solicitud. Actualiza la página e inténtalo de nuevo.');
+            }
+
+            setSolicitudes((actuales) => actuales.map((solicitud) =>
+                String(solicitud.id) === String(id) ? solicitudActualizada : solicitud
+            ));
+            setMensaje(`Solicitud actualizada: ${ETIQUETAS_ESTADO[estado]}.`);
+        } catch (errorActualizacion) {
+            setError(errorActualizacion instanceof Error ? errorActualizacion.message : 'No se pudo actualizar la solicitud.');
+        } finally {
+            setActualizando(null);
+        }
+    };
+
+    return (
+        <main className="workspace-content operations-page" data-page="solicitudes">
+            <header className="page-heading operations-heading">
+                <p className="workspace-eyebrow">RESERVAS DEL ESTUDIO</p>
+                <h1>Solicitudes</h1>
+                <p>Revisa las solicitudes de cabinas y gestiona su negociación, confirmación o rechazo.</p>
+            </header>
+
+            <section className="operations-summary" aria-label="Resumen de solicitudes">
+                <article><span>Total de solicitudes</span><strong>{solicitudes.length}</strong></article>
+                <article><span>Por gestionar</span><strong>{solicitudes.filter((item) => ['solicitud', 'en_negociacion'].includes(item.estado)).length}</strong></article>
+                <article><span>Confirmadas</span><strong>{solicitudes.filter((item) => item.estado === 'confirmada').length}</strong></article>
+            </section>
+
+            {mensaje && <p className="operations-feedback" role="status">{mensaje}</p>}
+            {error && <p className="operations-feedback operations-feedback-error" role="alert">{error}</p>}
+
+            <section className="operations-panel" aria-labelledby="requests-list-title">
+                <div className="operations-panel-heading">
+                    <div>
+                        <p className="workspace-eyebrow">BANDEJA DE SOLICITUDES</p>
+                        <h2 id="requests-list-title">Reservas recibidas</h2>
+                    </div>
+                </div>
+
+                <div className="operations-filters" aria-label="Filtrar solicitudes">
+                    {[
+                        ['abiertas', 'Por gestionar'],
+                        ['todas', 'Todas'],
+                        ['confirmada', 'Confirmadas'],
+                        ['rechazada', 'Rechazadas'],
+                        ['expirada', 'Expiradas'],
+                    ].map(([estado, etiqueta]) => (
+                        <button
+                            className={filtroEstado === estado ? 'operations-filter is-active' : 'operations-filter'}
+                            key={estado}
+                            onClick={() => setFiltroEstado(estado)}
+                            type="button"
+                        >
+                            {etiqueta}
+                        </button>
+                    ))}
+                </div>
+
+                {solicitudesFiltradas.length ? (
+                    <div className="request-list">
+                        {solicitudesFiltradas.map((solicitud) => {
+                            const sala = salas.find((item) => String(item.id) === String(solicitud.sala_id));
+                            const horas = duracionFranja(solicitud.franja);
+                            const estimado = sala && horas ? sala.precio_hora * horas : null;
+                            const puedeGestionar = ['solicitud', 'en_negociacion'].includes(solicitud.estado);
+
+                            return (
+                                <article className="request-card" key={solicitud.id}>
+                                    <div className="request-card-main">
+                                        <div className="request-card-heading">
+                                            <div>
+                                                <p className="workspace-eyebrow">{formatearFecha(solicitud.fecha)}</p>
+                                                <h3>{obtenerColaborador(solicitud.colaborador_id)}</h3>
+                                            </div>
+                                            <span className={`operations-status status-${solicitud.estado}`}>
+                                                {ETIQUETAS_ESTADO[solicitud.estado] ?? solicitud.estado}
+                                            </span>
+                                        </div>
+                                        <div className="request-details">
+                                            <span><strong>Sala</strong>{obtenerSala(solicitud.sala_id)}</span>
+                                            <span><strong>Horario</strong>{solicitud.franja || 'Por coordinar'}</span>
+                                            {estimado !== null && (
+                                                <span><strong>Estimado de sala</strong>{new Intl.NumberFormat('es-CO', {
+                                                    style: 'currency',
+                                                    currency: 'COP',
+                                                    maximumFractionDigits: 0,
+                                                }).format(estimado)}</span>
+                                            )}
+                                        </div>
+                                        {puedeGestionar && (
+                                            <div className="request-actions" aria-label={`Acciones para solicitud de ${obtenerColaborador(solicitud.colaborador_id)}`}>
+                                                <button
+                                                    className="request-action request-action-primary"
+                                                    disabled={actualizando === solicitud.id}
+                                                    onClick={() => cambiarEstado(solicitud.id, 'confirmada')}
+                                                    type="button"
+                                                >
+                                                    Confirmar
+                                                </button>
+                                                {solicitud.estado === 'solicitud' && (
+                                                    <button
+                                                        className="request-action"
+                                                        disabled={actualizando === solicitud.id}
+                                                        onClick={() => cambiarEstado(solicitud.id, 'en_negociacion')}
+                                                        type="button"
+                                                    >
+                                                        Enviar a negociación
+                                                    </button>
+                                                )}
+                                                <button
+                                                    className="request-action request-action-danger"
+                                                    disabled={actualizando === solicitud.id}
+                                                    onClick={() => cambiarEstado(solicitud.id, 'rechazada')}
+                                                    type="button"
+                                                >
+                                                    Rechazar
+                                                </button>
+                                            </div>
+                                        )}
+                                    </div>
+                                </article>
+                            );
+                        })}
+                    </div>
+                ) : (
+                    <p className="operations-empty">No hay solicitudes en esta categoría.</p>
+                )}
+            </section>
+        </main>
+    );
+}
