@@ -14,8 +14,8 @@ const estilos = {
     campo: 'w-full rounded-lg border border-border bg-surface-2 px-3 py-2 text-texto outline-none transition placeholder:text-sutil focus:border-accent focus:ring-2 focus:ring-accent/40',
     etiqueta: 'mb-1 block text-xs font-semibold uppercase tracking-wider text-sutil',
     botonPrimario: 'rounded-lg bg-accent px-4 py-2 text-sm font-semibold text-bg transition hover:bg-accent/90 focus:outline-none focus:ring-2 focus:ring-accent/50',
+    botonSecundario: 'rounded-lg border border-border px-3 py-1.5 text-sm font-medium text-texto transition hover:border-accent/60 hover:text-accent',
     botonPeligro: 'rounded-lg border border-peligro/50 px-3 py-1.5 text-sm font-medium text-peligro transition hover:bg-peligro/10',
-    tarjeta: 'rounded-xl border border-border bg-surface p-4',
 };
 
 function duracionTexto(cancion) {
@@ -83,9 +83,11 @@ function PartesCancion({ cancion }) {
 
 export default function MisProyectos() {
     const { usuario } = useAuth();
+    const navigate = useNavigate();
     const [proyectos] = useProyectos(usuario?.id);
     const [proyectoActivoId, setProyectoActivoId] = useState(null);
     const [canciones] = useCanciones(proyectoActivoId);
+    const [partesAbierta, setPartesAbierta] = useState(null);
 
     const [nombreProyecto, setNombreProyecto] = useState('');
     const [nombreCancion, setNombreCancion] = useState('');
@@ -153,6 +155,12 @@ export default function MisProyectos() {
     const eliminarCancion = (cancion) => {
         CancionService.eliminar(cancion.id);
         setMensaje(`Canción "${cancion.nombre}" eliminada.`);
+    };
+
+    const solicitarGrabacion = (cancion) => {
+        navigate(RUTAS.SOLICITUDES, {
+            state: { grabacionPrevia: { cancion_id: cancion.id, proyecto_id: proyectoActivo?.id ?? null } },
+        });
     };
 
     return (
@@ -279,25 +287,52 @@ export default function MisProyectos() {
 
                             {canciones.length ? (
                                 <ul className="flex flex-col gap-2">
-                                    {canciones.map((cancion) => (
-                                        <li key={cancion.id} className="flex items-center justify-between gap-3 rounded-xl border border-border bg-surface-2 px-4 py-3">
-                                            <div className="flex items-center gap-3">
-                                                <span aria-hidden="true" className="text-lg text-accent">♪</span>
-                                                <div>
-                                                    <p className="font-medium text-texto">{cancion.nombre}</p>
-                                                    <p className="text-xs text-sutil">{duracionTexto(cancion) || 'Sin duración'}</p>
+                                    {canciones.map((cancion) => {
+                                        const cantPartes = (cancion.partes ?? []).length;
+                                        const partesVisible = partesAbierta === cancion.id;
+
+                                        return (
+                                            <li key={cancion.id} className="rounded-xl border border-border bg-surface-2 px-4 py-3">
+                                                <div className="flex items-center justify-between gap-3">
+                                                    <div className="flex items-center gap-3">
+                                                        <span aria-hidden="true" className="text-lg text-accent">♪</span>
+                                                        <div>
+                                                            <p className="font-medium text-texto">{cancion.nombre}</p>
+                                                            <p className="text-xs text-sutil">{duracionTexto(cancion) || 'Sin duración'}</p>
+                                                        </div>
+                                                    </div>
+                                                    <div className="flex shrink-0 items-center gap-2">
+                                                        <button
+                                                            className={estilos.botonPrimario}
+                                                            onClick={() => solicitarGrabacion(cancion)}
+                                                            type="button"
+                                                            aria-label={`Solicitar grabación de ${cancion.nombre}`}
+                                                        >
+                                                            Grabarla
+                                                        </button>
+                                                        <button
+                                                            className={estilos.botonSecundario}
+                                                            onClick={() => setPartesAbierta(partesVisible ? null : cancion.id)}
+                                                            type="button"
+                                                            aria-expanded={partesVisible}
+                                                            aria-label={`Partes de audio de ${cancion.nombre}`}
+                                                        >
+                                                            Partes{cantPartes > 0 ? ` (${cantPartes})` : ''}
+                                                        </button>
+                                                        <button
+                                                            className={estilos.botonPeligro}
+                                                            onClick={() => eliminarCancion(cancion)}
+                                                            type="button"
+                                                            aria-label={`Eliminar canción ${cancion.nombre}`}
+                                                        >
+                                                            Quitar
+                                                        </button>
+                                                    </div>
                                                 </div>
-                                            </div>
-                                            <button
-                                                className={estilos.botonPeligro}
-                                                onClick={() => eliminarCancion(cancion)}
-                                                type="button"
-                                                aria-label={`Eliminar canción ${cancion.nombre}`}
-                                            >
-                                                Quitar
-                                            </button>
-                                        </li>
-                                    ))}
+                                                {partesVisible && <PartesCancion cancion={cancion} />}
+                                            </li>
+                                        );
+                                    })}
                                 </ul>
                             ) : (
                                 <p className="rounded-xl border border-dashed border-border bg-surface/40 px-4 py-6 text-sm text-sutil">

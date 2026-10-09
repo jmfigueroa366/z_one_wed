@@ -3,7 +3,7 @@
 
 // Incrementa este valor cuando cambie SEED para que los navegadores
 // con datos antiguos se repueblen automáticamente.
-export const SEED_VERSION = '2026-10-08-2';
+export const SEED_VERSION = '2026-10-08-3';
 
 function fechaLocalISO(fecha) {
     return (
@@ -70,10 +70,10 @@ export const SEED = {
     ],
 
     canciones: [
-        { proyecto_id: 1, nombre: 'Amanecer', duracion: 3 },
-        { proyecto_id: 1, nombre: 'Ritmo del alma', duracion: 4 },
+        { proyecto_id: 1, nombre: 'Amanecer', duracion: 3, partes: ['Vocales', 'Guitarra', 'Batería', 'Coros'] },
+        { proyecto_id: 1, nombre: 'Ritmo del alma', duracion: 4, partes: ['Vocales', 'Bajo', 'Teclados'] },
         { proyecto_id: 1, nombre: 'Sin título', duracion: 2 },
-        { proyecto_id: 2, nombre: 'Noche azul', duracion: 3 },
+        { proyecto_id: 2, nombre: 'Noche azul', duracion: 3, partes: ['Voz', 'Teclados'] },
         { proyecto_id: 2, nombre: 'Contigo', duracion: 3 },
     ],
 

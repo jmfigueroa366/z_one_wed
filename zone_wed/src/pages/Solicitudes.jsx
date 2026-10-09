@@ -6,6 +6,7 @@ import { useColaboradores } from '../hooks/useColaboradores.js';
 import { useSalas } from '../hooks/useSalas.js';
 import { useSolicitudes } from '../hooks/useSolicitudes.js';
 import { SolicitudService } from '../services/solicitudService.js';
+import { CancionService } from '../services/cancionService.js';
 import { etiquetaEstado, etiquetaTipo, estimadoSala } from '../utils/solicitudes.js';
 import { formatearFecha, formatearMoneda } from '../utils/helpers.js';
 import MisSolicitudes from '../components/MisSolicitudes.jsx';
@@ -19,6 +20,8 @@ function BandejaSolicitudes() {
     const [mensaje, setMensaje] = useState('');
     const [error, setError] = useState('');
     const [actualizando, setActualizando] = useState(null);
+
+    const canciones = useMemo(() => CancionService.listar(), [solicitudes]);
 
     const solicitudesFiltradas = useMemo(() => [...solicitudes]
         .filter((solicitud) => {
@@ -36,6 +39,11 @@ function BandejaSolicitudes() {
 
     const nombreSolicitante = (solicitud) =>
         solicitud.solicitante_nombre ?? obtenerColaborador(solicitud.colaborador_id);
+
+    const nombreCancionDe = (solicitud) => {
+        if (!solicitud.cancion_id) return null;
+        return canciones.find((cancion) => String(cancion.id) === String(solicitud.cancion_id))?.nombre ?? 'Canción no encontrada';
+    };
 
     const cambiarEstado = (id, estado) => {
         setError('');
@@ -123,6 +131,12 @@ function BandejaSolicitudes() {
                                             <span><strong>Sala</strong>{obtenerSala(solicitud.sala_id)}</span>
                                             <span><strong>Tipo</strong>{etiquetaTipo(solicitud.tipo)}</span>
                                             <span><strong>Horario</strong>{solicitud.franja || 'Por coordinar'}</span>
+                                            {nombreCancionDe(solicitud) && (
+                                                <span><strong>Canción</strong>{nombreCancionDe(solicitud)}</span>
+                                            )}
+                                            {(solicitud.partes ?? []).length > 0 && (
+                                                <span><strong>Partes</strong>{solicitud.partes.join(', ')}</span>
+                                            )}
                                             {estimado !== null && (
                                                 <span><strong>Estimado de sala</strong>{formatearMoneda(estimado)}</span>
                                             )}
