@@ -1,0 +1,23 @@
+/* CAPA: Presentación
+   Estilos utilitarios con Tailwind v4 para pantallas nuevas.
+   Se importan SOLO en las secciones nuevas; sin preflight para
+   no alterar el diseño CSS existente. */
+
+@layer theme, components, utilities;
+@import "tailwindcss/theme.css" layer(theme);
+@import "tailwindcss/utilities.css" layer(utilities);
+
+@theme {
+    --color-bg: #100d1b;
+    --color-surface: #171527;
+    --color-surface-2: #211e38;
+    --color-surface-3: #2b2747;
+    --color-border: #2d2a45;
+    --color-accent: #a477ff;
+    --color-magenta: #f04fa6;
+    --color-texto: #f2effb;
+    --color-sutil: #a69ebd;
+    --color-exito: #7be0b0;
+    --color-peligro: #ff8a8a;
+    --color-aviso: #ffd166;
+}

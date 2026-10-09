@@ -97,6 +97,24 @@ export const Storage = {
         storage.removeItem(getKey(clave));
         return true;
     },
+
+    reiniciarSiVersionCambio(version) {
+        const claveVersion = getKey('seed_version');
+        const storage = getStorage('local');
+        if (!storage || storage.getItem(claveVersion) === version) {
+            return false;
+        }
+
+        for (let i = storage.length - 1; i >= 0; i--) {
+            const claveItem = storage.key(i);
+            if (claveItem && claveItem.startsWith(STORAGE_PREFIX)) {
+                storage.removeItem(claveItem);
+            }
+        }
+
+        storage.setItem(claveVersion, version);
+        return true;
+    },
 };
 
 export default Storage;

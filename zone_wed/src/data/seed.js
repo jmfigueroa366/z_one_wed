@@ -1,6 +1,10 @@
 // CAPA: Infraestructura
 // Datos iniciales; la persistencia se orquesta desde la capa de aplicación.
 
+// Incrementa este valor cuando cambie SEED para que los navegadores
+// con datos antiguos se repueblen automáticamente.
+export const SEED_VERSION = '2026-10-08-1';
+
 function fechaLocalISO(fecha) {
     return (
         fecha.getFullYear() + '-' +
@@ -40,14 +44,14 @@ export const SEED = {
     ],
 
     solicitudes: [
-        { colaborador_id: 1, sala_id: 1, fecha: enDias(0), franja: '10:00-12:00', estado: 'solicitud' },
-        { colaborador_id: 2, sala_id: 3, fecha: enDias(1), franja: '15:00-18:00', estado: 'en_negociacion' },
-        { colaborador_id: 3, sala_id: 2, fecha: enDias(2), franja: '09:00-11:00', estado: 'confirmada' },
-        { colaborador_id: 4, sala_id: 1, fecha: enDias(-1), franja: '14:00-16:00', estado: 'rechazada' },
-        { colaborador_id: 5, sala_id: 2, fecha: enDias(3), franja: '18:00-20:00', estado: 'solicitud' },
-        { colaborador_id: 1, sala_id: 3, fecha: enDias(-4), franja: '11:00-13:00', estado: 'confirmada' },
-        { colaborador_id: 3, sala_id: 1, fecha: enDias(-6), franja: '10:00-12:00', estado: 'expirada' },
-        { colaborador_id: 2, sala_id: 2, fecha: enDias(5), franja: '16:00-19:00', estado: 'en_negociacion' },
+        { colaborador_id: 1, usuario_id: 2, sala_id: 1, fecha: enDias(0), franja: '10:00-12:00', tipo: 'grabacion', estado: 'solicitud' },
+        { colaborador_id: 2, sala_id: 3, fecha: enDias(1), franja: '15:00-18:00', tipo: 'mezcla', estado: 'en_negociacion' },
+        { colaborador_id: 3, sala_id: 2, fecha: enDias(2), franja: '09:00-11:00', tipo: 'grabacion', estado: 'confirmada' },
+        { colaborador_id: 4, sala_id: 1, fecha: enDias(-1), franja: '14:00-16:00', tipo: 'produccion', estado: 'rechazada' },
+        { colaborador_id: 5, sala_id: 2, fecha: enDias(3), franja: '18:00-20:00', tipo: 'masterizacion', estado: 'solicitud' },
+        { colaborador_id: 1, usuario_id: 2, sala_id: 3, fecha: enDias(-4), franja: '11:00-13:00', tipo: 'ensayo', estado: 'confirmada' },
+        { colaborador_id: 3, sala_id: 1, fecha: enDias(-6), franja: '10:00-12:00', tipo: 'grabacion', estado: 'expirada' },
+        { colaborador_id: 2, sala_id: 2, fecha: enDias(5), franja: '16:00-19:00', tipo: 'mezcla', estado: 'en_negociacion' },
     ],
 
     sesiones: [
