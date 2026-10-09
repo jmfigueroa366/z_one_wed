@@ -19,19 +19,25 @@ Abre la URL que muestra Vite; la ruta inicial redirige a `/login`. También pued
 - `src/services/` contiene los casos de uso de aplicación.
 - `src/models/`, `src/config/` y `src/utils/` contienen el dominio.
 - `src/repositories/`, `src/infrastructure/` y `src/data/` contienen persistencia e infraestructura.
+- `src/styles/` agrupa el CSS por página y `public/Imagenes/` las imágenes servidas en `/Imagenes/...`.
 - `App.jsx` define las rutas React; `index.html` es el único documento de entrada de Vite.
-- Las pantallas y servicios siguen como esqueletos pendientes de migrar.
+
+## Estado de la migración
+
+La migración a React está prácticamente completa. Ya están implementadas las rutas, la autenticación con guards por rol, el layout del área de trabajo y las pantallas de Inicio, Agenda, Solicitudes, Artistas, Productores, Sesiones, Catálogo, Estadísticas, Permisos, Configuración, Login, Registro y la página pública. La pantalla de Chatbot permanece como vista preparada (`src/pages/Chatbot.jsx`) a la espera de conectar su interfaz con `chatbotService.js`.
+
+Se eliminaron los CSS e imágenes duplicados de la versión vanilla; toda la presentación usa `src/styles/` (CSS por página) y `public/Imagenes/` (imágenes).
 
 ## Cuentas de demostración
 
 | Perfil | Usuario | Contraseña |
 | --- | --- | --- |
 | Administrador | `admin@z-one.com` | `admin123` |
-| Coordinador | `coordinador@z-one.com` | `coordinador123` |
 | Colaborador | `lua@z-one.com` | `colab123` |
+| Colaborador | `mario@z-one.com` | `colab123` |
 | Cliente | `cliente@z-one.com` | `cliente123` |
 
-Las cuentas semilla se crean si no existen. El registro público permite Cliente y Colaborador; Administrador y Coordinador son perfiles de demostración, no seleccionables durante el registro.
+Las cuentas semilla se crean si no existen. El registro público permite Cliente y Colaborador; el Administrador es un perfil de demostración, no seleccionable durante el registro.
 
 ## Alcance y seguridad
 
