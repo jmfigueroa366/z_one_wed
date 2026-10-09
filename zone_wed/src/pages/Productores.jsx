@@ -1,5 +1,6 @@
 // CAPA: Presentación
 import { useState } from 'react';
+import RegistroGrabacionSesiones from '../components/RegistroGrabacionSesiones.jsx';
 import { useProductores } from '../hooks/useProductores.js';
 import { ProductorService } from '../services/productorService.js';
 import '../styles/productores.css';
@@ -11,6 +12,7 @@ export default function Productores() {
     const [formulario, setFormulario] = useState({ nombre: '', especialidad: ESPECIALIDADES[0], imagen: '' });
     const [error, setError] = useState('');
     const [cargandoImagen, setCargandoImagen] = useState(false);
+    const [productorGrabacion, setProductorGrabacion] = useState(null);
 
     const manejarCambio = (event) => {
         const { name, value } = event.target;
@@ -97,6 +99,13 @@ export default function Productores() {
                                 <div>
                                     <strong>{productor.nombre}</strong>
                                     <span>{productor.especialidad}</span>
+                                    <button
+                                        className="producer-record-action"
+                                        type="button"
+                                        onClick={() => setProductorGrabacion(productor)}
+                                    >
+                                        Grabar canción por sesiones
+                                    </button>
                                 </div>
                             </article>
                         ))}
@@ -156,6 +165,13 @@ export default function Productores() {
                     </button>
                 </form>
             </section>
+
+            {productorGrabacion && (
+                <RegistroGrabacionSesiones
+                    productor={productorGrabacion}
+                    onCerrar={() => setProductorGrabacion(null)}
+                />
+            )}
         </main>
     );
 }

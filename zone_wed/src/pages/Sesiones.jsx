@@ -4,6 +4,8 @@ import FormularioSesion from '../components/FormularioSesion.jsx';
 import { useColaboradores } from '../hooks/useColaboradores.js';
 import { useSalas } from '../hooks/useSalas.js';
 import { useSesiones } from '../hooks/useSesiones.js';
+import { CancionService } from '../services/cancionService.js';
+import { ProyectoService } from '../services/proyectoService.js';
 import { formatearFecha } from '../utils/helpers.js';
 import '../styles/sesiones.css';
 
@@ -37,6 +39,16 @@ export default function Sesiones() {
         salas.find((sala) => String(sala.id) === String(id))?.nombre ?? 'Sala no disponible';
     const obtenerNombreColaborador = (id) =>
         colaboradores.find((colaborador) => String(colaborador.id) === String(id))?.nombre ?? 'Sin asignar';
+
+    const canciones = useMemo(() => CancionService.listar(), []);
+    const proyectos = useMemo(() => ProyectoService.listar(), []);
+    const detalleCancion = (id) => {
+        const cancion = canciones.find((c) => String(c.id) === String(id));
+        if (!cancion) return null;
+        const proyecto = proyectos.find((p) => p.canciones?.some((cId) => String(cId) === String(cancion.id)));
+        const partes = Array.isArray(cancion.partes) && cancion.partes.length > 0 ? ` · ${cancion.partes.join(', ')}` : '';
+        return `${cancion.nombre}${proyecto ? ` · ${proyecto.nombre}` : ''}${partes}`;
+    };
 
     return (
         <main className="workspace-content sessions-content">
@@ -108,7 +120,17 @@ export default function Sesiones() {
                                                 <strong>{formatearFecha(sesion.fecha, { day: 'numeric' }) || 'Sin fecha'}</strong>
                                                 <span>{sesion.hora_inicio ?? '--:--'}–{sesion.hora_fin ?? '--:--'}</span>
                                             </td>
-                                            <td>{sesion.titulo || sesion.tipo || 'Sesión de estudio'}</td>
+                                            <td>
+                                                {sesion.titulo || sesion.tipo || 'Sesión de estudio'}
+                                                {obtenerDetalleCancion(sesion.cancion_id) && (
+                                                    <span className="sessions-cancion">
+                                                        {(() => {
+                                                            const [nombreCancion, nombreProyecto, partes] = obtenerDetalleCancion(sesion.cancion_id);
+                                                            return `${nombreCancion}${nombreProyecto ? ` · ${nombreProyecto}` : ''}${partes}`;
+                                                        })()}
+                                                    </span>
+                                                )}
+                                            </td>
                                             <td>{obtenerNombreSala(sesion.sala_id)}</td>
                                             <td>{obtenerNombreColaborador(sesion.colaborador_id)}</td>
                                             <td>

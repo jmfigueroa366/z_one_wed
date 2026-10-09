@@ -146,7 +146,28 @@
 .producer-record-card > div {
     display: grid;
     min-width: 0;
+    flex: 1;
     gap: 5px;
+}
+
+.producer-record-action {
+    width: fit-content;
+    margin-top: 3px;
+    padding: 6px 10px;
+    color: #d5cdec;
+    background: rgba(147, 101, 242, 0.12);
+    border: 1px solid rgba(164, 119, 255, 0.32);
+    border-radius: 8px;
+    font: inherit;
+    font-size: 0.74rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: border-color 0.16s ease, filter 0.16s ease;
+}
+
+.producer-record-action:hover {
+    border-color: #a477ff;
+    filter: brightness(1.12);
 }
 
 .producer-record-card strong {
