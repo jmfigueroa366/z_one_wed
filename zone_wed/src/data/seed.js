@@ -52,6 +52,7 @@ export const SEED = {
         { colaborador_id: 1, usuario_id: 2, sala_id: 3, fecha: enDias(-4), franja: '11:00-13:00', tipo: 'ensayo', estado: 'confirmada' },
         { colaborador_id: 3, sala_id: 1, fecha: enDias(-6), franja: '10:00-12:00', tipo: 'grabacion', estado: 'expirada' },
         { colaborador_id: 2, sala_id: 2, fecha: enDias(5), franja: '16:00-19:00', tipo: 'mezcla', estado: 'en_negociacion' },
+        { usuario_id: 3, solicitante_nombre: 'Cliente Demo', sala_id: 2, fecha: enDias(-3), franja: '14:00-16:00', tipo: 'grabacion', estado: 'confirmada', cancion_id: 1, proyecto_id: 1, partes: ['Vocales', 'Guitarra'] },
     ],
 
     sesiones: [

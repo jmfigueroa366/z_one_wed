@@ -10,6 +10,8 @@ test('crearSolicitud asigna tipo y estado por defecto', () => {
     assert.equal(solicitud.estado, 'solicitud');
     assert.equal(solicitud.usuario_id, null);
     assert.equal(solicitud.colaborador_id, null);
+    assert.equal(solicitud.cancion_id, null);
+    assert.deepEqual(solicitud.partes, []);
 });
 
 test('crearSolicitud conserva tipo, usuario y solicitante cuando se envían', () => {
@@ -22,4 +24,16 @@ test('crearSolicitud conserva tipo, usuario y solicitante cuando se envían', ()
     assert.equal(solicitud.usuario_id, 3);
     assert.equal(solicitud.solicitante_nombre, 'Cliente Demo');
     assert.equal(solicitud.tipo, TIPOS_SOLICITUD.MEZCLA);
+});
+
+test('crearSolicitud conserva canción, proyecto y partes de una grabación', () => {
+    const solicitud = crearSolicitud({
+        cancion_id: 1,
+        proyecto_id: 1,
+        partes: ['Vocales', 'Guitarra'],
+    });
+
+    assert.equal(solicitud.cancion_id, 1);
+    assert.equal(solicitud.proyecto_id, 1);
+    assert.deepEqual(solicitud.partes, ['Vocales', 'Guitarra']);
 });

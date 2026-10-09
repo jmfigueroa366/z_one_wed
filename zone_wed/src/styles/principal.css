@@ -477,6 +477,12 @@
     font-weight: 650;
 }
 
+.workspace-header-actions {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
 .workspace-logout {
     padding: 9px 14px;
     color: #f2effb;

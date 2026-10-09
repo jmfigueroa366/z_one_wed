@@ -59,3 +59,15 @@ test('canciones conservan nombre y duración opcional', () => {
     assert.equal(sinDuracion.duracion, null);
     assert.equal(CancionService.obtenerPorId(conDuracion.id).nombre, 'Amanecer');
 });
+
+test('canciones guardan partes de audio y permiten editarlas', () => {
+    const proyecto = ProyectoService.crear({ nombre: 'Demo', usuario_id: 10 });
+    const cancion = CancionService.crear({ proyecto_id: proyecto.id, nombre: 'Tema', partes: ['Vocales'] });
+    const simple = CancionService.crear({ proyecto_id: proyecto.id, nombre: 'Instrumental' });
+
+    assert.deepEqual(cancion.partes, ['Vocales']);
+    assert.deepEqual(simple.partes, []);
+
+    const editada = CancionService.actualizar(cancion.id, { partes: ['Vocales', 'Guitarra'] });
+    assert.deepEqual(editada.partes, ['Vocales', 'Guitarra']);
+});

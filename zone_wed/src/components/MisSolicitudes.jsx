@@ -5,11 +5,19 @@ import { useAuth } from '../context/AuthContext.jsx';
 import { useColaboradores } from '../hooks/useColaboradores.js';
 import { useSalas } from '../hooks/useSalas.js';
 import { useSolicitudes } from '../hooks/useSolicitudes.js';
+import { useSesiones } from '../hooks/useSesiones.js';
 import { useProyectos } from '../hooks/useProyectos.js';
 import { useCancionesDeUsuario } from '../hooks/useCanciones.js';
 import { SolicitudService } from '../services/solicitudService.js';
 import { TIPOS_SOLICITUD } from '../models/Solicitud.js';
-import { etiquetaEstado, etiquetaTipo, estimadoSala } from '../utils/solicitudes.js';
+import {
+    aMinutos,
+    etiquetaEstado,
+    etiquetaTipo,
+    estimadoSala,
+    franjasOcupadas,
+    seSolapan,
+} from '../utils/solicitudes.js';
 import { formatearFecha, formatearMoneda } from '../utils/helpers.js';
 import '../styles/tailwind.css';
 import '../styles/solicitudes.css';
@@ -23,12 +31,6 @@ const FORM_INICIAL = {
     cancion_id: '',
 };
 
-function aMinutos(hora) {
-    const partes = String(hora ?? '').split(':');
-    if (partes.length < 2) return NaN;
-    return Number(partes[0]) * 60 + Number(partes[1]);
-}
-
 const estilos = {
     campo: 'w-full rounded-lg border border-border bg-surface-2 px-3 py-2 text-texto outline-none transition focus:border-accent focus:ring-2 focus:ring-accent/40',
     etiqueta: 'mb-1 block text-xs font-semibold uppercase tracking-wider text-sutil',
@@ -41,6 +43,7 @@ export default function MisSolicitudes() {
     const location = useLocation();
     const [solicitudes] = useSolicitudes();
     const [salas] = useSalas(true);
+    const [sesiones] = useSesiones();
     const [colaboradores] = useColaboradores();
     const [proyectos] = useProyectos(usuario?.id);
     const [canciones] = useCancionesDeUsuario(usuario?.id);
@@ -76,7 +79,15 @@ export default function MisSolicitudes() {
     [solicitudes, usuario, colaborador]);
 
     const salaSeleccionada = salas.find((sala) => String(sala.id) === String(form.sala_id));
-    const estimado = estimadoSala(salaSeleccionada, `${form.hora_inicio}-${form.hora_fin}`);
+    const franjaPropuesta = `${form.hora_inicio}-${form.hora_fin}`;
+    const estimado = estimadoSala(salaSeleccionada, franjaPropuesta);
+
+    const ocupadas = useMemo(
+        () => franjasOcupadas({ fecha: form.fecha, salaId: form.sala_id, solicitudes, sesiones }),
+        [form.fecha, form.sala_id, solicitudes, sesiones]
+    );
+    const franjasEnConflicto = ocupadas.filter((franja) => seSolapan(franja, franjaPropuesta));
+    const tieneConflicto = Boolean(form.sala_id && form.fecha && franjasEnConflicto.length);
 
     const cambiarCampo = (campo, valor) => setForm((previo) => ({ ...previo, [campo]: valor }));
 
@@ -123,6 +134,11 @@ export default function MisSolicitudes() {
         const fin = aMinutos(form.hora_fin);
         if (!Number.isFinite(inicio) || !Number.isFinite(fin) || fin <= inicio) {
             setError('La franja horaria debe terminar después de comenzar.');
+            return;
+        }
+
+        if (tieneConflicto) {
+            setError(`La cabina ya está ocupada el ${formatearFecha(form.fecha)} en: ${franjasEnConflicto.join(', ')}. Elige otra franja.`);
             return;
         }
 
@@ -283,6 +299,40 @@ export default function MisSolicitudes() {
                             />
                         </label>
                     </div>
+
+                    {form.sala_id && form.fecha && (
+                        <div className="flex flex-col gap-2 rounded-lg border border-border bg-surface-2 px-4 py-3">
+                            <p className="text-xs font-semibold uppercase tracking-wider text-sutil">
+                                Disponibilidad · {obtenerSala(form.sala_id)} · {formatearFecha(form.fecha)}
+                            </p>
+                            {ocupadas.length ? (
+                                <div className="flex flex-wrap gap-2">
+                                    {ocupadas.map((franja) => {
+                                        const chocando = seSolapan(franja, franjaPropuesta);
+                                        return (
+                                            <span
+                                                key={franja}
+                                                className={`rounded-full px-2.5 py-1 text-xs ${
+                                                    chocando
+                                                        ? 'border border-peligro/40 bg-peligro/10 text-peligro'
+                                                        : 'border border-border bg-surface-3 text-sutil'
+                                                }`}
+                                            >
+                                                {franja} reservado
+                                            </span>
+                                        );
+                                    })}
+                                </div>
+                            ) : (
+                                <p className="text-sm text-exito">Sin reservas ese día. Cabina despejada.</p>
+                            )}
+                            {tieneConflicto && (
+                                <p className="text-sm text-peligro" role="alert">
+                                    Tu franja ({franjaPropuesta}) choca con la reserva indicada. Elige otra.
+                                </p>
+                            )}
+                        </div>
+                    )}
 
                     <div className="flex flex-wrap items-center justify-between gap-3">
                         {estimado !== null ? (
