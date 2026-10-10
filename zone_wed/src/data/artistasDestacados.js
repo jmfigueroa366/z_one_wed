@@ -56,6 +56,22 @@ export const artistasDestacados = [
         licencia: 'CC BY-SA 4.0',
         fuenteLicencia: 'https://creativecommons.org/licenses/by-sa/4.0/',
     },
+    {
+        nombre: 'Dua Lipa',
+        origen: 'Londres, Reino Unido',
+        estilo: 'Pop · dance-pop',
+        historia: 'Cantautora británica de origen kosovar-albanés, saltó a la fama con un pop bailable de producción nítida. Su sonido conecta el dance-pop europeo con colaboraciones globales y una presencia escénica inconfundible.',
+        iniciales: 'DL',
+        fotografia: null,
+    },
+    {
+        nombre: 'Sebastián Yatra',
+        origen: 'Medellín, Colombia',
+        estilo: 'Pop latino · balada',
+        historia: 'Cantante y actor medellinense, se dio a conocer con baladas románticas que pronto evolucionaron hacia un pop latino versátil. Ha combinado el registro emotivo con ritmos urbanos y colaboraciones internacionales.',
+        iniciales: 'SY',
+        fotografia: null,
+    },
 ];
 
 export default artistasDestacados;

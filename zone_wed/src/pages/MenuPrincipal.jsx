@@ -189,12 +189,12 @@ export default function MenuPrincipal() {
                 <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
                     {rutasPermitidas.includes(RUTAS.SESIONES) && (
                         <article className="flex flex-col rounded-2xl border border-border bg-white/[0.025] p-5 transition hover:border-accent/40">
-                            <h3 className="text-base font-bold text-texto">Producción</h3>
+                            <h3 className="text-base font-bold text-texto">Sesiones de grabación</h3>
                             <p className="mt-2 text-sm leading-6 text-sutil">
-                                Organiza tus sesiones y consulta la actividad del estudio.
+                                Crea, programa y registra las sesiones del estudio.
                             </p>
                             <Link className="mt-4 text-sm font-bold text-accent-soft transition hover:text-magenta" to={RUTAS.SESIONES}>
-                                Ir a sesiones <span aria-hidden="true">→</span>
+                                Ver sesiones <span aria-hidden="true">→</span>
                             </Link>
                         </article>
                     )}
@@ -236,7 +236,7 @@ export default function MenuPrincipal() {
                             </p>
                         </div>
                         <span className="rounded-full border border-accent-soft/30 px-3 py-1.5 text-[0.68rem] font-extrabold tracking-[0.1em] text-accent-soft">
-                            05 PERFILES
+                            {String(artistasDestacados.length).padStart(2, '0')} PERFILES
                         </span>
                     </div>
                     <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">

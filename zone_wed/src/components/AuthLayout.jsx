@@ -1,12 +1,13 @@
 // CAPA: Presentación
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import anime from 'animejs';
 import { EstadisticasService } from '../services/estadisticasService.js';
 import { salaRepo } from '../repositories/salaRepo.js';
 import { artistasDestacados } from '../data/artistasDestacados.js';
 import '../styles/tailwind.css';
 
-const ARTISTA = artistasDestacados.find((artista) => artista.imagen) ?? artistasDestacados[0];
+const ARTISTA_FALLBACK =
+    'radial-gradient(circle at 30% 20%, rgba(240, 79, 166, 0.38), transparent 55%), linear-gradient(150deg, #3a2a52, #171322 82%)';
 
 export const authCampo =
     'w-full min-h-[48px] rounded-xl border border-border bg-surface-2 px-4 text-sm text-texto outline-none transition [color-scheme:dark] placeholder:text-sutil/70 focus:border-accent focus:ring-2 focus:ring-accent/40 [&>option]:bg-surface-3 [&>option]:text-texto';
@@ -28,7 +29,40 @@ function obtenerMetricas() {
 export default function AuthLayout({ titulo, subtitulo, children }) {
     const panelRef = useRef(null);
     const tarjetaRef = useRef(null);
+    const retratoRef = useRef(null);
+    const [indiceArtista, setIndiceArtista] = useState(0);
     const metricas = obtenerMetricas();
+    const artistaActual = artistasDestacados[indiceArtista];
+
+    useEffect(() => {
+        if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+            return undefined;
+        }
+
+        const intervalo = setInterval(() => {
+            setIndiceArtista((indice) => (indice + 1) % artistasDestacados.length);
+        }, 5600);
+
+        return () => clearInterval(intervalo);
+    }, []);
+
+    useEffect(() => {
+        const nodo = retratoRef.current;
+        if (!nodo || window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+            return undefined;
+        }
+
+        const animacionRetrato = anime({
+            targets: nodo,
+            opacity: [0, 1],
+            translateX: [26, 0],
+            filter: ['blur(6px)', 'blur(0px)'],
+            duration: 620,
+            easing: 'easeOutCubic',
+        });
+
+        return () => animacionRetrato.pause();
+    }, [indiceArtista]);
 
     useEffect(() => {
         if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
@@ -93,17 +127,51 @@ export default function AuthLayout({ titulo, subtitulo, children }) {
                     data-anim
                     className="relative overflow-hidden rounded-2xl border border-border/80 shadow-2xl shadow-black/40"
                 >
-                    <img src={ARTISTA.imagen} alt={ARTISTA.textoAlternativo} className="h-56 w-full object-cover" />
-                    <div className="absolute inset-0 bg-gradient-to-t from-bg via-bg/30 to-transparent" />
+                    <div ref={retratoRef} className="relative will-change-transform">
+                        {artistaActual.imagen ? (
+                            <img
+                                src={artistaActual.imagen}
+                                alt={artistaActual.textoAlternativo}
+                                className="h-56 w-full object-cover"
+                            />
+                        ) : (
+                            <div
+                                className="grid h-56 w-full place-items-center"
+                                style={{ background: ARTISTA_FALLBACK }}
+                            >
+                                <span className="text-6xl font-black tracking-tight text-white/90">
+                                    {artistaActual.iniciales}
+                                </span>
+                            </div>
+                        )}
+                    </div>
+                    <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-bg via-bg/45 to-transparent" aria-hidden="true" />
+                    <div className="pointer-events-none absolute inset-0 bg-[#6b4bd6]/25 mix-blend-multiply" aria-hidden="true" />
                     <figcaption className="absolute inset-x-0 bottom-0 p-5">
                         <p className="text-[0.68rem] font-bold uppercase tracking-[0.22em] text-accent-soft">
                             Artista destacado
                         </p>
-                        <p className="mt-1 text-xl font-bold text-texto-soft">{ARTISTA.nombre}</p>
+                        <p className="mt-1 text-xl font-bold text-texto-soft">{artistaActual.nombre}</p>
                         <p className="text-xs text-sutil">
-                            {ARTISTA.origen} · {ARTISTA.estilo}
+                            {artistaActual.origen} · {artistaActual.estilo}
                         </p>
                     </figcaption>
+                    <div className="absolute right-4 top-4 flex gap-1.5 rounded-full bg-black/30 px-2 py-1.5 backdrop-blur">
+                        {artistasDestacados.map((artista, indice) => (
+                            <button
+                                key={artista.nombre}
+                                type="button"
+                                onClick={() => setIndiceArtista(indice)}
+                                aria-label={`Ver a ${artista.nombre}`}
+                                aria-pressed={indice === indiceArtista}
+                                className={
+                                    indice === indiceArtista
+                                        ? 'h-2 w-6 rounded-full bg-accent-soft transition-all'
+                                        : 'h-2 w-2 rounded-full bg-white/40 transition-all hover:bg-white/70'
+                                }
+                            />
+                        ))}
+                    </div>
                 </figure>
 
                 <div

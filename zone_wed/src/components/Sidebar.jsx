@@ -7,13 +7,13 @@ import '../styles/tailwind.css';
 
 const NAVEGACION = [
     { ruta: RUTAS.MENU_PRINCIPAL, etiqueta: 'Inicio' },
+    { ruta: RUTAS.SESIONES, etiqueta: 'Sesiones' },
     { ruta: RUTAS.AGENDA, etiqueta: 'Agenda' },
     { ruta: RUTAS.SOLICITUDES, etiqueta: 'Solicitudes' },
     { ruta: RUTAS.ARTISTAS, etiqueta: 'Artistas' },
     { ruta: RUTAS.PRODUCTORES, etiqueta: 'Productores' },
     { ruta: RUTAS.CATALOGO, etiqueta: 'Catálogo' },
     { ruta: RUTAS.PROYECTOS, etiqueta: 'Mis proyectos' },
-    { ruta: RUTAS.SESIONES, etiqueta: 'Sesiones' },
     { ruta: RUTAS.ESTADISTICAS, etiqueta: 'Estadísticas' },
     { ruta: RUTAS.PERMISOS, etiqueta: 'Permisos' },
     { ruta: RUTAS.CHATBOT, etiqueta: 'Chatbot' },
