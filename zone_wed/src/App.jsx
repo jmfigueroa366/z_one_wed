@@ -11,6 +11,7 @@ import MenuPrincipal from './pages/MenuPrincipal.jsx';
 import MisProyectos from './pages/MisProyectos.jsx';
 import Agenda from './pages/Agenda.jsx';
 import Artistas from './pages/Artistas.jsx';
+import Escuchar from './pages/Escuchar.jsx';
 import Catalogo from './pages/Catalogo.jsx';
 import Chatbot from './pages/Chatbot.jsx';
 import Configuracion from './pages/Configuracion.jsx';
@@ -35,6 +36,7 @@ export default function App() {
                         </ProtectedRoute>
                     }>
                         <Route path={RUTAS.MENU_PRINCIPAL} element={<MenuPrincipal />} />
+                        <Route path={RUTAS.ESTUDIO} element={<Escuchar />} />
                         <Route path={RUTAS.AGENDA} element={<Agenda />} />
                         <Route path={RUTAS.ARTISTAS} element={<Artistas />} />
                         <Route path={RUTAS.CATALOGO} element={<Catalogo />} />

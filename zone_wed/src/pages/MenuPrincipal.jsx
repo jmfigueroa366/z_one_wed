@@ -29,6 +29,10 @@ function Creditos({ item }) {
         );
     }
 
+    if (!item.credito && !item.licencia) {
+        return null;
+    }
+
     return (
         <p className="mt-auto pt-4 text-[0.68rem] leading-5 text-sutil/70">
             Foto: {item.credito}
@@ -206,6 +210,17 @@ export default function MenuPrincipal() {
                             </p>
                             <Link className="mt-4 text-sm font-bold text-accent-soft transition hover:text-magenta" to={RUTAS.AGENDA}>
                                 Abrir agenda <span aria-hidden="true">→</span>
+                            </Link>
+                        </article>
+                    )}
+                    {rutasPermitidas.includes(RUTAS.ESTUDIO) && (
+                        <article className="flex flex-col rounded-2xl border border-border bg-white/[0.025] p-5 transition hover:border-accent/40">
+                            <h3 className="text-base font-bold text-texto">Escuchar artistas</h3>
+                            <p className="mt-2 text-sm leading-6 text-sutil">
+                                Reproduce las canciones de los artistas destacados del estudio.
+                            </p>
+                            <Link className="mt-4 text-sm font-bold text-accent-soft transition hover:text-magenta" to={RUTAS.ESTUDIO}>
+                                Abrir reproductor <span aria-hidden="true">→</span>
                             </Link>
                         </article>
                     )}
