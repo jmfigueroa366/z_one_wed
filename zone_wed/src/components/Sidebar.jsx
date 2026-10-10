@@ -124,9 +124,11 @@ export default function Sidebar({ colapsado, onAlternar, movilAbierto, onCerrarM
                         aria-label="Z-ONE inicio"
                         onClick={onCerrarMovil}
                     >
-                        <img src="/Imagenes/logo.png" alt="" className="h-9 w-9 shrink-0 object-contain" />
                         <span className={`text-2xl font-extrabold leading-none tracking-tight text-texto-soft ${colapsado ? 'lg:hidden' : ''}`}>
                             <span className="text-magenta">Z</span>-ONE
+                        </span>
+                        <span className={`hidden text-2xl font-extrabold leading-none tracking-tight text-texto-soft ${colapsado ? 'lg:inline-block' : ''}`}>
+                            <span className="text-magenta">Z</span>
                         </span>
                     </Link>
 

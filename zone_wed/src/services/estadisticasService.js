@@ -139,6 +139,25 @@ export const EstadisticasService = {
         const maxDia = Math.max(1, ...conteoDias.map((item) => item.valor));
         const diaPico = [...conteoDias].sort((a, b) => b.valor - a.valor)[0];
 
+        const SLOTS_CALOR = [
+            { inicio: 6, fin: 10, etiqueta: '06–10' },
+            { inicio: 10, fin: 13, etiqueta: '10–13' },
+            { inicio: 13, fin: 16, etiqueta: '13–16' },
+            { inicio: 16, fin: 19, etiqueta: '16–19' },
+            { inicio: 19, fin: 22, etiqueta: '19–22' },
+        ];
+        const celdasCalor = ORDEN_DIAS.map(() => SLOTS_CALOR.map(() => 0));
+        sesiones.forEach((sesion) => {
+            const indiceDia = diaSemana(sesion.fecha);
+            if (indiceDia === null) return;
+            const fila = ORDEN_DIAS.indexOf(indiceDia);
+            if (fila < 0) return;
+            const hora = aMinutos(sesion.hora_inicio) / 60;
+            const columna = SLOTS_CALOR.findIndex((slot) => hora >= slot.inicio && hora < slot.fin);
+            if (columna >= 0) celdasCalor[fila][columna] += 1;
+        });
+        const maxCalor = Math.max(1, ...celdasCalor.flat());
+
         const ingresos = { total: 0, cobrado: 0, porCobrar: 0, borrador: 0 };
         const ingresosPorEstadoMapa = new Map();
         ordenes.forEach((orden) => {
@@ -211,6 +230,12 @@ export const EstadisticasService = {
             maxColaborador,
             conteoDias,
             maxDia,
+            mapaCalor: {
+                filas: ORDEN_DIAS.map((indice) => DIAS[indice]),
+                columnas: SLOTS_CALOR.map((slot) => slot.etiqueta),
+                celdas: celdasCalor,
+                max: maxCalor,
+            },
             ordenes: { ...ingresos, porEstado: [...ingresosPorEstadoMapa.entries()].map(([estado, valor]) => ({ estado, valor })) },
             indice: { valor: indiceActividad, descriptor: describirIndice(indiceActividad), componentes: { intensidad, comercial, conversion } },
             insights: insightDefecto,

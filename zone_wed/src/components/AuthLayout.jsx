@@ -103,7 +103,6 @@ export default function AuthLayout({ titulo, subtitulo, children }) {
                 }}
             >
                 <div className="flex items-center gap-3" data-anim>
-                    <img src="/Imagenes/logo.png" alt="" className="h-12 w-12 object-contain" />
                     <div>
                         <p className="text-2xl font-extrabold leading-none tracking-tight">Z-ONE</p>
                         <p className="mt-1 text-[0.7rem] font-semibold uppercase tracking-[0.28em] text-sutil">
@@ -206,7 +205,6 @@ export default function AuthLayout({ titulo, subtitulo, children }) {
             <section className="flex items-center justify-center p-6 sm:p-10">
                 <div ref={tarjetaRef} className="w-full max-w-md">
                     <div className="mb-8 flex items-center gap-3 lg:hidden">
-                        <img src="/Imagenes/logo.png" alt="" className="h-11 w-11 object-contain" />
                         <span className="text-xl font-extrabold tracking-tight">Z-ONE</span>
                     </div>
 

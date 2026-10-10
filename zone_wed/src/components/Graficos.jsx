@@ -1,5 +1,5 @@
 // CAPA: Presentación
-import { useEffect, useLayoutEffect, useRef } from 'react';
+import { Fragment, useEffect, useLayoutEffect, useRef } from 'react';
 import anime from 'animejs';
 
 const MENOS_MOVIMIENTO = () =>
@@ -259,4 +259,69 @@ export function Anillo({ valor, etiqueta, subetiqueta, tamano = 200, grosor = 16
     );
 }
 
-export default { Donut, BarrasHorizontales, ColumnasDias, Anillo, PALETA };
+export function MapaCalor({ filas, columnas, celdas, max }) {
+    const ref = useRef(null);
+    const tope = Math.max(1, max || 1);
+
+    useEffect(() => {
+        const nodos = ref.current?.querySelectorAll('[data-celda]');
+        if (!nodos || nodos.length === 0 || MENOS_MOVIMIENTO()) return undefined;
+        const animacion = anime({
+            targets: nodos,
+            opacity: [0, 1],
+            scale: [0.55, 1],
+            duration: 520,
+            delay: anime.stagger(16, { grid: [filas.length, columnas.length], from: 'first' }),
+            easing: 'easeOutBack',
+        });
+        return () => animacion.pause();
+    }, [celdas, filas.length, columnas.length]);
+
+    return (
+        <div ref={ref} className="overflow-x-auto">
+            <div
+                className="grid min-w-[420px] gap-1.5"
+                style={{ gridTemplateColumns: `auto repeat(${columnas.length}, minmax(0, 1fr))` }}
+            >
+                <span aria-hidden="true" />
+                {columnas.map((columna) => (
+                    <span key={columna} className="text-center text-[0.62rem] font-bold uppercase tracking-wider text-sutil">
+                        {columna}
+                    </span>
+                ))}
+                {filas.map((fila, i) => (
+                    <Fragment key={fila}>
+                        <span className="pr-1.5 text-right text-[0.68rem] font-semibold text-sutil">{fila}</span>
+                        {columnas.map((columna, j) => {
+                            const valor = celdas[i]?.[j] ?? 0;
+                            const intensidad = valor / tope;
+                            const vacio = valor === 0;
+                            return (
+                                <span
+                                    key={`${fila}-${columna}`}
+                                    data-celda
+                                    title={`${fila} ${columna} · ${valor} sesión(es)`}
+                                    className="grid aspect-square place-items-center rounded-lg border text-[0.7rem] font-bold transition hover:scale-[1.08]"
+                                    style={
+                                        vacio
+                                            ? { background: 'rgba(255,255,255,0.03)', borderColor: 'rgba(255,255,255,0.05)', color: '#7c7490' }
+                                            : {
+                                                background: `linear-gradient(135deg, rgba(147,101,242,${0.22 + intensidad * 0.7}), rgba(240,79,166,${0.16 + intensidad * 0.74}))`,
+                                                borderColor: 'rgba(192,148,255,0.4)',
+                                                color: intensidad > 0.45 ? '#ffffff' : '#e8e2ff',
+                                                boxShadow: intensidad > 0.6 ? '0 0 16px rgba(240,79,166,0.35)' : 'none',
+                                            }
+                                    }
+                                >
+                                    {valor || ''}
+                                </span>
+                            );
+                        })}
+                    </Fragment>
+                ))}
+            </div>
+        </div>
+    );
+}
+
+export default { Donut, BarrasHorizontales, ColumnasDias, Anillo, MapaCalor, PALETA };
