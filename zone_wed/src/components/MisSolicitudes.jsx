@@ -19,7 +19,7 @@ import {
     seSolapan,
 } from '../utils/solicitudes.js';
 import { formatearFecha, formatearMoneda } from '../utils/helpers.js';
-import { clasePillEstado } from '../styles/clases.js';
+import { BOTON_PRIMARIO, clasePillEstado } from '../styles/clases.js';
 import '../styles/tailwind.css';
 
 const FORM_INICIAL = {
@@ -171,7 +171,8 @@ export default function MisSolicitudes() {
 
     return (
         <main className="workspace-content" data-page="mis-solicitudes">
-            <header className="page-heading">
+            <header className="page-heading relative border-l-4 border-accent pl-4">
+                <div aria-hidden="true" className="pointer-events-none absolute -top-20 right-24 h-52 w-52 animate-aurora rounded-full bg-[#9365f2]/18 blur-3xl" />
                 <p className="workspace-eyebrow">RESERVAS DEL ESTUDIO</p>
                 <h1>Mis solicitudes</h1>
                 <p>Solicita una cabina para grabar, mezclar, masterizar, ensayar o producir. El administrador la confirmará.</p>
@@ -180,8 +181,14 @@ export default function MisSolicitudes() {
             {mensaje && <p className="mt-4 rounded-xl border border-exito/30 bg-exito/10 px-4 py-3 text-sm text-exito-soft" role="status">{mensaje}</p>}
             {error && <p className="mt-4 rounded-xl border border-peligro/30 bg-peligro/10 px-4 py-3 text-sm text-peligro-soft" role="alert">{error}</p>}
 
-            <section className="mx-auto mb-8 max-w-3xl rounded-2xl border border-border bg-surface p-6 shadow-lg shadow-black/20">
-                <h2 className="mb-4 text-xl font-semibold text-texto">Nueva solicitud</h2>
+            <section className="mx-auto mb-8 max-w-4xl rounded-[2rem] border border-border bg-surface/60 p-6 shadow-lg shadow-black/20 backdrop-blur sm:p-7">
+                <div className="mb-5 flex items-center gap-3">
+                    <span className="grid h-11 w-11 place-items-center rounded-2xl bg-gradient-to-br from-[#9365f2] to-[#e34ba6] text-lg text-white" aria-hidden="true">✎</span>
+                    <div>
+                        <p className="workspace-eyebrow">NUEVA RESERVA</p>
+                        <h2 className="text-xl font-bold tracking-tight text-texto-soft">Nueva solicitud</h2>
+                    </div>
+                </div>
                 <form className="grid gap-5" onSubmit={enviar} aria-label="Crear solicitud de cabina">
                     <div className="grid gap-5 sm:grid-cols-2">
                         <label className="flex flex-col">
@@ -343,7 +350,7 @@ export default function MisSolicitudes() {
                             <p className="text-sm text-sutil">La franja te dará un estimado del costo.</p>
                         )}
                         <button
-                            className="rounded-lg bg-accent px-5 py-2 font-semibold text-bg transition hover:bg-accent/90 focus:outline-none focus:ring-2 focus:ring-accent/50"
+                            className={BOTON_PRIMARIO}
                             type="submit"
                         >
                             Enviar solicitud
@@ -352,7 +359,7 @@ export default function MisSolicitudes() {
                 </form>
             </section>
 
-            <section className="mx-auto max-w-3xl" aria-labelledby="mis-solicitudes-title">
+            <section className="mx-auto max-w-4xl" aria-labelledby="mis-solicitudes-title">
                 <div className="mb-4 flex items-center justify-between">
                     <div>
                         <p className="workspace-eyebrow">HISTORIAL</p>
@@ -367,7 +374,8 @@ export default function MisSolicitudes() {
                             const estimado = estimadoSala(sala, solicitud.franja);
 
                             return (
-                                <article className="rounded-2xl border border-border bg-white/[0.02] p-5" key={solicitud.id}>
+                                <article className="relative overflow-hidden rounded-2xl border border-border bg-white/[0.02] p-5 transition hover:border-accent/40" key={solicitud.id}>
+                                    <span aria-hidden="true" className="absolute inset-y-0 left-0 w-1 bg-gradient-to-b from-[#9365f2] to-[#e34ba6]" />
                                     <div>
                                         <div className="flex flex-wrap items-start justify-between gap-3">
                                             <div>

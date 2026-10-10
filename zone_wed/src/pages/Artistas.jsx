@@ -7,6 +7,9 @@ import { useArtistas } from '../hooks/useArtistas.js';
 import { CAMPO, ETIQUETA } from '../styles/clases.js';
 import '../styles/tailwind.css';
 
+const MENOS_MOVIMIENTO = () =>
+    typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
 export default function Artistas() {
     const [artistas] = useArtistas();
     const [busqueda, setBusqueda] = useState('');
@@ -26,7 +29,7 @@ export default function Artistas() {
 
     useEffect(() => {
         const grid = gridRef.current;
-        if (!grid || window.matchMedia('(prefers-reduced-motion: reduce)').matches) return undefined;
+        if (!grid || MENOS_MOVIMIENTO()) return undefined;
 
         const animacion = anime({
             targets: grid.children,
@@ -48,18 +51,61 @@ export default function Artistas() {
                 <p>Conoce a las voces vinculadas al estudio y organiza sus perfiles para próximas sesiones.</p>
             </header>
 
-            <section className="mt-6 grid gap-4 sm:grid-cols-2" aria-label="Resumen de artistas">
-                <div className="rounded-2xl border border-border bg-surface/70 px-5 py-4">
-                    <span className="text-sm text-sutil">Artistas activos</span>
-                    <strong className="mt-1 block text-3xl font-black text-texto-soft">{artistas.length}</strong>
+            <section
+                className="relative mt-6 overflow-hidden rounded-[2rem] border border-magenta/25 p-6 sm:p-8"
+                style={{
+                    background:
+                        'radial-gradient(ellipse at 88% 8%, rgba(240, 79, 166, 0.3), transparent 48%), linear-gradient(120deg, rgba(111, 75, 187, 0.34), rgba(23, 19, 34, 0.97) 72%)',
+                }}
+            >
+                <div aria-hidden="true" className="pointer-events-none absolute -right-12 -top-24 h-60 w-60 animate-aurora rounded-full bg-[#e34ba6]/25 blur-3xl" />
+                <div aria-hidden="true" className="pointer-events-none absolute right-8 top-1/2 hidden -translate-y-1/2 select-none text-[10rem] font-black leading-none tracking-tighter text-white/[0.04] lg:block">
+                    ♪
                 </div>
-                <div className="rounded-2xl border border-border bg-surface/70 px-5 py-4">
-                    <span className="text-sm text-sutil">Géneros y estilos</span>
-                    <strong className="mt-1 block text-3xl font-black text-accent-soft">{generos.length}</strong>
+                <div className="relative">
+                    <p className="workspace-eyebrow">VOCES DEL ESTUDIO</p>
+                    <h2 className="mt-1 text-3xl font-extrabold tracking-tight text-texto-soft sm:text-4xl">
+                        El talento que da vida al sonido.
+                    </h2>
+                    <p className="mt-3 max-w-xl text-sm leading-7 text-sutil">
+                        Artistas vinculados a Z-ONE listos para grabar, ensayar y producir. Explora por estilo y encuentra la próxima voz de tu proyecto.
+                    </p>
+                    <div className="mt-6 flex flex-wrap items-center gap-4">
+                        <div className="rounded-2xl border border-white/10 bg-black/20 px-4 py-3">
+                            <span className="block text-[0.62rem] font-bold uppercase tracking-[0.12em] text-sutil">Artistas activos</span>
+                            <strong className="text-2xl font-black text-texto-soft">{String(artistas.length).padStart(2, '0')}</strong>
+                        </div>
+                        <div className="rounded-2xl border border-white/10 bg-black/20 px-4 py-3">
+                            <span className="block text-[0.62rem] font-bold uppercase tracking-[0.12em] text-sutil">Géneros y estilos</span>
+                            <strong className="text-2xl font-black text-accent-soft">{String(generos.length).padStart(2, '0')}</strong>
+                        </div>
+                    </div>
+                    {generos.length > 0 && (
+                        <div className="mt-5 flex flex-wrap gap-2">
+                            {['Todos', ...generos].map((genero) => {
+                                const activo = filtroGenero === genero;
+                                return (
+                                    <button
+                                        key={genero}
+                                        type="button"
+                                        onClick={() => setFiltroGenero(genero)}
+                                        aria-pressed={activo}
+                                        className={
+                                            activo
+                                                ? 'rounded-full border border-accent/60 bg-gradient-to-r from-[#9365f2]/50 to-[#e34ba6]/40 px-3.5 py-1.5 text-xs font-bold text-white transition'
+                                                : 'rounded-full border border-border bg-white/[0.04] px-3.5 py-1.5 text-xs font-medium text-sutil transition hover:border-accent/50 hover:text-texto'
+                                        }
+                                    >
+                                        {genero}
+                                    </button>
+                                );
+                            })}
+                        </div>
+                    )}
                 </div>
             </section>
 
-            <section className="mt-6 rounded-3xl border border-border bg-surface/70 p-6" aria-labelledby="artists-directory-title">
+            <section className="mt-6 rounded-[2rem] border border-border bg-surface/60 p-6 backdrop-blur" aria-labelledby="artists-directory-title">
                 <div className="flex flex-wrap items-end justify-between gap-4">
                     <div>
                         <p className="workspace-eyebrow">DIRECTORIO</p>
@@ -99,7 +145,7 @@ export default function Artistas() {
                         ))}
                     </div>
                 ) : (
-                    <p className="py-4 text-center text-sutil">No hay artistas que coincidan con la búsqueda.</p>
+                    <p className="mt-5 py-6 text-center text-sutil">No hay artistas que coincidan con la búsqueda.</p>
                 )}
             </section>
 
