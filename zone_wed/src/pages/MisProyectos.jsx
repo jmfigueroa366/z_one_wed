@@ -1,6 +1,7 @@
 // CAPA: Presentación
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import anime from 'animejs';
 import { useAuth } from '../context/AuthContext.jsx';
 import { RUTAS } from '../config/rutas.js';
 import { useProyectos } from '../hooks/useProyectos.js';
@@ -8,19 +9,15 @@ import { useCanciones } from '../hooks/useCanciones.js';
 import { ProyectoService } from '../services/proyectoService.js';
 import { CancionService } from '../services/cancionService.js';
 import AudioCancion from '../components/AudioCancion.jsx';
+import { CAMPO, ETIQUETA, BOTON_PRIMARIO, BOTON_SECUNDARIO, BOTON_PELIGRO } from '../styles/clases.js';
 import { formatearFecha } from '../utils/helpers.js';
 import '../styles/tailwind.css';
 
-const estilos = {
-    campo: 'w-full rounded-lg border border-border bg-surface-2 px-3 py-2 text-texto outline-none transition placeholder:text-sutil focus:border-accent focus:ring-2 focus:ring-accent/40',
-    etiqueta: 'mb-1 block text-xs font-semibold uppercase tracking-wider text-sutil',
-    botonPrimario: 'rounded-lg bg-accent px-4 py-2 text-sm font-semibold text-bg transition hover:bg-accent/90 focus:outline-none focus:ring-2 focus:ring-accent/50',
-    botonSecundario: 'rounded-lg border border-border px-3 py-1.5 text-sm font-medium text-texto transition hover:border-accent/60 hover:text-accent',
-    botonPeligro: 'rounded-lg border border-peligro/50 px-3 py-1.5 text-sm font-medium text-peligro transition hover:bg-peligro/10',
-};
+const MENOS_MOVIMIENTO = () =>
+    typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
 function duracionTexto(cancion) {
-    if (!cancion.duracion) return '';
+    if (!cancion.duracion) return 'Sin duración';
     return `${cancion.duracion} min`;
 }
 
@@ -44,7 +41,7 @@ function PartesCancion({ cancion }) {
     };
 
     return (
-        <div className="mt-3 border-t border-border pt-3">
+        <div className="mt-4 border-t border-border pt-4">
             {partes.length ? (
                 <div className="flex flex-wrap gap-2">
                     {partes.map((parte) => (
@@ -66,17 +63,17 @@ function PartesCancion({ cancion }) {
                 </div>
             ) : (
                 <p className="text-xs text-sutil">
-                    Sin partes definidas. Añade lo que grabarás en el estudio (ej. Vocales, Guitarra, Batería), así el estudio divide la grabación por cada audio.
+                    Sin partes definidas. Añade lo que grabarás (ej. Vocales, Guitarra, Batería) para dividir la grabación por cada audio.
                 </p>
             )}
             <form className="mt-3 flex gap-2" onSubmit={agregar} aria-label="Agregar parte de audio">
                 <input
-                    className={`${estilos.campo} flex-1 text-sm`}
+                    className={`${CAMPO} flex-1`}
                     placeholder="Nueva parte (ej. Coros)"
                     value={nuevaParte}
                     onChange={(evento) => setNuevaParte(evento.target.value)}
                 />
-                <button className={`${estilos.botonPrimario} shrink-0`} type="submit">Agregar</button>
+                <button className={`${BOTON_PRIMARIO} shrink-0`} type="submit">Agregar</button>
             </form>
         </div>
     );
@@ -89,6 +86,7 @@ export default function MisProyectos() {
     const [proyectoActivoId, setProyectoActivoId] = useState(null);
     const [canciones] = useCanciones(proyectoActivoId);
     const [partesAbierta, setPartesAbierta] = useState(null);
+    const panelRef = useRef(null);
 
     const [nombreProyecto, setNombreProyecto] = useState('');
     const [nombreCancion, setNombreCancion] = useState('');
@@ -105,6 +103,21 @@ export default function MisProyectos() {
     }, [canciones, proyectos]);
 
     const proyectoActivo = proyectos.find((proyecto) => String(proyecto.id) === String(proyectoActivoId)) ?? null;
+
+    useEffect(() => {
+        if (MENOS_MOVIMIENTO()) return undefined;
+        const panel = panelRef.current;
+        if (!panel) return undefined;
+        const animacion = anime({
+            targets: panel.querySelectorAll('[data-pista]'),
+            opacity: [0, 1],
+            translateY: [14, 0],
+            duration: 420,
+            delay: anime.stagger(55),
+            easing: 'easeOutCubic',
+        });
+        return () => animacion.pause();
+    }, [proyectoActivoId, canciones]);
 
     const avisar = (valor, anotacion) => {
         setMensaje(valor || '');
@@ -166,30 +179,39 @@ export default function MisProyectos() {
 
     return (
         <main className="workspace-content" data-page="mis-proyectos">
-            <header className="page-heading">
+            <header className="page-heading relative border-l-4 border-accent pl-4">
+                <div aria-hidden="true" className="pointer-events-none absolute -top-20 right-20 h-52 w-52 animate-aurora rounded-full bg-[#9365f2]/18 blur-3xl" />
                 <p className="workspace-eyebrow">TU ESPACIO DE TRABAJO</p>
                 <h1>Mis proyectos</h1>
                 <p>Organiza tus proyectos en carpetas y nombra las canciones que quieres trabajar en el estudio.</p>
             </header>
 
-            {mensaje && <p className="mb-4 rounded-lg border border-exito/30 bg-exito/10 px-4 py-2 text-sm text-exito" role="status">{mensaje}</p>}
-            {error && <p className="mb-4 rounded-lg border border-peligro/30 bg-peligro/10 px-4 py-2 text-sm text-peligro" role="alert">{error}</p>}
+            {mensaje && <p className="mt-5 rounded-xl border border-exito/30 bg-exito/10 px-4 py-2 text-sm text-exito" role="status">{mensaje}</p>}
+            {error && <p className="mt-5 rounded-xl border border-peligro/30 bg-peligro/10 px-4 py-2 text-sm text-peligro" role="alert">{error}</p>}
 
-            <div className="grid gap-6 lg:grid-cols-[340px_1fr]">
-                <section className="rounded-2xl border border-border bg-surface p-5" aria-label="Carpetas de proyectos">
-                    <h2 className="mb-4 text-lg font-semibold text-texto">Carpetas</h2>
+            <div className="mt-6 grid gap-6 lg:grid-cols-[340px_1fr]">
+                <section
+                    className="h-fit rounded-[2rem] border border-border bg-surface/60 p-5 backdrop-blur"
+                    aria-label="Carpetas de proyectos"
+                >
+                    <div className="mb-4 flex items-center justify-between">
+                        <h2 className="text-lg font-bold text-texto-soft">Carpetas</h2>
+                        <span className="rounded-full border border-accent-soft/30 px-3 py-1 text-[0.68rem] font-extrabold text-accent-soft">
+                            {String(proyectos.length).padStart(2, '0')}
+                        </span>
+                    </div>
 
                     <form className="mb-5" onSubmit={crearProyecto} aria-label="Crear carpeta de proyecto">
                         <label className="flex flex-col">
-                            <span className={estilos.etiqueta}>Nueva carpeta</span>
+                            <span className={ETIQUETA}>Nueva carpeta</span>
                             <div className="flex gap-2">
                                 <input
-                                    className={estilos.campo}
+                                    className={CAMPO}
                                     placeholder="Nombre de la carpeta"
                                     value={nombreProyecto}
                                     onChange={(evento) => setNombreProyecto(evento.target.value)}
                                 />
-                                <button className={`${estilos.botonPrimario} shrink-0`} type="submit">Crear</button>
+                                <button className={`${BOTON_PRIMARIO} shrink-0`} type="submit">Crear</button>
                             </div>
                         </label>
                     </form>
@@ -201,10 +223,10 @@ export default function MisProyectos() {
                                 return (
                                     <li key={proyecto.id}>
                                         <div
-                                            className={`flex items-center justify-between gap-2 rounded-xl border px-3 py-3 text-left transition ${
+                                            className={`group flex items-center justify-between gap-2 rounded-2xl border px-3 py-3 text-left transition ${
                                                 activa
-                                                    ? 'border-accent bg-accent/10'
-                                                    : 'border-border bg-surface-2 hover:border-accent/60'
+                                                    ? 'border-accent/60 bg-gradient-to-r from-[#5b418f]/45 to-transparent'
+                                                    : 'border-border bg-white/[0.02] hover:border-accent/50'
                                             }`}
                                             role="button"
                                             tabIndex={0}
@@ -215,14 +237,24 @@ export default function MisProyectos() {
                                                 }
                                             }}
                                         >
-                                            <div className="min-w-0">
-                                                <p className="truncate font-medium text-texto">{proyecto.nombre}</p>
-                                                <p className="text-xs text-sutil">
-                                                    {conteoCanciones.get(String(proyecto.id)) ?? 0} canciones · {formatearFecha(proyecto.creado_en, { day: 'numeric', month: 'short' })}
-                                                </p>
+                                            <div className="flex min-w-0 items-center gap-3">
+                                                <span
+                                                    className={`grid h-9 w-9 shrink-0 place-items-center rounded-xl text-base ${
+                                                        activa ? 'bg-gradient-to-br from-[#9365f2] to-[#e34ba6] text-white' : 'bg-white/[0.05] text-accent-soft'
+                                                    }`}
+                                                    aria-hidden="true"
+                                                >
+                                                    ♫
+                                                </span>
+                                                <div className="min-w-0">
+                                                    <p className="truncate font-semibold text-texto-soft">{proyecto.nombre}</p>
+                                                    <p className="text-xs text-sutil">
+                                                        {conteoCanciones.get(String(proyecto.id)) ?? 0} canciones · {formatearFecha(proyecto.creado_en, { day: 'numeric', month: 'short' })}
+                                                    </p>
+                                                </div>
                                             </div>
                                             <button
-                                                className={`${estilos.botonPeligro} shrink-0`}
+                                                className="shrink-0 rounded-lg p-1.5 text-sutil opacity-0 transition hover:bg-peligro/10 hover:text-peligro group-hover:opacity-100"
                                                 onClick={(evento) => {
                                                     evento.stopPropagation();
                                                     eliminarProyecto(proyecto);
@@ -230,7 +262,7 @@ export default function MisProyectos() {
                                                 type="button"
                                                 aria-label={`Eliminar carpeta ${proyecto.nombre}`}
                                             >
-                                                Eliminar
+                                                ✕
                                             </button>
                                         </div>
                                     </li>
@@ -238,41 +270,46 @@ export default function MisProyectos() {
                             })}
                         </ul>
                     ) : (
-                        <p className="rounded-xl border border-dashed border-border bg-surface/40 px-4 py-6 text-sm text-sutil">
+                        <p className="rounded-2xl border border-dashed border-border bg-surface/40 px-4 py-6 text-sm text-sutil">
                             Aún no tienes carpetas. Crea la primera para empezar.
                         </p>
                     )}
                 </section>
 
-                <section className="rounded-2xl border border-border bg-surface p-5" aria-label="Canciones de la carpeta">
+                <section className="rounded-[2rem] border border-border bg-surface/60 p-5 backdrop-blur sm:p-6" aria-label="Canciones de la carpeta">
                     {proyectoActivo ? (
                         <>
-                            <div className="mb-5 flex items-start justify-between gap-4">
-                                <div>
-                                    <h2 className="text-lg font-semibold text-texto">{proyectoActivo.nombre}</h2>
-                                    <p className="text-sm text-sutil">
-                                        {canciones.length} canción{canciones.length === 1 ? '' : 'es'} en la carpeta
-                                    </p>
+                            <div className="mb-6 flex flex-wrap items-start justify-between gap-4">
+                                <div className="flex items-center gap-4">
+                                    <span className="grid h-14 w-14 shrink-0 place-items-center rounded-2xl bg-gradient-to-br from-[#9365f2] to-[#e34ba6] text-2xl text-white" aria-hidden="true">
+                                        ♫
+                                    </span>
+                                    <div>
+                                        <h2 className="text-xl font-bold tracking-tight text-texto-soft">{proyectoActivo.nombre}</h2>
+                                        <p className="text-sm text-sutil">
+                                            {canciones.length} canción{canciones.length === 1 ? '' : 'es'} en la carpeta
+                                        </p>
+                                    </div>
                                 </div>
-                                <button className={estilos.botonPeligro} onClick={() => eliminarProyecto(proyectoActivo)} type="button">
+                                <button className={BOTON_PELIGRO} onClick={() => eliminarProyecto(proyectoActivo)} type="button">
                                     Eliminar carpeta
                                 </button>
                             </div>
 
-                            <form className="mb-6 grid gap-3 sm:grid-cols-[1fr_120px_auto]" onSubmit={agregarCancion} aria-label="Agregar canción">
+                            <form className="mb-6 grid gap-3 rounded-2xl border border-border bg-white/[0.02] p-4 sm:grid-cols-[1fr_130px_auto]" onSubmit={agregarCancion} aria-label="Agregar canción">
                                 <label className="flex flex-col">
-                                    <span className={estilos.etiqueta}>Nombre de la canción</span>
+                                    <span className={ETIQUETA}>Nombre de la canción</span>
                                     <input
-                                        className={estilos.campo}
+                                        className={CAMPO}
                                         placeholder="Ej. Amanecer"
                                         value={nombreCancion}
                                         onChange={(evento) => setNombreCancion(evento.target.value)}
                                     />
                                 </label>
                                 <label className="flex flex-col">
-                                    <span className={estilos.etiqueta}>Duración (min)</span>
+                                    <span className={ETIQUETA}>Duración (min)</span>
                                     <input
-                                        className={estilos.campo}
+                                        className={CAMPO}
                                         type="number"
                                         min="1"
                                         step="1"
@@ -282,29 +319,34 @@ export default function MisProyectos() {
                                     />
                                 </label>
                                 <div className="flex items-end">
-                                    <button className={estilos.botonPrimario} type="submit">Agregar</button>
+                                    <button className={BOTON_PRIMARIO} type="submit">Agregar</button>
                                 </div>
                             </form>
 
                             {canciones.length ? (
-                                <ul className="flex flex-col gap-2">
-                                    {canciones.map((cancion) => {
+                                <ul ref={panelRef} className="flex flex-col gap-3">
+                                    {canciones.map((cancion, indice) => {
                                         const cantPartes = (cancion.partes ?? []).length;
                                         const partesVisible = partesAbierta === cancion.id;
 
                                         return (
-                                            <li key={cancion.id} className="rounded-xl border border-border bg-surface-2 px-4 py-3">
-                                                <div className="flex items-center justify-between gap-3">
-                                                    <div className="flex items-center gap-3">
-                                                        <span aria-hidden="true" className="text-lg text-accent">♪</span>
-                                                        <div>
-                                                            <p className="font-medium text-texto">{cancion.nombre}</p>
-                                                            <p className="text-xs text-sutil">{duracionTexto(cancion) || 'Sin duración'}</p>
+                                            <li key={cancion.id} data-pista className="rounded-2xl border border-border bg-white/[0.02] p-4 transition hover:border-accent/40">
+                                                <div className="flex flex-wrap items-center justify-between gap-3">
+                                                    <div className="flex min-w-0 items-center gap-3">
+                                                        <span className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-white/[0.05] text-sm font-bold tabular-nums text-accent-soft" aria-hidden="true">
+                                                            {String(indice + 1).padStart(2, '0')}
+                                                        </span>
+                                                        <div className="min-w-0">
+                                                            <p className="truncate font-semibold text-texto-soft">{cancion.nombre}</p>
+                                                            <p className="text-xs text-sutil">
+                                                                {duracionTexto(cancion)}
+                                                                {cantPartes > 0 && <span className="text-accent-soft"> · {cantPartes} parte{cantPartes === 1 ? '' : 's'}</span>}
+                                                            </p>
                                                         </div>
                                                     </div>
-                                                    <div className="flex shrink-0 items-center gap-2">
+                                                    <div className="flex shrink-0 flex-wrap items-center gap-2">
                                                         <button
-                                                            className={estilos.botonPrimario}
+                                                            className={BOTON_PRIMARIO}
                                                             onClick={() => solicitarGrabacion(cancion)}
                                                             type="button"
                                                             aria-label={`Solicitar grabación de ${cancion.nombre}`}
@@ -312,7 +354,7 @@ export default function MisProyectos() {
                                                             Grabarla
                                                         </button>
                                                         <button
-                                                            className={estilos.botonSecundario}
+                                                            className={BOTON_SECUNDARIO}
                                                             onClick={() => setPartesAbierta(partesVisible ? null : cancion.id)}
                                                             type="button"
                                                             aria-expanded={partesVisible}
@@ -320,9 +362,9 @@ export default function MisProyectos() {
                                                         >
                                                             Partes{cantPartes > 0 ? ` (${cantPartes})` : ''}
                                                         </button>
-                                                        <AudioCancion cancion={cancion} estilo={estilos.botonSecundario} />
+                                                        <AudioCancion cancion={cancion} estilo={BOTON_SECUNDARIO} />
                                                         <button
-                                                            className={estilos.botonPeligro}
+                                                            className={BOTON_PELIGRO}
                                                             onClick={() => eliminarCancion(cancion)}
                                                             type="button"
                                                             aria-label={`Eliminar canción ${cancion.nombre}`}
@@ -337,15 +379,15 @@ export default function MisProyectos() {
                                     })}
                                 </ul>
                             ) : (
-                                <p className="rounded-xl border border-dashed border-border bg-surface/40 px-4 py-6 text-sm text-sutil">
+                                <p className="rounded-2xl border border-dashed border-border bg-surface/40 px-4 py-6 text-sm text-sutil">
                                     Esta carpeta no tiene canciones. Agrégale la primera con el nombre que quieras.
                                 </p>
                             )}
                         </>
                     ) : (
-                        <div className="flex h-full min-h-48 flex-col items-center justify-center rounded-xl border border-dashed border-border bg-surface/40 px-6 py-10 text-center">
-                            <p className="text-2xl text-accent" aria-hidden="true">♫</p>
-                            <p className="mt-2 font-medium text-texto">Selecciona una carpeta</p>
+                        <div className="flex h-full min-h-48 flex-col items-center justify-center rounded-2xl border border-dashed border-border bg-surface/40 px-6 py-12 text-center">
+                            <span className="grid h-14 w-14 place-items-center rounded-2xl bg-gradient-to-br from-[#5b418f]/60 to-surface-2 text-2xl text-accent-soft" aria-hidden="true">♫</span>
+                            <p className="mt-3 font-semibold text-texto-soft">Selecciona una carpeta</p>
                             <p className="text-sm text-sutil">Elige una carpeta para ver y nombrar sus canciones.</p>
                         </div>
                     )}

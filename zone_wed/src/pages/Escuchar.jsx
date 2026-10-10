@@ -1,5 +1,5 @@
 // CAPA: Presentación
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import anime from 'animejs';
 import { cancionesArtistas, urlCancion } from '../data/cancionesArtistas.js';
 import '../styles/tailwind.css';
@@ -15,18 +15,45 @@ function formatearTiempo(segundos) {
     return `${minutos}:${resto}`;
 }
 
-function Barra({ valor, max, onCambiar, etiqueta, compacta = false }) {
+function useOndas(semilla, cantidad = 56) {
+    return useMemo(() => {
+        let hash = 2166136261;
+        for (let i = 0; i < semilla.length; i += 1) {
+            hash ^= semilla.charCodeAt(i);
+            hash = Math.imul(hash, 16777619);
+        }
+        const valores = [];
+        for (let i = 0; i < cantidad; i += 1) {
+            hash ^= hash << 13;
+            hash >>>= 0;
+            hash ^= hash >>> 17;
+            hash ^= hash << 5;
+            hash >>>= 0;
+            const azar = ((hash >>> 0) % 1000) / 1000;
+            const envolvente = Math.sin((i / cantidad) * Math.PI);
+            valores.push(Math.min(1, 0.16 + Math.pow(azar, 0.7) * (0.5 + envolvente * 0.5)));
+        }
+        return valores;
+    }, [semilla, cantidad]);
+}
+
+function Barra({ valor, max, onCambiar, etiqueta }) {
     const seguro = Number.isFinite(max) && max > 0 ? max : 0;
     const porcentaje = seguro > 0 ? Math.min((valor / seguro) * 100, 100) : 0;
 
     return (
-        <div className={`relative ${compacta ? 'h-5 w-28' : 'h-6 w-full'}`}>
+        <div className="group/barra relative h-5 w-28">
             <div className="absolute inset-x-0 top-1/2 h-1.5 -translate-y-1/2 overflow-hidden rounded-full bg-white/10">
                 <div
-                    className="h-full rounded-full bg-gradient-to-r from-[#9365f2] via-[#c85ed0] to-[#e34ba6]"
+                    className="h-full rounded-full bg-gradient-to-r from-[#9365f2] to-[#e34ba6]"
                     style={{ width: `${porcentaje}%` }}
                 />
             </div>
+            <span
+                aria-hidden="true"
+                className="pointer-events-none absolute top-1/2 h-3.5 w-3.5 -translate-x-1/2 -translate-y-1/2 rounded-full border-2 border-white bg-[#e34ba6] opacity-0 shadow-lg transition group-hover/barra:opacity-100"
+                style={{ left: `${porcentaje}%` }}
+            />
             <input
                 type="range"
                 min="0"
@@ -41,12 +68,76 @@ function Barra({ valor, max, onCambiar, etiqueta, compacta = false }) {
     );
 }
 
-function Ecualizador({ activo, referencia }) {
+function Onda({ valores, progreso, duracion, onSeek }) {
+    const ref = useRef(null);
+    const [arrastrando, setArrastrando] = useState(false);
+    const porcentaje = duracion > 0 ? Math.min((progreso / duracion) * 100, 100) : 0;
+
+    const calcular = (clientX) => {
+        const el = ref.current;
+        if (!el || !duracion) return;
+        const rect = el.getBoundingClientRect();
+        const relacion = Math.min(Math.max((clientX - rect.left) / rect.width, 0), 1);
+        onSeek(relacion * duracion);
+    };
+
+    const soltarCaptura = (evento) => {
+        try {
+            evento.currentTarget.releasePointerCapture?.(evento.pointerId);
+        } catch {
+            /* ignore */
+        }
+    };
+
+    return (
+        <div
+            ref={ref}
+            role="slider"
+            tabIndex={0}
+            aria-label="Progreso de la canción"
+            aria-valuemin={0}
+            aria-valuemax={Math.round(duracion) || 0}
+            aria-valuenow={Math.round(progreso) || 0}
+            onPointerDown={(evento) => {
+                setArrastrando(true);
+                evento.currentTarget.setPointerCapture?.(evento.pointerId);
+                calcular(evento.clientX);
+            }}
+            onPointerMove={(evento) => {
+                if (arrastrando) calcular(evento.clientX);
+            }}
+            onPointerUp={(evento) => {
+                setArrastrando(false);
+                soltarCaptura(evento);
+            }}
+            onPointerCancel={(evento) => {
+                setArrastrando(false);
+                soltarCaptura(evento);
+            }}
+            className="flex h-14 w-full cursor-pointer items-center gap-[2px]"
+        >
+            {valores.map((altura, indice) => {
+                const activo = (indice / valores.length) * 100 <= porcentaje;
+                return (
+                    <span
+                        key={indice}
+                        className={`flex-1 rounded-full transition-colors duration-150 ${
+                            activo ? 'bg-gradient-to-t from-[#9365f2] to-[#e34ba6]' : 'bg-white/[0.12] hover:bg-white/20'
+                        }`}
+                        style={{ height: `${Math.round(altura * 100)}%` }}
+                    />
+                );
+            })}
+        </div>
+    );
+}
+
+function Ecualizador({ activo, referencia, barras = 5 }) {
     return (
         <span ref={referencia} className="flex h-6 items-end gap-1" aria-hidden="true">
-            {[0, 1, 2, 3, 4].map((i) => (
+            {Array.from({ length: barras }).map((_, indice) => (
                 <span
-                    key={i}
+                    key={indice}
                     data-eq
                     className="w-1 origin-bottom rounded-full bg-gradient-to-t from-[#e34ba6] to-[#9365f2]"
                     style={{ height: '100%', transform: `scaleY(${activo ? 0.35 : 0.2})` }}
@@ -63,6 +154,7 @@ export default function Escuchar() {
     const [progreso, setProgreso] = useState(0);
     const [duracion, setDuracion] = useState(0);
     const [volumen, setVolumen] = useState(0.9);
+    const [error, setError] = useState('');
 
     const audioRef = useRef(null);
     const listaRef = useRef(null);
@@ -73,6 +165,11 @@ export default function Escuchar() {
     const cancion = artista.canciones[indiceCancion];
     const totalCanciones = artista.canciones.length;
     const origenActual = urlCancion(artista.carpeta, cancion.archivo);
+    const ondas = useOndas(cancion.archivo);
+    const totalGeneral = useMemo(
+        () => cancionesArtistas.reduce((suma, item) => suma + item.canciones.length, 0),
+        []
+    );
 
     useEffect(() => {
         debeSonarRef.current = reproduciendo;
@@ -87,8 +184,9 @@ export default function Escuchar() {
         const audio = audioRef.current;
         if (!audio) return;
         audio.src = origenActual;
-        audio.load();
         setProgreso(0);
+        setDuracion(0);
+        setError('');
     }, [origenActual]);
 
     useEffect(() => {
@@ -194,26 +292,30 @@ export default function Escuchar() {
         irAnterior();
     };
 
-    const manejarBusqueda = (evento) => {
-        const valor = Number(evento.target.value);
+    const buscar = (tiempo) => {
         const audio = audioRef.current;
-        if (audio) audio.currentTime = valor;
-        setProgreso(valor);
+        if (!audio || !Number.isFinite(tiempo)) return;
+        audio.currentTime = tiempo;
+        setProgreso(tiempo);
     };
 
     const discoAnimado = !MENOS_MOVIMIENTO();
+    const anguloBrazo = reproduciendo ? '-9deg' : '-32deg';
 
     return (
-        <main className="workspace-content" data-page="estudio">
-            <header className="page-heading border-l-4 border-accent pl-4">
+        <main className="workspace-content relative" data-page="estudio">
+            <div aria-hidden="true" className="pointer-events-none absolute -top-24 left-1/4 h-72 w-72 animate-aurora rounded-full bg-[#9365f2]/20 blur-3xl" />
+            <div aria-hidden="true" className="pointer-events-none absolute right-0 top-40 h-64 w-64 animate-aurora rounded-full bg-[#e34ba6]/15 blur-3xl [animation-delay:-7s]" />
+
+            <header className="page-heading relative border-l-4 border-accent pl-4">
                 <p className="workspace-eyebrow">ESTUDIO · ESCUCHAR ARTISTAS</p>
                 <h1>Escuchar artistas</h1>
-                <p>Un reproductor único para descubrir las canciones de los artistas del estudio.</p>
+                <p>{totalGeneral} canciones de {cancionesArtistas.length} artistas en un único reproductor.</p>
             </header>
 
-            <div className="mt-6 grid gap-5 lg:grid-cols-[minmax(230px,260px)_1fr]">
+            <div className="relative mt-6 grid gap-5 lg:grid-cols-[minmax(230px,260px)_1fr]">
                 <section
-                    className="rounded-[1.75rem] border border-border bg-surface/60 p-3 backdrop-blur"
+                    className="h-fit rounded-[1.75rem] border border-border bg-surface/60 p-3 backdrop-blur"
                     aria-label="Seleccionar artista"
                 >
                     <p className="workspace-eyebrow px-2 py-2">ARTISTAS</p>
@@ -235,14 +337,14 @@ export default function Escuchar() {
                                         <span className="relative shrink-0">
                                             <span
                                                 className={`grid h-12 w-12 place-items-center overflow-hidden rounded-full ${
-                                                    activo ? 'bg-gradient-to-br from-[#9365f2] to-[#e34ba6] p-[2px]' : ''
+                                                    activo ? 'bg-gradient-to-br from-[#9365f2] to-[#e34ba6] p-[2px]' : 'border border-border'
                                                 }`}
                                             >
                                                 <img
                                                     src={item.imagen}
                                                     alt=""
                                                     loading="lazy"
-                                                    className="h-full w-full rounded-full object-cover"
+                                                    className="h-full w-full rounded-full object-cover transition duration-300 group-hover:scale-105"
                                                 />
                                             </span>
                                             {activo && reproduciendo && (
@@ -268,57 +370,72 @@ export default function Escuchar() {
                             aria-hidden="true"
                             className="absolute inset-0 h-full w-full scale-125 object-cover opacity-30 blur-3xl"
                         />
-                        <div className="absolute inset-0 bg-gradient-to-br from-[#0c0914]/85 via-[#0d0a17]/80 to-[#0d0a17]/95" />
+                        <div className="absolute inset-0 bg-gradient-to-br from-[#0c0914]/88 via-[#0d0a17]/85 to-[#0d0a17]/96" />
                         <div
                             className="pointer-events-none absolute inset-0"
                             style={{
                                 background:
-                                    'radial-gradient(ellipse at 85% 0%, rgba(214, 70, 169, 0.22), transparent 45%), radial-gradient(ellipse at 5% 100%, rgba(111, 75, 187, 0.28), transparent 50%)',
+                                    'radial-gradient(ellipse at 85% 0%, rgba(214, 70, 169, 0.24), transparent 45%), radial-gradient(ellipse at 5% 100%, rgba(111, 75, 187, 0.3), transparent 50%)',
                             }}
                         />
 
-                        <div className="relative grid gap-6 p-6 sm:p-8 md:grid-cols-[auto_1fr] md:items-center">
-                            <div className="relative mx-auto h-44 w-44 shrink-0">
+                        <div className="relative grid gap-8 p-6 sm:p-8 md:grid-cols-[auto_1fr] md:items-center">
+                            <div className="relative mx-auto w-fit">
+                                <div className="absolute inset-0 rounded-full bg-[#9365f2]/30 blur-2xl" aria-hidden="true" />
                                 <div
-                                    className={`absolute right-[-2.5rem] top-1/2 h-48 w-48 -translate-y-1/2 rounded-full border border-white/10 ${
+                                    className={`relative grid h-52 w-52 place-items-center rounded-full border border-white/10 shadow-2xl shadow-black/70 sm:h-60 sm:w-60 ${
                                         discoAnimado ? 'animate-spin' : ''
                                     }`}
                                     style={{
-                                        background:
-                                            'repeating-radial-gradient(circle, #191325 0 5px, #0b0812 5px 10px)',
-                                        animationDuration: '9s',
+                                        background: 'repeating-radial-gradient(circle at center, #1b1528 0 3px, #0a0712 3px 7px)',
+                                        animationDuration: '14s',
                                         animationPlayState: reproduciendo ? 'running' : 'paused',
                                     }}
                                     aria-hidden="true"
                                 >
-                                    <span className="absolute left-1/2 top-1/2 h-16 w-16 -translate-x-1/2 -translate-y-1/2 rounded-full bg-gradient-to-br from-[#9365f2] to-[#e34ba6]" />
+                                    <span className="absolute h-28 w-28 overflow-hidden rounded-full border-4 border-[#0a0712] shadow-[0_0_25px_rgba(0,0,0,0.6)] sm:h-32 sm:w-32">
+                                        <img src={artista.imagen} alt="" className="h-full w-full object-cover" />
+                                    </span>
+                                    <span className="absolute h-3 w-3 rounded-full bg-[#0a0712] ring-2 ring-white/10" />
                                 </div>
-                                <img
-                                    src={artista.imagen}
-                                    alt={`Retrato de ${artista.artista}`}
-                                    className="relative h-44 w-44 rounded-2xl border border-white/10 object-cover shadow-2xl shadow-black/50"
-                                />
+
+                                <div
+                                    className="pointer-events-none absolute -right-5 -top-5 origin-top-right"
+                                    style={{
+                                        transform: `rotate(${anguloBrazo})`,
+                                        transition: MENOS_MOVIMIENTO() ? 'none' : 'transform 0.8s cubic-bezier(0.2, 0.8, 0.2, 1)',
+                                    }}
+                                    aria-hidden="true"
+                                >
+                                    <div className="flex flex-col items-center">
+                                        <span className="h-5 w-5 rounded-full border border-white/20 bg-[#e6dcff] shadow-lg" />
+                                        <span className="h-32 w-1.5 rounded-b-full bg-gradient-to-b from-[#e6dcff] via-[#b7a6e6] to-[#6b5aa0]" />
+                                        <span className="h-3 w-3 rotate-45 rounded-sm bg-[#e34ba6]" />
+                                    </div>
+                                </div>
                             </div>
 
                             <div className="min-w-0">
                                 <div className="flex items-center gap-3">
                                     <Ecualizador activo={reproduciendo} referencia={eqRef} />
-                                    <p className="workspace-eyebrow">SONANDO AHORA</p>
+                                    <p className="workspace-eyebrow mb-0">SONANDO AHORA</p>
                                 </div>
-                                <h2 className="mt-2 truncate text-2xl font-extrabold tracking-tight text-texto-soft sm:text-3xl">
+                                <h2 className="mt-2 line-clamp-2 text-2xl font-extrabold tracking-tight text-texto-soft sm:text-3xl">
                                     {cancion.titulo}
                                 </h2>
                                 <p className="mt-1 text-sm text-sutil">
                                     {artista.artista} · {artista.origen}
                                 </p>
-                                <p className="mt-2 text-xs text-sutil/80">
-                                    Pista {indiceCancion + 1} de {totalCanciones} · {indiceArtista + 1} de {cancionesArtistas.length} artistas
-                                </p>
 
-                                <div className="mt-5 flex items-center gap-3">
-                                    <span className="w-10 text-right text-xs tabular-nums text-sutil">{formatearTiempo(progreso)}</span>
-                                    <Barra valor={progreso} max={duracion} onCambiar={manejarBusqueda} etiqueta="Progreso de la canción" />
-                                    <span className="w-10 text-xs tabular-nums text-sutil">{formatearTiempo(duracion)}</span>
+                                <div className="mt-5">
+                                    <Onda valores={ondas} progreso={progreso} duracion={duracion} onSeek={buscar} />
+                                    <div className="mt-1 flex items-center justify-between text-xs tabular-nums text-sutil">
+                                        <span>{formatearTiempo(progreso)}</span>
+                                        <span>
+                                            Pista {indiceCancion + 1} de {totalCanciones}
+                                        </span>
+                                        <span>{formatearTiempo(duracion)}</span>
+                                    </div>
                                 </div>
 
                                 <div className="mt-4 flex flex-wrap items-center gap-4">
@@ -335,7 +452,9 @@ export default function Escuchar() {
                                             type="button"
                                             onClick={() => setReproduciendo((actual) => !actual)}
                                             aria-label={reproduciendo ? 'Pausar' : 'Reproducir'}
-                                            className="grid h-16 w-16 place-items-center rounded-full bg-gradient-to-r from-[#9365f2] to-[#e34ba6] text-2xl text-white shadow-xl shadow-accent/30 transition hover:scale-105"
+                                            className={`grid h-16 w-16 place-items-center rounded-full bg-gradient-to-r from-[#9365f2] to-[#e34ba6] text-2xl text-white transition hover:scale-105 ${
+                                                reproduciendo ? 'shadow-[0_0_45px_rgba(147,101,242,0.55)]' : 'shadow-xl shadow-accent/30'
+                                            }`}
                                         >
                                             {reproduciendo ? '❚❚' : '▶'}
                                         </button>
@@ -354,12 +473,17 @@ export default function Escuchar() {
                                         <Barra
                                             valor={volumen}
                                             max={1}
-                                            compacta
                                             onCambiar={(evento) => setVolumen(Number(evento.target.value))}
                                             etiqueta="Volumen"
                                         />
                                     </div>
                                 </div>
+
+                                {error && (
+                                    <p className="mt-3 rounded-xl border border-peligro/30 bg-peligro/10 px-3 py-2 text-xs font-semibold text-peligro-soft">
+                                        No se pudo reproducir esta canción.
+                                    </p>
+                                )}
                             </div>
                         </div>
 
@@ -369,8 +493,12 @@ export default function Escuchar() {
                             onTimeUpdate={(evento) => setProgreso(evento.currentTarget.currentTime)}
                             onLoadedMetadata={(evento) => setDuracion(evento.currentTarget.duration)}
                             onCanPlay={reintentar}
+                            onLoadedData={reintentar}
                             onEnded={irSiguiente}
-                            onError={() => setReproduciendo(false)}
+                            onError={() => {
+                                setError('error');
+                                setReproduciendo(false);
+                            }}
                         />
                     </article>
 
@@ -409,7 +537,7 @@ export default function Escuchar() {
                                                     {[0, 1, 2].map((barra) => (
                                                         <span
                                                             key={barra}
-                                                            className="w-0.5 origin-bottom animate-pulse rounded-full bg-magenta"
+                                                            className="w-0.5 origin-bottom rounded-full bg-magenta [animation:ecu_0.9s_ease-in-out_infinite]"
                                                             style={{ height: `${[60, 100, 40][barra]}%`, animationDelay: `${barra * 120}ms` }}
                                                         />
                                                     ))}

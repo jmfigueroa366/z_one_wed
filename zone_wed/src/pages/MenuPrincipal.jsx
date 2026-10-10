@@ -1,304 +1,289 @@
 // CAPA: Presentación
-import { useEffect, useRef } from 'react';
+import { useEffect, useMemo, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import anime from 'animejs';
 import { useAuth } from '../context/AuthContext.jsx';
 import { useSesiones } from '../hooks/useSesiones.js';
 import { artistasDestacados } from '../data/artistasDestacados.js';
 import { productoresDestacados } from '../data/productoresDestacados.js';
+import { cancionesArtistas } from '../data/cancionesArtistas.js';
 import { RUTAS, rutasPermitidasPorRol } from '../config/rutas.js';
 import '../styles/tailwind.css';
 import '../styles/principal.css';
 
+const MENOS_MOVIMIENTO = () =>
+    typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
 const TARJETA =
-    'group flex flex-col overflow-hidden rounded-2xl border border-border bg-surface-2/80 transition duration-300 hover:-translate-y-1 hover:border-accent/40 hover:shadow-xl hover:shadow-black/30';
+    'group relative overflow-hidden rounded-3xl border border-border bg-surface/60 p-6 backdrop-blur transition duration-300 hover:-translate-y-1 hover:border-accent/40 hover:shadow-2xl hover:shadow-black/40';
 
-function Creditos({ item }) {
-    if (item.fotografia) {
-        return (
-            <p className="mt-auto pt-4 text-[0.68rem] leading-5 text-sutil/70">
-                Foto:{' '}
-                <a className="underline decoration-sutil/40 underline-offset-2 hover:text-accent-soft" href={item.fuenteFotografia} target="_blank" rel="noopener noreferrer">
-                    {item.fotografia}
-                </a>
-                {' · '}
-                <a className="underline decoration-sutil/40 underline-offset-2 hover:text-accent-soft" href={item.fuenteLicencia} target="_blank" rel="noopener noreferrer">
-                    {item.licencia}
-                </a>
-            </p>
-        );
-    }
+function Contador({ valor, relleno = false }) {
+    const ref = useRef(null);
 
-    if (!item.credito && !item.licencia) {
-        return null;
-    }
+    useEffect(() => {
+        const el = ref.current;
+        if (!el) return undefined;
+        const objetivo = Number(valor) || 0;
 
-    return (
-        <p className="mt-auto pt-4 text-[0.68rem] leading-5 text-sutil/70">
-            Foto: {item.credito}
-            {item.licencia ? ` · ${item.licencia}` : ''}
-        </p>
-    );
+        if (MENOS_MOVIMIENTO()) {
+            el.textContent = relleno ? String(objetivo).padStart(2, '0') : String(objetivo);
+            return undefined;
+        }
+
+        const estado = { actual: 0 };
+        const animacion = anime({
+            targets: estado,
+            actual: objetivo,
+            round: 1,
+            duration: 1300,
+            easing: 'easeOutExpo',
+            update() {
+                el.textContent = relleno ? String(estado.actual).padStart(2, '0') : String(estado.actual);
+            },
+        });
+
+        return () => animacion.pause();
+    }, [valor, relleno]);
+
+    return <span ref={ref}>0</span>;
 }
 
-function Retrato({ item }) {
-    if (item.imagen) {
-        return (
-            <div className="relative h-56 overflow-hidden bg-surface">
-                <img
-                    src={item.imagen}
-                    alt={item.textoAlternativo}
-                    loading="lazy"
-                    decoding="async"
-                    className="h-full w-full object-cover transition duration-500 group-hover:scale-105"
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-surface-2 via-surface-2/10 to-transparent" />
-            </div>
-        );
-    }
-
-    return (
-        <div className="relative grid h-56 place-items-center overflow-hidden bg-gradient-to-br from-[#2a1d3c] to-[#15111f]">
-            <span className="text-6xl font-black tracking-tighter text-texto-soft">{item.iniciales}</span>
-            <span className="mt-1 text-[0.7rem] font-bold uppercase tracking-[0.28em] text-magenta">Princesa</span>
-            <span className="absolute bottom-3 text-xs text-sutil">Retrato por confirmar</span>
-        </div>
-    );
-}
+const ACCESOS = [
+    { ruta: RUTAS.ESTUDIO, icono: '▶', etiqueta: 'Escuchar artistas', descripcion: 'Reproductor del estudio' },
+    { ruta: RUTAS.AGENDA, icono: '🗓', etiqueta: 'Agenda', descripcion: 'Reservas y actividades' },
+    { ruta: RUTAS.SESIONES, icono: '🎙', etiqueta: 'Sesiones', descripcion: 'Programa y registra' },
+    { ruta: RUTAS.SOLICITUDES, icono: '📩', etiqueta: 'Solicitudes', descripcion: 'Peticiones del estudio' },
+    { ruta: RUTAS.PROYECTOS, icono: '🎵', etiqueta: 'Proyectos', descripcion: 'Canciones y avances' },
+    { ruta: RUTAS.ARTISTAS, icono: '🎤', etiqueta: 'Artistas', descripcion: 'Talento del estudio' },
+    { ruta: RUTAS.PRODUCTORES, icono: '🎛', etiqueta: 'Productores', descripcion: 'Equipo de producción' },
+    { ruta: RUTAS.CATALOGO, icono: '📚', etiqueta: 'Catálogo', descripcion: 'Servicios y tarifas' },
+    { ruta: RUTAS.ESTADISTICAS, icono: '📊', etiqueta: 'Estadísticas', descripcion: 'Métricas del estudio' },
+    { ruta: RUTAS.PERMISOS, icono: '🔐', etiqueta: 'Permisos', descripcion: 'Roles y accesos' },
+    { ruta: RUTAS.CHATBOT, icono: '💬', etiqueta: 'Chatbot', descripcion: 'Asistente virtual' },
+    { ruta: RUTAS.CONFIGURACION, icono: '⚙', etiqueta: 'Configuración', descripcion: 'Ajustes de cuenta' },
+];
 
 export default function MenuPrincipal() {
     const { usuario } = useAuth();
     const rutasPermitidas = rutasPermitidasPorRol(usuario?.rol);
-    const puedeGestionarSesiones = rutasPermitidas.includes(RUTAS.SESIONES);
     const [sesiones] = useSesiones();
-    const showcaseRef = useRef(null);
-    const sesionesActivas = sesiones.filter((sesion) =>
-        ['confirmada', 'en_proceso'].includes(sesion.estado)
-    ).length;
+    const contenedorRef = useRef(null);
+
+    const sesionesActivas = sesiones.filter((sesion) => ['confirmada', 'en_proceso'].includes(sesion.estado)).length;
+    const totalCanciones = useMemo(
+        () => cancionesArtistas.reduce((suma, item) => suma + item.canciones.length, 0),
+        []
+    );
 
     useEffect(() => {
-        if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
-            return undefined;
-        }
-
-        const contenedor = showcaseRef.current;
+        if (MENOS_MOVIMIENTO()) return undefined;
+        const contenedor = contenedorRef.current;
         if (!contenedor) return undefined;
 
         const animacion = anime({
-            targets: contenedor.querySelectorAll('[data-menu-card]'),
+            targets: contenedor.querySelectorAll('[data-tile]'),
             opacity: [0, 1],
-            translateY: [22, 0],
-            duration: 560,
-            delay: anime.stagger(85),
+            translateY: [20, 0],
+            duration: 620,
+            delay: anime.stagger(70),
             easing: 'easeOutCubic',
         });
 
         return () => animacion.pause();
     }, []);
 
-    const resumenCards = [
-        {
-            icono: '●',
-            etiqueta: 'Estado de la plataforma',
-            valor: 'Producción activa',
-            nota: 'Servicios del estudio disponibles',
-            destacada: true,
-        },
-        {
-            icono: '◷',
-            etiqueta: 'Sesiones activas',
-            valor: sesionesActivas,
-            nota: 'Confirmadas o en proceso',
-        },
-        {
-            icono: '✦',
-            etiqueta: 'Sesiones registradas',
-            valor: sesiones.length,
-            nota: 'En la agenda del estudio',
-        },
+    const accesos = ACCESOS.filter((item) => rutasPermitidas.includes(item.ruta)).slice(0, 8);
+
+    const metricas = [
+        { etiqueta: 'Sesiones activas', valor: sesionesActivas, nota: 'Confirmadas o en proceso', icono: '◷', destacada: true },
+        { etiqueta: 'Sesiones registradas', valor: sesiones.length, nota: 'En la agenda del estudio', icono: '✦' },
+        { etiqueta: 'Artistas', valor: artistasDestacados.length, nota: 'Perfiles destacados', icono: '🎤', relleno: true },
+        { etiqueta: 'Canciones', valor: totalCanciones, nota: 'Disponibles para escuchar', icono: '♪', relleno: true },
     ];
 
     return (
-        <main className="workspace-content dashboard-content">
-            <section
-                className="relative overflow-hidden rounded-3xl border border-accent/25 p-8 sm:p-10"
-                style={{
-                    background:
-                        'radial-gradient(ellipse at 82% 12%, rgba(214, 70, 169, 0.22), transparent 42%), linear-gradient(115deg, rgba(111, 75, 187, 0.28), rgba(31, 24, 47, 0.94) 68%)',
-                }}
-            >
-                <p className="workspace-eyebrow">PANEL PRINCIPAL · GESTIÓN MUSICAL</p>
-                <h1 className="mt-3 text-3xl font-extrabold tracking-tight text-texto-soft sm:text-4xl">
-                    Hola, {usuario?.nombre ?? 'usuario'}.
-                </h1>
-                <p className="mt-3 max-w-2xl text-sm leading-7 text-sutil">
-                    Bienvenido al centro operativo de Z-ONE. Organiza la producción y coordina las sesiones del estudio
-                    desde un panel pensado para el trabajo diario.
-                </p>
-                {puedeGestionarSesiones && (
-                    <div className="mt-7 flex flex-wrap gap-3">
-                        <Link
-                            className="inline-flex min-h-[44px] items-center justify-center rounded-xl bg-gradient-to-r from-[#9365f2] to-[#e34ba6] px-5 text-sm font-bold text-white shadow-lg shadow-accent/25 transition hover:-translate-y-0.5 hover:brightness-110"
-                            to={`${RUTAS.SESIONES}#crear`}
-                        >
-                            Crear sesión
-                        </Link>
-                        <Link
-                            className="inline-flex min-h-[44px] items-center justify-center rounded-xl border border-border bg-white/[0.045] px-5 text-sm font-bold text-texto transition hover:-translate-y-0.5 hover:border-accent/60"
-                            to={`${RUTAS.SESIONES}#registrar`}
-                        >
-                            Registrar sesión
-                        </Link>
-                    </div>
-                )}
-            </section>
-
-            <section className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3" aria-label="Resumen del estudio">
-                {resumenCards.map((card) => (
+        <main className="workspace-content dashboard-content" data-page="principal">
+            <div ref={contenedorRef} className="grid gap-6">
+                <section className="grid gap-5 lg:grid-cols-3">
                     <article
-                        key={card.etiqueta}
-                        className={`flex flex-col gap-2 rounded-2xl border border-border p-5 ${
-                            card.destacada
-                                ? 'bg-gradient-to-br from-[#5b418f]/40 to-surface/80'
-                                : 'bg-surface/70'
-                        }`}
+                        data-tile
+                        className="relative overflow-hidden rounded-[2rem] border border-accent/25 p-7 sm:p-9 lg:col-span-2"
+                        style={{
+                            background:
+                                'radial-gradient(ellipse at 85% 10%, rgba(214, 70, 169, 0.28), transparent 45%), linear-gradient(120deg, rgba(111, 75, 187, 0.35), rgba(24, 19, 38, 0.96) 70%)',
+                        }}
                     >
-                        <span className="text-accent-soft" aria-hidden="true">{card.icono}</span>
-                        <p className="text-sm text-sutil">{card.etiqueta}</p>
-                        <strong
-                            className={
-                                card.destacada
-                                    ? 'text-lg font-bold text-texto-soft'
-                                    : 'text-3xl font-extrabold tracking-tight text-texto-soft'
-                            }
-                        >
-                            {card.valor}
-                        </strong>
-                        <span className="text-xs text-sutil/80">{card.nota}</span>
-                    </article>
-                ))}
-            </section>
-
-            <section className="grid gap-5 rounded-3xl border border-border bg-surface/60 p-6 sm:p-8">
-                <div>
-                    <p className="workspace-eyebrow">INFORMACIÓN DE Z-ONE</p>
-                    <h2 className="mt-1 text-2xl font-bold tracking-tight text-texto-soft">
-                        Una gestión musical centralizada
-                    </h2>
-                    <p className="mt-2 max-w-3xl text-sm leading-7 text-sutil">
-                        Z-ONE reúne la producción musical, el talento, las salas y la agenda para facilitar la
-                        coordinación del estudio.
-                    </p>
-                </div>
-                <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-                    {rutasPermitidas.includes(RUTAS.SESIONES) && (
-                        <article className="flex flex-col rounded-2xl border border-border bg-white/[0.025] p-5 transition hover:border-accent/40">
-                            <h3 className="text-base font-bold text-texto">Sesiones de grabación</h3>
-                            <p className="mt-2 text-sm leading-6 text-sutil">
-                                Crea, programa y registra las sesiones del estudio.
-                            </p>
-                            <Link className="mt-4 text-sm font-bold text-accent-soft transition hover:text-magenta" to={RUTAS.SESIONES}>
-                                Ver sesiones <span aria-hidden="true">→</span>
-                            </Link>
-                        </article>
-                    )}
-                    {rutasPermitidas.includes(RUTAS.AGENDA) && (
-                        <article className="flex flex-col rounded-2xl border border-border bg-white/[0.025] p-5 transition hover:border-accent/40">
-                            <h3 className="text-base font-bold text-texto">Agenda</h3>
-                            <p className="mt-2 text-sm leading-6 text-sutil">
-                                Consulta las reservas y actividades programadas.
-                            </p>
-                            <Link className="mt-4 text-sm font-bold text-accent-soft transition hover:text-magenta" to={RUTAS.AGENDA}>
-                                Abrir agenda <span aria-hidden="true">→</span>
-                            </Link>
-                        </article>
-                    )}
-                    {rutasPermitidas.includes(RUTAS.ESTUDIO) && (
-                        <article className="flex flex-col rounded-2xl border border-border bg-white/[0.025] p-5 transition hover:border-accent/40">
-                            <h3 className="text-base font-bold text-texto">Escuchar artistas</h3>
-                            <p className="mt-2 text-sm leading-6 text-sutil">
-                                Reproduce las canciones de los artistas destacados del estudio.
-                            </p>
-                            <Link className="mt-4 text-sm font-bold text-accent-soft transition hover:text-magenta" to={RUTAS.ESTUDIO}>
-                                Abrir reproductor <span aria-hidden="true">→</span>
-                            </Link>
-                        </article>
-                    )}
-                    {rutasPermitidas.includes(RUTAS.ARTISTAS) && (
-                        <article className="flex flex-col rounded-2xl border border-border bg-white/[0.025] p-5 transition hover:border-accent/40">
-                            <h3 className="text-base font-bold text-texto">Equipo creativo</h3>
-                            <p className="mt-2 text-sm leading-6 text-sutil">
-                                Explora artistas y productores del estudio.
-                            </p>
-                            <Link className="mt-4 text-sm font-bold text-accent-soft transition hover:text-magenta" to={RUTAS.ARTISTAS}>
-                                Ver artistas <span aria-hidden="true">→</span>
-                            </Link>
-                        </article>
-                    )}
-                </div>
-            </section>
-
-            <div ref={showcaseRef} className="grid gap-6">
-                <section className="grid gap-6 rounded-3xl border border-border bg-surface/60 p-6 sm:p-8" aria-labelledby="artist-showcase-title">
-                    <div className="flex flex-wrap items-end justify-between gap-4">
-                        <div>
-                            <p className="workspace-eyebrow">VOCES QUE INSPIRAN</p>
-                            <h2 id="artist-showcase-title" className="mt-1 text-2xl font-bold tracking-tight text-texto-soft">
-                                Artistas destacados
-                            </h2>
-                            <p className="mt-2 max-w-2xl text-sm leading-7 text-sutil">
-                                Un recorrido por artistas colombianos y latinos que dejan huella en distintos sonidos.
-                            </p>
+                        <div aria-hidden="true" className="pointer-events-none absolute -right-16 -top-24 h-72 w-72 animate-aurora rounded-full bg-[#9365f2]/30 blur-3xl" />
+                        <div aria-hidden="true" className="pointer-events-none absolute -bottom-24 left-10 h-64 w-64 animate-aurora rounded-full bg-[#e34ba6]/25 blur-3xl [animation-delay:-6s]" />
+                        <div aria-hidden="true" className="pointer-events-none absolute right-6 top-1/2 hidden -translate-y-1/2 select-none text-[11rem] font-black leading-none tracking-tighter text-white/[0.04] sm:block">
+                            Z·1
                         </div>
-                        <span className="rounded-full border border-accent-soft/30 px-3 py-1.5 text-[0.68rem] font-extrabold tracking-[0.1em] text-accent-soft">
-                            {String(artistasDestacados.length).padStart(2, '0')} PERFILES
-                        </span>
+
+                        <div className="relative">
+                            <span className="inline-flex items-center gap-2 rounded-full border border-accent-soft/30 bg-black/20 px-3 py-1 text-[0.68rem] font-extrabold uppercase tracking-[0.14em] text-accent-soft">
+                                <span className="h-2 w-2 animate-pulse rounded-full bg-exito" />
+                                Estudio en línea
+                            </span>
+                            <h1 className="mt-4 text-3xl font-extrabold tracking-tight text-texto-soft sm:text-4xl">
+                                Hola, {usuario?.nombre ?? 'usuario'}.
+                            </h1>
+                            <p className="mt-3 max-w-xl text-sm leading-7 text-sutil">
+                                Este es el centro operativo de Z-ONE. Coordina la producción, descubre a los artistas y
+                                gestiona las sesiones del estudio desde un solo lugar.
+                            </p>
+
+                            <div className="mt-7 flex flex-wrap gap-3">
+                                {rutasPermitidas.includes(RUTAS.SESIONES) && (
+                                    <Link
+                                        to={`${RUTAS.SESIONES}#crear`}
+                                        className="inline-flex min-h-[46px] items-center justify-center rounded-xl bg-gradient-to-r from-[#9365f2] to-[#e34ba6] px-5 text-sm font-bold text-white shadow-lg shadow-accent/30 transition hover:-translate-y-0.5 hover:brightness-110"
+                                    >
+                                        Crear sesión
+                                    </Link>
+                                )}
+                                <Link
+                                    to={RUTAS.ESTUDIO}
+                                    className="inline-flex min-h-[46px] items-center gap-2 rounded-xl border border-border bg-white/[0.05] px-5 text-sm font-bold text-texto transition hover:-translate-y-0.5 hover:border-accent/60"
+                                >
+                                    <span aria-hidden="true">▶</span> Escuchar artistas
+                                </Link>
+                            </div>
+                        </div>
+                    </article>
+
+                    <article data-tile className={`${TARJETA} flex flex-col`}>
+                        <div className="flex items-center justify-between">
+                            <p className="workspace-eyebrow mb-0">AHORA EN EL ESTUDIO</p>
+                            <span className="flex h-5 items-end gap-[3px]" aria-hidden="true">
+                                {[0, 1, 2, 3].map((i) => (
+                                    <span
+                                        key={i}
+                                        className="w-1 origin-bottom rounded-full bg-gradient-to-t from-[#e34ba6] to-[#9365f2] [animation:ecu_1.2s_ease-in-out_infinite]"
+                                        style={{ height: `${[45, 100, 65, 85][i]}%`, animationDelay: `${i * 140}ms` }}
+                                    />
+                                ))}
+                            </span>
+                        </div>
+                        <p className="mt-3 text-sm leading-6 text-sutil">
+                            Explora el catálogo sonoro del estudio y reproduce las canciones de los artistas destacados.
+                        </p>
+                        <div className="mt-4 flex -space-x-3">
+                            {artistasDestacados.slice(0, 5).map((artista) => (
+                                <img
+                                    key={artista.nombre}
+                                    src={artista.imagen}
+                                    alt=""
+                                    className="h-11 w-11 rounded-full border-2 border-surface object-cover"
+                                />
+                            ))}
+                            <span className="grid h-11 w-11 place-items-center rounded-full border-2 border-surface bg-surface-3 text-[0.7rem] font-bold text-sutil">
+                                +{Math.max(artistasDestacados.length - 5, 0)}
+                            </span>
+                        </div>
+                        <Link
+                            to={RUTAS.ESTUDIO}
+                            className="mt-auto pt-5 text-sm font-bold text-accent-soft transition hover:text-magenta"
+                        >
+                            Abrir reproductor <span aria-hidden="true">→</span>
+                        </Link>
+                    </article>
+                </section>
+
+                <section className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4" aria-label="Métricas del estudio">
+                    {metricas.map((metrica) => (
+                        <article key={metrica.etiqueta} data-tile className={TARJETA}>
+                            <span className="text-accent-soft" aria-hidden="true">{metrica.icono}</span>
+                            <p className="mt-3 text-sm text-sutil">{metrica.etiqueta}</p>
+                            <strong className="mt-1 block text-4xl font-extrabold tracking-tight text-texto-soft">
+                                <Contador valor={metrica.valor} relleno={metrica.relleno} />
+                            </strong>
+                            <span className="mt-1 block text-xs text-sutil/80">{metrica.nota}</span>
+                            {metrica.destacada && (
+                                <span className="pointer-events-none absolute -right-10 -top-10 h-28 w-28 rounded-full bg-[#9365f2]/25 blur-2xl" />
+                            )}
+                        </article>
+                    ))}
+                </section>
+
+                <section data-tile className="rounded-[2rem] border border-border bg-surface/60 p-6 backdrop-blur sm:p-8">
+                    <div className="flex flex-wrap items-end justify-between gap-3">
+                        <div>
+                            <p className="workspace-eyebrow">ACCESOS DIRECTOS</p>
+                            <h2 className="mt-1 text-2xl font-bold tracking-tight text-texto-soft">Todo a un toque</h2>
+                        </div>
                     </div>
-                    <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-                        {artistasDestacados.map((artista) => (
-                            <article className={TARJETA} key={artista.nombre} data-menu-card>
-                                <Retrato item={artista} />
-                                <div className="flex flex-1 flex-col p-5">
-                                    <p className="text-[0.72rem] font-bold tracking-wide text-accent-soft">{artista.origen}</p>
-                                    <h3 className="mt-1 text-lg font-bold text-texto-soft">{artista.nombre}</h3>
-                                    <span className="mt-2 inline-flex w-fit rounded-full bg-magenta/10 px-2.5 py-1 text-[0.7rem] font-semibold text-magenta">
-                                        {artista.estilo}
-                                    </span>
-                                    <p className="mt-3 text-sm leading-6 text-sutil">{artista.historia}</p>
-                                    <Creditos item={artista} />
-                                </div>
-                            </article>
+                    <div className="mt-5 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+                        {accesos.map((acceso) => (
+                            <Link
+                                key={acceso.ruta}
+                                to={acceso.ruta}
+                                className="group/acceso flex items-center gap-3 rounded-2xl border border-border bg-white/[0.02] p-3.5 transition hover:-translate-y-0.5 hover:border-accent/50 hover:bg-white/[0.05]"
+                            >
+                                <span className="grid h-11 w-11 shrink-0 place-items-center rounded-xl bg-gradient-to-br from-[#5b418f]/50 to-surface-2 text-lg transition group-hover/acceso:from-[#9365f2]/60 group-hover/acceso:to-[#e34ba6]/40">
+                                    {acceso.icono}
+                                </span>
+                                <span className="min-w-0">
+                                    <span className="block truncate text-sm font-bold text-texto-soft">{acceso.etiqueta}</span>
+                                    <span className="block truncate text-xs text-sutil">{acceso.descripcion}</span>
+                                </span>
+                            </Link>
                         ))}
                     </div>
                 </section>
 
-                <section className="grid gap-6 rounded-3xl border border-border bg-surface/60 p-6 sm:p-8" aria-labelledby="producer-showcase-title">
-                    <div className="flex flex-wrap items-end justify-between gap-4">
+                <section data-tile className="overflow-hidden rounded-[2rem] border border-border bg-surface/60 py-6 backdrop-blur">
+                    <div className="flex flex-wrap items-end justify-between gap-3 px-6 sm:px-8">
+                        <div>
+                            <p className="workspace-eyebrow">VOCES QUE INSPIRAN</p>
+                            <h2 className="mt-1 text-2xl font-bold tracking-tight text-texto-soft">Artistas destacados</h2>
+                        </div>
+                        <Link to={RUTAS.ESTUDIO} className="text-sm font-bold text-accent-soft transition hover:text-magenta">
+                            Escuchar <span aria-hidden="true">→</span>
+                        </Link>
+                    </div>
+                    <div className="group relative mt-5 overflow-hidden [mask-image:linear-gradient(to_right,transparent,black_6%,black_94%,transparent)]">
+                        <div className="flex w-max animate-marquee gap-4 px-2 group-hover:[animation-play-state:paused]">
+                            {[...artistasDestacados, ...artistasDestacados].map((artista, indice) => (
+                                <div key={`${artista.nombre}-${indice}`} className="flex w-36 shrink-0 flex-col items-center gap-2 text-center">
+                                    <div className="rounded-full bg-gradient-to-br from-[#9365f2] to-[#e34ba6] p-[2px]">
+                                        <img
+                                            src={artista.imagen}
+                                            alt=""
+                                            loading="lazy"
+                                            className="h-24 w-24 rounded-full object-cover transition duration-300 hover:scale-105"
+                                        />
+                                    </div>
+                                    <p className="w-full truncate text-sm font-bold text-texto-soft">{artista.nombre}</p>
+                                    <p className="w-full truncate text-[0.7rem] text-sutil">{artista.origen}</p>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                </section>
+
+                <section data-tile className="rounded-[2rem] border border-border bg-surface/60 p-6 backdrop-blur sm:p-8">
+                    <div className="flex flex-wrap items-end justify-between gap-3">
                         <div>
                             <p className="workspace-eyebrow">ARQUITECTOS DEL SONIDO</p>
-                            <h2 id="producer-showcase-title" className="mt-1 text-2xl font-bold tracking-tight text-texto-soft">
-                                Productores destacados
-                            </h2>
-                            <p className="mt-2 max-w-2xl text-sm leading-7 text-sutil">
-                                Cuatro productores cuya visión y trabajo ayudaron a transformar la historia de la música.
-                            </p>
+                            <h2 className="mt-1 text-2xl font-bold tracking-tight text-texto-soft">Productores destacados</h2>
                         </div>
                         <span className="rounded-full border border-accent-soft/30 px-3 py-1.5 text-[0.68rem] font-extrabold tracking-[0.1em] text-accent-soft">
-                            04 PRODUCTORES
+                            {String(productoresDestacados.length).padStart(2, '0')} PRODUCTORES
                         </span>
                     </div>
-                    <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+                    <div className="mt-5 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
                         {productoresDestacados.map((productor) => (
-                            <article className={TARJETA} key={productor.nombre} data-menu-card>
-                                <Retrato item={productor} />
-                                <div className="flex flex-1 flex-col p-5">
-                                    <p className="text-[0.72rem] font-bold tracking-wide text-accent-soft">{productor.origen}</p>
-                                    <h3 className="mt-1 text-lg font-bold text-texto-soft">{productor.nombre}</h3>
-                                    <span className="mt-2 inline-flex w-fit rounded-full bg-magenta/10 px-2.5 py-1 text-[0.7rem] font-semibold text-magenta">
-                                        {productor.estilo}
-                                    </span>
-                                    <p className="mt-3 text-sm leading-6 text-sutil">{productor.historia}</p>
-                                    <Creditos item={productor} />
+                            <article key={productor.nombre} className="group relative overflow-hidden rounded-2xl border border-border">
+                                <img
+                                    src={productor.imagen}
+                                    alt={productor.textoAlternativo ?? productor.nombre}
+                                    loading="lazy"
+                                    className="h-52 w-full object-cover transition duration-500 group-hover:scale-110"
+                                />
+                                <div className="absolute inset-0 bg-gradient-to-t from-[#0b0812] via-[#0b0812]/30 to-transparent" />
+                                <div className="absolute inset-x-0 bottom-0 p-4">
+                                    <h3 className="text-base font-bold text-texto-soft">{productor.nombre}</h3>
+                                    <p className="mt-0.5 text-[0.72rem] text-sutil">{productor.origen}</p>
                                 </div>
                             </article>
                         ))}
