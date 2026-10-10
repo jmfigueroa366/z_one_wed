@@ -1,6 +1,7 @@
 // CAPA: Presentación
 import { useEffect, useMemo, useRef, useState } from 'react';
 import anime from 'animejs';
+import { Clock, Mic, SlidersHorizontal } from 'lucide-react';
 import { useColaboradores } from '../hooks/useColaboradores.js';
 import { useSalas } from '../hooks/useSalas.js';
 import { useSesiones } from '../hooks/useSesiones.js';
@@ -148,9 +149,9 @@ export default function Agenda() {
                                 <p className="workspace-eyebrow">PRÓXIMO EN AGENDA</p>
                                 <h2 className="mt-1 text-2xl font-extrabold tracking-tight text-texto-soft">{proximo.titulo || 'Sesión sin título'}</h2>
                                 <div className="mt-2 flex flex-wrap items-center gap-x-5 gap-y-1 text-sm text-sutil">
-                                    <span className="inline-flex items-center gap-1.5"><span aria-hidden="true">◷</span> {proximo.hora_inicio || '--:--'}{proximo.hora_fin ? ` – ${proximo.hora_fin}` : ''}</span>
-                                    <span className="inline-flex items-center gap-1.5"><span aria-hidden="true">🎚</span> {obtenerSala(proximo.sala_id)}</span>
-                                    <span className="inline-flex items-center gap-1.5"><span aria-hidden="true">🎤</span> {nombreColaborador(proximo.colaborador_id, colaboradores)}</span>
+                                    <span className="inline-flex items-center gap-1.5"><Clock className="h-3.5 w-3.5" aria-hidden="true" /> {proximo.hora_inicio || '--:--'}{proximo.hora_fin ? ` – ${proximo.hora_fin}` : ''}</span>
+                                    <span className="inline-flex items-center gap-1.5"><SlidersHorizontal className="h-3.5 w-3.5" aria-hidden="true" /> {obtenerSala(proximo.sala_id)}</span>
+                                    <span className="inline-flex items-center gap-1.5"><Mic className="h-3.5 w-3.5" aria-hidden="true" /> {nombreColaborador(proximo.colaborador_id, colaboradores)}</span>
                                 </div>
                             </div>
                         </div>
@@ -259,8 +260,8 @@ export default function Agenda() {
                                                 <p className="mt-2 text-[0.68rem] font-bold uppercase tracking-wider text-accent-soft">{evento.tipo}</p>
                                                 <h3 className="mt-0.5 text-sm font-semibold leading-5 text-texto">{evento.titulo || 'Sesión sin título'}</h3>
                                                 <div className="mt-2 flex flex-wrap gap-x-3 gap-y-1 text-[0.7rem] text-sutil">
-                                                    <span className="inline-flex items-center gap-1"><span aria-hidden="true">🎚</span> {obtenerSala(evento.sala_id)}</span>
-                                                    <span className="inline-flex items-center gap-1"><span aria-hidden="true">🎤</span> {nombreColaborador(evento.colaborador_id, colaboradores)}</span>
+                                                    <span className="inline-flex items-center gap-1"><SlidersHorizontal className="h-3 w-3" aria-hidden="true" /> {obtenerSala(evento.sala_id)}</span>
+                                                    <span className="inline-flex items-center gap-1"><Mic className="h-3 w-3" aria-hidden="true" /> {nombreColaborador(evento.colaborador_id, colaboradores)}</span>
                                                 </div>
                                                 <span className={`${clasePillEstado(evento.estado)} mt-3`}>{ETIQUETAS_ESTADO[evento.estado] ?? evento.estado}</span>
                                             </article>

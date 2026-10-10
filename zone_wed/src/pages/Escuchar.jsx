@@ -12,6 +12,8 @@ import {
     Volume2,
     Volume1,
     VolumeX,
+    Music,
+    Mic2,
 } from 'lucide-react';
 import { cancionesArtistas, urlCancion } from '../data/cancionesArtistas.js';
 import '../styles/tailwind.css';
@@ -433,6 +435,20 @@ export default function Escuchar() {
                 <h1>Escuchar artistas</h1>
                 <p>{totalGeneral} canciones de {cancionesArtistas.length} artistas en un único reproductor.</p>
             </header>
+
+            <div className="relative mt-5 flex flex-wrap items-center gap-3">
+                <span className="inline-flex items-center gap-2 rounded-full border border-border bg-white/[0.03] px-3.5 py-2 text-xs font-semibold text-sutil">
+                    <Music className="h-3.5 w-3.5 text-accent-soft" aria-hidden="true" /> {totalGeneral} canciones
+                </span>
+                <span className="inline-flex items-center gap-2 rounded-full border border-border bg-white/[0.03] px-3.5 py-2 text-xs font-semibold text-sutil">
+                    <Mic2 className="h-3.5 w-3.5 text-accent-soft" aria-hidden="true" /> {cancionesArtistas.length} artistas
+                </span>
+                <span className="inline-flex min-w-0 items-center gap-2 rounded-full border border-accent/30 bg-accent/10 px-3.5 py-2 text-xs font-semibold text-accent-soft">
+                    <span className={`h-2 w-2 shrink-0 rounded-full bg-magenta ${reproduciendo ? 'animate-pulse' : ''}`} />
+                    <span className="shrink-0">{reproduciendo ? 'Reproduciendo' : 'En pausa'} ·</span>
+                    <span className="truncate">{cancion.titulo}</span>
+                </span>
+            </div>
 
             <div className="relative mt-6 grid gap-5 lg:grid-cols-[minmax(230px,260px)_1fr]">
                 <section

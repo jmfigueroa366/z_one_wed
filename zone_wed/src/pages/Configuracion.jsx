@@ -1,9 +1,15 @@
 // CAPA: Presentación
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
+import anime from 'animejs';
+import { ShieldCheck, Sparkles } from 'lucide-react';
 import { useAuth } from '../context/AuthContext.jsx';
 import { ROLES } from '../config/roles.js';
+import { Contador } from '../components/Animados.jsx';
 import { CAMPO, ETIQUETA } from '../styles/clases.js';
 import '../styles/tailwind.css';
+
+const MENOS_MOVIMIENTO = () =>
+    typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
 const ETIQUETA_ROL = {
     [ROLES.ADMINISTRADOR]: 'Administrador',
@@ -60,6 +66,23 @@ export default function Configuracion() {
     const [preferencias, setPreferencias] = useState(PREFERENCIAS_INICIALES);
     const [seguridad, setSeguridad] = useState({ actual: '', nueva: '', confirmar: '' });
     const [aviso, setAviso] = useState('');
+    const contenedorRef = useRef(null);
+
+    const preferenciasActivas = [preferencias.notificacionesCorreo, preferencias.alertasSesiones, preferencias.resumenSemanal].filter(Boolean).length;
+
+    useEffect(() => {
+        const contenedor = contenedorRef.current;
+        if (!contenedor || MENOS_MOVIMIENTO()) return undefined;
+        const animacion = anime({
+            targets: contenedor.querySelectorAll('[data-tarjeta]'),
+            opacity: [0, 1],
+            translateY: [20, 0],
+            duration: 560,
+            delay: anime.stagger(80),
+            easing: 'easeOutCubic',
+        });
+        return () => animacion.pause();
+    }, []);
 
     const cambiarPreferencia = (clave, valor) => {
         setPreferencias((actuales) => ({ ...actuales, [clave]: valor }));
@@ -80,14 +103,48 @@ export default function Configuracion() {
                 <p>Administra tu perfil, tus preferencias y la seguridad de tu cuenta en Z-ONE.</p>
             </header>
 
+            <section
+                className="relative mt-6 overflow-hidden rounded-[2rem] border border-accent/25 p-6 sm:p-7"
+                style={{
+                    background:
+                        'radial-gradient(ellipse at 90% 8%, rgba(227, 75, 166, 0.24), transparent 46%), radial-gradient(ellipse at 4% 100%, rgba(111, 75, 187, 0.34), transparent 50%), linear-gradient(120deg, rgba(111, 75, 187, 0.34), rgba(23, 19, 34, 0.97) 72%)',
+                }}
+            >
+                <div aria-hidden="true" className="pointer-events-none absolute -right-12 -top-24 h-60 w-60 animate-aurora rounded-full bg-[#e34ba6]/20 blur-3xl" />
+                <ShieldCheck aria-hidden="true" className="pointer-events-none absolute right-8 top-1/2 hidden h-40 w-40 -translate-y-1/2 text-white/[0.05] lg:block" />
+                <div className="relative flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
+                    <div className="flex items-center gap-4">
+                        <span className="grid h-16 w-16 shrink-0 place-items-center rounded-2xl bg-gradient-to-br from-[#9365f2] to-[#e34ba6] text-xl font-black text-white shadow-lg shadow-accent/25">
+                            {iniciales(usuario?.nombre)}
+                        </span>
+                        <div className="min-w-0">
+                            <p className="workspace-eyebrow flex items-center gap-2">
+                                <Sparkles className="h-3.5 w-3.5" aria-hidden="true" /> TU CUENTA
+                            </p>
+                            <h2 className="mt-1 truncate text-2xl font-extrabold tracking-tight text-texto-soft">{usuario?.nombre ?? 'Usuario'}</h2>
+                            <p className="truncate text-sm text-sutil">{usuario?.correo ?? 'sin correo'}</p>
+                        </div>
+                    </div>
+                    <div className="flex items-center gap-4">
+                        <div className="rounded-2xl border border-white/10 bg-black/25 px-5 py-3 text-center">
+                            <strong className="block text-3xl font-black tracking-tight text-texto-soft"><Contador valor={preferenciasActivas} pad={2} /></strong>
+                            <span className="mt-1 block text-[0.62rem] font-bold uppercase tracking-[0.12em] text-sutil">Preferencias</span>
+                        </div>
+                        <span className="inline-flex w-fit rounded-full border border-accent-soft/30 bg-accent-soft/10 px-3.5 py-2 text-xs font-bold uppercase tracking-wider text-accent-soft">
+                            {ETIQUETA_ROL[usuario?.rol] ?? 'Usuario'}
+                        </span>
+                    </div>
+                </div>
+            </section>
+
             {aviso && (
                 <p className="mt-4 max-w-3xl rounded-2xl border border-exito/25 bg-exito/10 px-4 py-3 text-sm font-semibold text-exito-soft">
                     {aviso}
                 </p>
             )}
 
-            <section className="mt-6 grid gap-5 lg:grid-cols-2">
-                <article className="rounded-3xl border border-border bg-surface/70 p-6 lg:col-span-2">
+            <section ref={contenedorRef} className="mt-6 grid gap-5 lg:grid-cols-2">
+                <article data-tarjeta className="rounded-3xl border border-border bg-surface/70 p-6 lg:col-span-2">
                     <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
                         <span className="grid h-16 w-16 shrink-0 place-items-center rounded-2xl bg-gradient-to-br from-[#9365f2] to-[#e34ba6] text-xl font-black text-white">
                             {iniciales(usuario?.nombre)}
@@ -102,7 +159,7 @@ export default function Configuracion() {
                     </div>
                 </article>
 
-                <article className="rounded-3xl border border-border bg-surface/70 p-6">
+                <article data-tarjeta className="rounded-3xl border border-border bg-surface/70 p-6">
                     <h2 className="text-base font-bold text-texto-soft">Datos del perfil</h2>
                     <p className="mt-1 text-xs text-sutil">Información asociada a tu cuenta.</p>
                     <div className="mt-5 grid gap-4">
@@ -117,7 +174,7 @@ export default function Configuracion() {
                     </div>
                 </article>
 
-                <article className="rounded-3xl border border-border bg-surface/70 p-6">
+                <article data-tarjeta className="rounded-3xl border border-border bg-surface/70 p-6">
                     <h2 className="text-base font-bold text-texto-soft">Seguridad</h2>
                     <p className="mt-1 text-xs text-sutil">Actualiza tu contraseña periódicamente.</p>
                     <form className="mt-5 grid gap-4" onSubmit={manejarSeguridad}>
@@ -160,7 +217,7 @@ export default function Configuracion() {
                     </form>
                 </article>
 
-                <article className="rounded-3xl border border-border bg-surface/70 p-6 lg:col-span-2">
+                <article data-tarjeta className="rounded-3xl border border-border bg-surface/70 p-6 lg:col-span-2">
                     <h2 className="text-base font-bold text-texto-soft">Preferencias</h2>
                     <p className="mt-1 text-xs text-sutil">Personaliza cómo Z-ONE se comunica contigo.</p>
                     <div className="mt-5 grid gap-3 lg:grid-cols-2">

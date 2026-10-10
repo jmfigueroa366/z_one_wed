@@ -2,7 +2,20 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useLocation } from 'react-router-dom';
 import anime from 'animejs';
-import { CalendarClock, Sparkles } from 'lucide-react';
+import {
+    CalendarClock,
+    Clock,
+    Coins,
+    Disc3,
+    Layers,
+    MapPin,
+    Mic,
+    Music,
+    Send,
+    SlidersHorizontal,
+    Sparkles,
+    Wand2,
+} from 'lucide-react';
 import { Contador, Ecualizador } from './Animados.jsx';
 import { useAuth } from '../context/AuthContext.jsx';
 import { useColaboradores } from '../hooks/useColaboradores.js';
@@ -22,7 +35,7 @@ import {
     seSolapan,
 } from '../utils/solicitudes.js';
 import { formatearFecha, formatearMoneda } from '../utils/helpers.js';
-import { BOTON_PRIMARIO, clasePillEstado } from '../styles/clases.js';
+import { BOTON_PRIMARIO, CAMPO, ETIQUETA, clasePillEstado } from '../styles/clases.js';
 import '../styles/tailwind.css';
 
 const FORM_INICIAL = {
@@ -34,11 +47,12 @@ const FORM_INICIAL = {
     cancion_id: '',
 };
 
-const estilos = {
-    campo: 'w-full rounded-lg border border-border bg-surface-2 px-3 py-2 text-texto outline-none transition focus:border-accent focus:ring-2 focus:ring-accent/40',
-    etiqueta: 'mb-1 block text-xs font-semibold uppercase tracking-wider text-sutil',
-    parteActiva: 'rounded-full border border-accent bg-accent/20 px-3 py-1 text-sm font-medium text-texto transition',
-    parteInactiva: 'rounded-full border border-border bg-surface-2 px-3 py-1 text-sm text-sutil transition hover:border-accent/50 hover:text-texto',
+const TIPOS_META = {
+    [TIPOS_SOLICITUD.GRABACION]: { icono: Mic, ayuda: 'Voces e instrumentos' },
+    [TIPOS_SOLICITUD.MEZCLA]: { icono: SlidersHorizontal, ayuda: 'Equilibrar pistas' },
+    [TIPOS_SOLICITUD.MASTERIZACION]: { icono: Disc3, ayuda: 'Acabado final' },
+    [TIPOS_SOLICITUD.ENSAYO]: { icono: Music, ayuda: 'Practicar en cabina' },
+    [TIPOS_SOLICITUD.PRODUCCION]: { icono: Wand2, ayuda: 'Arreglos y dirección' },
 };
 
 const MENOS_MOVIMIENTO = () =>
@@ -56,6 +70,32 @@ const ACENTO_ESTADO = {
     expirada: '#f2a4b1',
 };
 const acentoEstado = (estado) => ACENTO_ESTADO[estado] ?? '#a477ff';
+
+function Paso({ numero, titulo, icono: Icono }) {
+    return (
+        <div className="mb-4 flex items-center gap-3">
+            <span className="grid h-9 w-9 shrink-0 place-items-center rounded-xl border border-accent/30 bg-accent/10 text-sm font-black text-accent-soft">
+                {numero}
+            </span>
+            <h3 className="flex items-center gap-2 text-sm font-bold uppercase tracking-wider text-texto-soft">
+                {Icono && <Icono className="h-4 w-4 text-accent-soft" aria-hidden="true" />}
+                {titulo}
+            </h3>
+        </div>
+    );
+}
+
+function Dato({ icono: Icono, etiqueta, valor }) {
+    return (
+        <span className="flex items-start gap-2.5">
+            <Icono className="mt-0.5 h-4 w-4 shrink-0 text-accent-soft" aria-hidden="true" />
+            <span className="grid gap-0.5">
+                <strong className="text-[0.62rem] font-bold uppercase tracking-[0.12em] text-sutil">{etiqueta}</strong>
+                <span className="text-sm text-texto">{valor}</span>
+            </span>
+        </span>
+    );
+}
 
 export default function MisSolicitudes() {
     const { usuario } = useAuth();
@@ -94,7 +134,7 @@ export default function MisSolicitudes() {
         .filter((solicitud) =>
             String(solicitud.usuario_id) === String(usuario?.id)
             || (colaborador && String(solicitud.colaborador_id) === String(colaborador.id)))
-        .sort((a, b) => String(a.fecha ?? '').localeCompare(String(b.fecha ?? ''))),
+        .sort((a, b) => String(b.fecha ?? '').localeCompare(String(a.fecha ?? ''))),
     [solicitudes, usuario, colaborador]);
 
     const resumen = useMemo(() => ({
@@ -209,49 +249,50 @@ export default function MisSolicitudes() {
         return canciones.find((item) => String(item.id) === String(solicitud.cancion_id))?.nombre ?? 'Canción no encontrada';
     };
 
+    const pasoFecha = esGrabacion ? '04' : '03';
+
     return (
         <main className="workspace-content" data-page="mis-solicitudes">
-            <header className="page-heading relative border-l-4 border-accent pl-4">
-                <div aria-hidden="true" className="pointer-events-none absolute -top-20 right-24 h-52 w-52 animate-aurora rounded-full bg-[#9365f2]/18 blur-3xl" />
-                <p className="workspace-eyebrow">RESERVAS DEL ESTUDIO</p>
-                <h1>Mis solicitudes</h1>
-                <p>Solicita una cabina para grabar, mezclar, masterizar, ensayar o producir. El administrador la confirmará.</p>
-            </header>
-
-            {mensaje && <p className="mt-4 rounded-xl border border-exito/30 bg-exito/10 px-4 py-3 text-sm text-exito-soft" role="status">{mensaje}</p>}
-            {error && <p className="mt-4 rounded-xl border border-peligro/30 bg-peligro/10 px-4 py-3 text-sm text-peligro-soft" role="alert">{error}</p>}
-
             <section
-                className="relative mt-6 overflow-hidden rounded-[2rem] border border-accent/25 p-6 sm:p-7"
+                className="relative overflow-hidden rounded-[2rem] border border-accent/25 p-6 sm:p-8"
                 style={{
                     background:
-                        'radial-gradient(ellipse at 90% 8%, rgba(227, 75, 166, 0.28), transparent 46%), radial-gradient(ellipse at 4% 100%, rgba(111, 75, 187, 0.34), transparent 50%), linear-gradient(120deg, rgba(111, 75, 187, 0.34), rgba(23, 19, 34, 0.97) 72%)',
+                        'radial-gradient(ellipse at 88% 6%, rgba(227, 75, 166, 0.30), transparent 46%), radial-gradient(ellipse at 0% 100%, rgba(111, 75, 187, 0.36), transparent 50%), linear-gradient(120deg, rgba(111, 75, 187, 0.38), rgba(23, 19, 34, 0.97) 72%)',
                 }}
             >
-                <div aria-hidden="true" className="pointer-events-none absolute -right-12 -top-24 h-60 w-60 animate-aurora rounded-full bg-[#e34ba6]/25 blur-3xl" />
-                <CalendarClock aria-hidden="true" className="pointer-events-none absolute right-8 top-1/2 hidden h-40 w-40 -translate-y-1/2 text-white/[0.05] lg:block" />
-                <div className="relative flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
+                <div aria-hidden="true" className="pointer-events-none absolute -right-14 -top-24 h-64 w-64 animate-aurora rounded-full bg-[#e34ba6]/25 blur-3xl" />
+                <div aria-hidden="true" className="pointer-events-none absolute -bottom-24 left-16 h-56 w-56 animate-aurora rounded-full bg-[#9365f2]/25 blur-3xl [animation-delay:-6s]" />
+                <CalendarClock aria-hidden="true" className="pointer-events-none absolute right-8 top-1/2 hidden h-44 w-44 -translate-y-1/2 text-white/[0.05] xl:block" />
+
+                <div className="relative grid gap-7 lg:grid-cols-[1fr_auto] lg:items-center">
                     <div className="max-w-xl">
                         <p className="workspace-eyebrow flex items-center gap-2">
                             <Sparkles className="h-3.5 w-3.5" aria-hidden="true" /> TU AGENDA DE ESTUDIO
                         </p>
-                        <h2 className="mt-1 text-3xl font-extrabold tracking-tight text-texto-soft sm:text-4xl">
+                        <h1 className="mt-2 text-3xl font-extrabold tracking-tight text-texto-soft sm:text-4xl">
                             Reserva, produce, suena.
-                        </h2>
+                        </h1>
                         <p className="mt-3 text-sm leading-7 text-sutil">
-                            Pide tu cabina para grabar, mezclar o ensayar. El estudio confirma y tú sigues el estado de cada reserva.
+                            Pide tu cabina para grabar, mezclar, masterizar o ensayar. El estudio confirma y tú sigues el estado de cada reserva.
                         </p>
+                        <a
+                            href="#nueva-reserva"
+                            className="mt-6 inline-flex min-h-[46px] items-center gap-2 rounded-xl bg-gradient-to-r from-[#9365f2] to-[#e34ba6] px-5 text-sm font-bold text-white shadow-lg shadow-accent/30 transition hover:-translate-y-0.5 hover:brightness-110"
+                        >
+                            <Send className="h-4 w-4" aria-hidden="true" /> Nueva reserva
+                        </a>
                     </div>
-                    <div className="flex items-center gap-3">
-                        <div className="rounded-2xl border border-white/10 bg-black/25 px-4 py-3 text-center">
+
+                    <div className="flex flex-wrap items-center gap-3">
+                        <div className="min-w-[84px] rounded-2xl border border-white/10 bg-black/25 px-4 py-3 text-center">
                             <strong className="block text-3xl font-black tracking-tight text-texto-soft"><Contador valor={resumen.total} pad={2} /></strong>
                             <span className="mt-1 block text-[0.62rem] font-bold uppercase tracking-[0.12em] text-sutil">Total</span>
                         </div>
-                        <div className="rounded-2xl border border-white/10 bg-black/25 px-4 py-3 text-center">
+                        <div className="min-w-[84px] rounded-2xl border border-white/10 bg-black/25 px-4 py-3 text-center">
                             <strong className="block text-3xl font-black tracking-tight text-aviso-soft"><Contador valor={resumen.activas} pad={2} /></strong>
                             <span className="mt-1 block text-[0.62rem] font-bold uppercase tracking-[0.12em] text-sutil">Activas</span>
                         </div>
-                        <div className="rounded-2xl border border-white/10 bg-black/25 px-4 py-3 text-center">
+                        <div className="min-w-[84px] rounded-2xl border border-white/10 bg-black/25 px-4 py-3 text-center">
                             <strong className="block text-3xl font-black tracking-tight text-exito-soft"><Contador valor={resumen.confirmadas} pad={2} /></strong>
                             <span className="mt-1 block text-[0.62rem] font-bold uppercase tracking-[0.12em] text-sutil">Confirmadas</span>
                         </div>
@@ -260,210 +301,273 @@ export default function MisSolicitudes() {
                 </div>
             </section>
 
-            <section className="mx-auto mb-8 max-w-4xl rounded-[2rem] border border-border bg-surface/60 p-6 shadow-lg shadow-black/20 backdrop-blur sm:p-7">
-                <div className="mb-5 flex items-center gap-3">
-                    <span className="grid h-11 w-11 place-items-center rounded-2xl bg-gradient-to-br from-[#9365f2] to-[#e34ba6] text-lg text-white" aria-hidden="true">✎</span>
+            {mensaje && <p className="mt-5 rounded-xl border border-exito/30 bg-exito/10 px-4 py-3 text-sm text-exito-soft" role="status">{mensaje}</p>}
+            {error && <p className="mt-5 rounded-xl border border-peligro/30 bg-peligro/10 px-4 py-3 text-sm text-peligro-soft" role="alert">{error}</p>}
+
+            <section
+                id="nueva-reserva"
+                className="mt-6 scroll-mt-24 rounded-[2rem] border border-border bg-surface/60 p-6 shadow-lg shadow-black/20 backdrop-blur sm:p-8"
+            >
+                <div className="mb-7 flex items-center gap-3">
+                    <span className="grid h-12 w-12 place-items-center rounded-2xl bg-gradient-to-br from-[#9365f2] to-[#e34ba6] text-white shadow-lg shadow-accent/25">
+                        <Send className="h-5 w-5" aria-hidden="true" />
+                    </span>
                     <div>
                         <p className="workspace-eyebrow">NUEVA RESERVA</p>
-                        <h2 className="text-xl font-bold tracking-tight text-texto-soft">Nueva solicitud</h2>
+                        <h2 className="text-2xl font-bold tracking-tight text-texto-soft">Arma tu sesión</h2>
                     </div>
                 </div>
-                <form className="grid gap-5" onSubmit={enviar} aria-label="Crear solicitud de cabina">
-                    <div className="grid gap-5 sm:grid-cols-2">
-                        <label className="flex flex-col">
-                            <span className={estilos.etiqueta}>Tipo de servicio</span>
-                            <select
-                                className={estilos.campo}
-                                value={form.tipo}
-                                onChange={(evento) => cambiarTipo(evento.target.value)}
-                            >
-                                {Object.values(TIPOS_SOLICITUD).map((tipo) => (
-                                    <option key={tipo} value={tipo}>{etiquetaTipo(tipo)}</option>
-                                ))}
-                            </select>
-                        </label>
 
-                        <label className="flex flex-col">
-                            <span className={estilos.etiqueta}>Cabina</span>
-                            <select
-                                className={estilos.campo}
-                                value={form.sala_id}
-                                onChange={(evento) => cambiarCampo('sala_id', evento.target.value)}
-                            >
-                                <option value="">Selecciona la cabina…</option>
-                                {salas.map((sala) => (
-                                    <option key={sala.id} value={sala.id}>
-                                        {sala.nombre} — {formatearMoneda(sala.precio_hora)}/h
-                                    </option>
-                                ))}
-                            </select>
-                        </label>
+                <form className="grid gap-8" onSubmit={enviar} aria-label="Crear solicitud de cabina">
+                    <div>
+                        <Paso numero="01" titulo="Tipo de servicio" icono={Sparkles} />
+                        <div className="grid gap-3 sm:grid-cols-3 lg:grid-cols-5" role="group" aria-label="Tipo de servicio">
+                            {Object.values(TIPOS_SOLICITUD).map((tipo) => {
+                                const meta = TIPOS_META[tipo];
+                                const Icono = meta.icono;
+                                const activo = form.tipo === tipo;
+                                return (
+                                    <button
+                                        key={tipo}
+                                        type="button"
+                                        onClick={() => cambiarTipo(tipo)}
+                                        aria-pressed={activo}
+                                        className={`group flex flex-col gap-2 rounded-2xl border p-4 text-left transition ${
+                                            activo
+                                                ? 'border-accent/60 bg-gradient-to-br from-[#5b418f]/50 to-transparent shadow-lg shadow-accent/10'
+                                                : 'border-border bg-white/[0.02] hover:-translate-y-0.5 hover:border-accent/40'
+                                        }`}
+                                    >
+                                        <span className={`grid h-10 w-10 place-items-center rounded-xl ${
+                                            activo ? 'bg-gradient-to-br from-[#9365f2] to-[#e34ba6] text-white' : 'bg-white/[0.05] text-accent-soft'
+                                        }`}>
+                                            <Icono className="h-5 w-5" aria-hidden="true" />
+                                        </span>
+                                        <span className="text-sm font-bold text-texto-soft">{etiquetaTipo(tipo)}</span>
+                                        <span className="text-xs text-sutil">{meta.ayuda}</span>
+                                    </button>
+                                );
+                            })}
+                        </div>
+                    </div>
+
+                    <div>
+                        <Paso numero="02" titulo="Elige tu cabina" icono={MapPin} />
+                        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3" role="group" aria-label="Cabina">
+                            {salas.map((sala) => {
+                                const activo = String(form.sala_id) === String(sala.id);
+                                return (
+                                    <button
+                                        key={sala.id}
+                                        type="button"
+                                        onClick={() => cambiarCampo('sala_id', String(sala.id))}
+                                        aria-pressed={activo}
+                                        className={`group relative flex flex-col gap-2 overflow-hidden rounded-2xl border p-4 text-left transition ${
+                                            activo
+                                                ? 'border-accent/60 bg-gradient-to-br from-[#5b418f]/50 to-transparent'
+                                                : 'border-border bg-white/[0.02] hover:-translate-y-0.5 hover:border-accent/40'
+                                        }`}
+                                    >
+                                        <span className="flex items-center justify-between gap-2">
+                                            <span className="text-sm font-bold text-texto-soft">{sala.nombre}</span>
+                                            <MapPin className={`h-4 w-4 shrink-0 ${activo ? 'text-magenta' : 'text-sutil'}`} aria-hidden="true" />
+                                        </span>
+                                        <span className="flex items-baseline gap-1 text-sutil">
+                                            <strong className="text-lg font-extrabold text-texto-soft">{formatearMoneda(sala.precio_hora)}</strong>
+                                            <span className="text-xs">/hora</span>
+                                        </span>
+                                        {activo && <span aria-hidden="true" className="pointer-events-none absolute -right-8 -top-8 h-20 w-20 rounded-full bg-[#e34ba6]/25 blur-2xl" />}
+                                    </button>
+                                );
+                            })}
+                        </div>
                     </div>
 
                     {esGrabacion && (
-                        <div className="grid gap-5">
-                            <label className="flex flex-col">
-                                <span className={estilos.etiqueta}>Canción a grabar</span>
-                                <select
-                                    className={estilos.campo}
-                                    value={form.cancion_id}
-                                    onChange={(evento) => cambiarCancion(evento.target.value)}
-                                >
-                                    <option value="">Grabación general (sin canción específica)</option>
-                                    {canciones.map((cancion) => {
-                                        const proyecto = proyectoDe(cancion.id);
-                                        return (
-                                            <option key={cancion.id} value={cancion.id}>
-                                                {cancion.nombre}
-                                                {proyecto ? ` — ${proyecto.nombre}` : ''}
-                                            </option>
-                                        );
-                                    })}
-                                </select>
-                            </label>
-
-                            {cancionSeleccionada && (cancionSeleccionada.partes ?? []).length > 0 && (
-                                <fieldset>
-                                    <legend className={estilos.etiqueta}>Partes a grabar (audio separado por parte)</legend>
-                                    <div className="flex flex-wrap gap-2">
-                                        {(cancionSeleccionada.partes ?? []).map((parte) => {
-                                            const activa = partesMarcadas.includes(parte);
+                        <div>
+                            <Paso numero="03" titulo="Detalles de grabación" icono={Music} />
+                            <div className="grid gap-5 rounded-2xl border border-border bg-white/[0.02] p-5">
+                                <label className="flex flex-col">
+                                    <span className={ETIQUETA}>Canción a grabar</span>
+                                    <select
+                                        className={CAMPO}
+                                        value={form.cancion_id}
+                                        onChange={(evento) => cambiarCancion(evento.target.value)}
+                                    >
+                                        <option value="">Grabación general (sin canción específica)</option>
+                                        {canciones.map((cancion) => {
+                                            const proyecto = proyectoDe(cancion.id);
                                             return (
-                                                <button
-                                                    key={parte}
-                                                    className={activa ? estilos.parteActiva : estilos.parteInactiva}
-                                                    aria-pressed={activa}
-                                                    onClick={() => alternarParte(parte)}
-                                                    type="button"
+                                                <option key={cancion.id} value={cancion.id}>
+                                                    {cancion.nombre}
+                                                    {proyecto ? ` — ${proyecto.nombre}` : ''}
+                                                </option>
+                                            );
+                                        })}
+                                    </select>
+                                </label>
+
+                                {cancionSeleccionada && (cancionSeleccionada.partes ?? []).length > 0 && (
+                                    <fieldset>
+                                        <legend className={ETIQUETA}>Partes a grabar (un audio por parte)</legend>
+                                        <div className="flex flex-wrap gap-2">
+                                            {(cancionSeleccionada.partes ?? []).map((parte) => {
+                                                const activa = partesMarcadas.includes(parte);
+                                                return (
+                                                    <button
+                                                        key={parte}
+                                                        className={`inline-flex items-center gap-1.5 rounded-full border px-3.5 py-2 text-sm font-semibold transition ${
+                                                            activa
+                                                                ? 'border-accent/60 bg-gradient-to-r from-[#9365f2]/40 to-[#e34ba6]/30 text-white'
+                                                                : 'border-border bg-white/[0.03] text-sutil hover:border-accent/50 hover:text-texto'
+                                                        }`}
+                                                        aria-pressed={activa}
+                                                        onClick={() => alternarParte(parte)}
+                                                        type="button"
+                                                    >
+                                                        <Layers className="h-3.5 w-3.5" aria-hidden="true" />
+                                                        {parte}
+                                                    </button>
+                                                );
+                                            })}
+                                        </div>
+                                    </fieldset>
+                                )}
+
+                                {cancionSeleccionada && (cancionSeleccionada.partes ?? []).length === 0 && (
+                                    <p className="text-xs text-sutil">
+                                        Esta canción no tiene partes definidas. Agréguelas en "Mis proyectos"
+                                        si quieres dividir la grabación en audios por parte.
+                                    </p>
+                                )}
+                            </div>
+                        </div>
+                    )}
+
+                    <div>
+                        <Paso numero={pasoFecha} titulo="Fecha y horario" icono={CalendarClock} />
+                        <div className="grid gap-5 sm:grid-cols-3">
+                            <label className="flex flex-col">
+                                <span className={ETIQUETA}>Fecha</span>
+                                <input
+                                    className={CAMPO}
+                                    type="date"
+                                    value={form.fecha}
+                                    onChange={(evento) => cambiarCampo('fecha', evento.target.value)}
+                                />
+                            </label>
+                            <label className="flex flex-col">
+                                <span className={ETIQUETA}>Desde</span>
+                                <input
+                                    className={CAMPO}
+                                    type="time"
+                                    value={form.hora_inicio}
+                                    onChange={(evento) => cambiarCampo('hora_inicio', evento.target.value)}
+                                />
+                            </label>
+                            <label className="flex flex-col">
+                                <span className={ETIQUETA}>Hasta</span>
+                                <input
+                                    className={CAMPO}
+                                    type="time"
+                                    value={form.hora_fin}
+                                    onChange={(evento) => cambiarCampo('hora_fin', evento.target.value)}
+                                />
+                            </label>
+                        </div>
+
+                        {form.sala_id && form.fecha && (
+                            <div className="mt-5 flex flex-col gap-2 rounded-2xl border border-border bg-surface-2/60 px-4 py-3.5">
+                                <p className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-sutil">
+                                    <Clock className="h-3.5 w-3.5" aria-hidden="true" />
+                                    Disponibilidad · {obtenerSala(form.sala_id)} · {formatearFecha(form.fecha)}
+                                </p>
+                                {ocupadas.length ? (
+                                    <div className="flex flex-wrap gap-2">
+                                        {ocupadas.map((franja) => {
+                                            const chocando = seSolapan(franja, franjaPropuesta);
+                                            return (
+                                                <span
+                                                    key={franja}
+                                                    className={`rounded-full px-2.5 py-1 text-xs ${
+                                                        chocando
+                                                            ? 'border border-peligro/40 bg-peligro/10 text-peligro'
+                                                            : 'border border-border bg-surface-3 text-sutil'
+                                                    }`}
                                                 >
-                                                    {parte}
-                                                </button>
+                                                    {franja} reservado
+                                                </span>
                                             );
                                         })}
                                     </div>
-                                    <p className="mt-2 text-xs text-sutil">
-                                        El estudio grabará un audio por cada parte marcada.
+                                ) : (
+                                    <p className="text-sm text-exito">Sin reservas ese día. Cabina despejada.</p>
+                                )}
+                                {tieneConflicto && (
+                                    <p className="text-sm text-peligro" role="alert">
+                                        Tu franja ({franjaPropuesta}) choca con la reserva indicada. Elige otra.
                                     </p>
-                                </fieldset>
-                            )}
-
-                            {cancionSeleccionada && (cancionSeleccionada.partes ?? []).length === 0 && (
-                                <p className="text-xs text-sutil">
-                                    Esta canción no tiene partes definidas. Agréguelas en "Mis proyectos"
-                                    si quieres dividir la grabación en audios por parte.
-                                </p>
-                            )}
-                        </div>
-                    )}
-
-                    <div className="grid gap-5 sm:grid-cols-3">
-                        <label className="flex flex-col">
-                            <span className={estilos.etiqueta}>Fecha</span>
-                            <input
-                                className={estilos.campo}
-                                type="date"
-                                value={form.fecha}
-                                onChange={(evento) => cambiarCampo('fecha', evento.target.value)}
-                            />
-                        </label>
-                        <label className="flex flex-col">
-                            <span className={estilos.etiqueta}>Desde</span>
-                            <input
-                                className={estilos.campo}
-                                type="time"
-                                value={form.hora_inicio}
-                                onChange={(evento) => cambiarCampo('hora_inicio', evento.target.value)}
-                            />
-                        </label>
-                        <label className="flex flex-col">
-                            <span className={estilos.etiqueta}>Hasta</span>
-                            <input
-                                className={estilos.campo}
-                                type="time"
-                                value={form.hora_fin}
-                                onChange={(evento) => cambiarCampo('hora_fin', evento.target.value)}
-                            />
-                        </label>
+                                )}
+                            </div>
+                        )}
                     </div>
 
-                    {form.sala_id && form.fecha && (
-                        <div className="flex flex-col gap-2 rounded-lg border border-border bg-surface-2 px-4 py-3">
-                            <p className="text-xs font-semibold uppercase tracking-wider text-sutil">
-                                Disponibilidad · {obtenerSala(form.sala_id)} · {formatearFecha(form.fecha)}
-                            </p>
-                            {ocupadas.length ? (
-                                <div className="flex flex-wrap gap-2">
-                                    {ocupadas.map((franja) => {
-                                        const chocando = seSolapan(franja, franjaPropuesta);
-                                        return (
-                                            <span
-                                                key={franja}
-                                                className={`rounded-full px-2.5 py-1 text-xs ${
-                                                    chocando
-                                                        ? 'border border-peligro/40 bg-peligro/10 text-peligro'
-                                                        : 'border border-border bg-surface-3 text-sutil'
-                                                }`}
-                                            >
-                                                {franja} reservado
-                                            </span>
-                                        );
-                                    })}
-                                </div>
-                            ) : (
-                                <p className="text-sm text-exito">Sin reservas ese día. Cabina despejada.</p>
-                            )}
-                            {tieneConflicto && (
-                                <p className="text-sm text-peligro" role="alert">
-                                    Tu franja ({franjaPropuesta}) choca con la reserva indicada. Elige otra.
-                                </p>
-                            )}
+                    <div className="flex flex-wrap items-center justify-between gap-4 rounded-2xl border border-border bg-gradient-to-r from-[#5b418f]/25 to-transparent p-5">
+                        <div className="flex items-center gap-3">
+                            <span className="grid h-11 w-11 place-items-center rounded-xl bg-white/[0.06] text-accent-soft" aria-hidden="true">
+                                <Coins className="h-5 w-5" />
+                            </span>
+                            <div>
+                                <p className="text-[0.62rem] font-bold uppercase tracking-[0.12em] text-sutil">Estimado de la franja</p>
+                                <strong className="text-2xl font-black tracking-tight text-texto-soft">
+                                    {estimado !== null ? formatearMoneda(estimado) : '—'}
+                                </strong>
+                            </div>
                         </div>
-                    )}
-
-                    <div className="flex flex-wrap items-center justify-between gap-3">
-                        {estimado !== null ? (
-                            <p className="text-sm text-sutil">
-                                Estimado de la franja: <span className="font-semibold text-texto">{formatearMoneda(estimado)}</span>
-                            </p>
-                        ) : (
-                            <p className="text-sm text-sutil">La franja te dará un estimado del costo.</p>
-                        )}
-                        <button
-                            className={BOTON_PRIMARIO}
-                            type="submit"
-                        >
-                            Enviar solicitud
+                        <button className={`${BOTON_PRIMARIO} w-full sm:w-auto`} type="submit">
+                            <Send className="mr-2 h-4 w-4" aria-hidden="true" /> Enviar solicitud
                         </button>
                     </div>
                 </form>
             </section>
 
-            <section className="mx-auto max-w-4xl" aria-labelledby="mis-solicitudes-title">
-                <div className="mb-4 flex items-center justify-between">
+            <section className="mt-9" aria-labelledby="mis-solicitudes-title">
+                <div className="mb-5 flex flex-wrap items-end justify-between gap-3">
                     <div>
                         <p className="workspace-eyebrow">HISTORIAL</p>
-                        <h2 id="mis-solicitudes-title" className="text-xl font-semibold text-texto">Tus solicitudes</h2>
+                        <h2 id="mis-solicitudes-title" className="mt-1 text-2xl font-bold tracking-tight text-texto-soft">
+                            Tus solicitudes
+                        </h2>
                     </div>
+                    <span className="rounded-full border border-accent-soft/30 px-3 py-1.5 text-[0.68rem] font-extrabold tracking-[0.1em] text-accent-soft">
+                        {String(resumen.total).padStart(2, '0')} REGISTRADAS
+                    </span>
                 </div>
 
                 {misSolicitudes.length ? (
-                    <div className="grid gap-4" ref={historialRef}>
+                    <div ref={historialRef} className="relative grid gap-4">
+                        <span aria-hidden="true" className="pointer-events-none absolute bottom-3 left-4 top-3 w-px bg-gradient-to-b from-accent/50 via-white/10 to-transparent" />
                         {misSolicitudes.map((solicitud) => {
                             const sala = salas.find((sala) => String(sala.id) === String(solicitud.sala_id));
-                            const estimado = estimadoSala(sala, solicitud.franja);
+                            const costo = estimadoSala(sala, solicitud.franja);
                             const acento = acentoEstado(solicitud.estado);
+                            const IconoTipo = TIPOS_META[solicitud.tipo]?.icono ?? Music;
 
                             return (
-                                <article
-                                    data-solicitud
-                                    className="relative overflow-hidden rounded-2xl border border-border bg-white/[0.02] p-5 transition hover:-translate-y-1 hover:shadow-xl hover:shadow-black/40"
-                                    style={{ borderColor: `${acento}44` }}
-                                    key={solicitud.id}
-                                >
-                                    <span aria-hidden="true" className="absolute inset-y-0 left-0 w-1" style={{ background: `linear-gradient(to bottom, ${acento}, ${acento}55)` }} />
-                                    <span aria-hidden="true" className="pointer-events-none absolute -right-10 -top-10 h-24 w-24 rounded-full blur-2xl" style={{ background: `${acento}22` }} />
-                                    <div>
-                                        <div className="flex flex-wrap items-start justify-between gap-3">
+                                <article data-solicitud className="relative pl-12" key={solicitud.id}>
+                                    <span
+                                        className="absolute left-0 top-5 grid h-8 w-8 place-items-center rounded-full border bg-surface-2"
+                                        style={{ borderColor: `${acento}66` }}
+                                        aria-hidden="true"
+                                    >
+                                        <IconoTipo className="h-4 w-4" style={{ color: acento }} />
+                                    </span>
+                                    <div
+                                        className="group relative overflow-hidden rounded-2xl border bg-white/[0.02] p-5 transition hover:-translate-y-0.5 hover:shadow-xl hover:shadow-black/40"
+                                        style={{ borderColor: `${acento}44` }}
+                                    >
+                                        <span aria-hidden="true" className="pointer-events-none absolute -right-12 -top-12 h-28 w-28 rounded-full blur-2xl" style={{ background: `${acento}22` }} />
+                                        <div className="relative flex flex-wrap items-start justify-between gap-3">
                                             <div>
                                                 <p className="workspace-eyebrow">{formatearFecha(solicitud.fecha, { weekday: 'short', day: 'numeric' }) || 'Fecha pendiente'}</p>
                                                 <h3 className="mt-1 text-lg font-bold text-texto-soft">{etiquetaTipo(solicitud.tipo)}</h3>
@@ -472,17 +576,17 @@ export default function MisSolicitudes() {
                                                 {etiquetaEstado(solicitud.estado)}
                                             </span>
                                         </div>
-                                        <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-                                            <span className="grid gap-0.5 text-sm text-texto"><strong className="text-xs font-bold uppercase tracking-wider text-sutil">Sala</strong>{obtenerSala(solicitud.sala_id)}</span>
-                                            <span className="grid gap-0.5 text-sm text-texto"><strong className="text-xs font-bold uppercase tracking-wider text-sutil">Horario</strong>{solicitud.franja || 'Por coordinar'}</span>
+                                        <div className="relative mt-4 grid gap-x-6 gap-y-4 sm:grid-cols-2 lg:grid-cols-3">
+                                            <Dato icono={MapPin} etiqueta="Sala" valor={obtenerSala(solicitud.sala_id)} />
+                                            <Dato icono={Clock} etiqueta="Horario" valor={solicitud.franja || 'Por coordinar'} />
                                             {nombreCancionDe(solicitud) && (
-                                                <span className="grid gap-0.5 text-sm text-texto"><strong className="text-xs font-bold uppercase tracking-wider text-sutil">Canción</strong>{nombreCancionDe(solicitud)}</span>
+                                                <Dato icono={Music} etiqueta="Canción" valor={nombreCancionDe(solicitud)} />
                                             )}
                                             {(solicitud.partes ?? []).length > 0 && (
-                                                <span className="grid gap-0.5 text-sm text-texto"><strong className="text-xs font-bold uppercase tracking-wider text-sutil">Partes</strong>{solicitud.partes.join(', ')}</span>
+                                                <Dato icono={Layers} etiqueta="Partes" valor={solicitud.partes.join(', ')} />
                                             )}
-                                            {estimado !== null && (
-                                                <span className="grid gap-0.5 text-sm text-texto"><strong className="text-xs font-bold uppercase tracking-wider text-sutil">Estimado</strong>{formatearMoneda(estimado)}</span>
+                                            {costo !== null && (
+                                                <Dato icono={Coins} etiqueta="Estimado" valor={formatearMoneda(costo)} />
                                             )}
                                         </div>
                                     </div>
@@ -491,9 +595,11 @@ export default function MisSolicitudes() {
                         })}
                     </div>
                 ) : (
-                    <p className="mx-auto rounded-xl border border-dashed border-border bg-surface/50 px-6 py-8 text-center text-sutil">
-                        No has enviado solicitudes todavía. Crea la primera arriba.
-                    </p>
+                    <div className="rounded-[2rem] border border-dashed border-border bg-surface/40 px-6 py-12 text-center">
+                        <Sparkles className="mx-auto h-8 w-8 text-accent-soft" aria-hidden="true" />
+                        <p className="mt-3 font-semibold text-texto-soft">Aún no has enviado solicitudes.</p>
+                        <p className="mt-1 text-sm text-sutil">Crea la primera con el formulario de arriba.</p>
+                    </div>
                 )}
             </section>
         </main>

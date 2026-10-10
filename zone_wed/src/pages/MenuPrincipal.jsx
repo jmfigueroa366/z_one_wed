@@ -2,6 +2,21 @@
 import { useEffect, useMemo, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import anime from 'animejs';
+import {
+    Activity,
+    BarChart3,
+    BookOpen,
+    CalendarDays,
+    Inbox,
+    Mic,
+    Mic2,
+    MessageCircle,
+    Music,
+    Play,
+    Settings,
+    ShieldCheck,
+    SlidersHorizontal,
+} from 'lucide-react';
 import { useAuth } from '../context/AuthContext.jsx';
 import { useSesiones } from '../hooks/useSesiones.js';
 import { artistasDestacados } from '../data/artistasDestacados.js';
@@ -49,18 +64,18 @@ function Contador({ valor, relleno = false }) {
 }
 
 const ACCESOS = [
-    { ruta: RUTAS.ESTUDIO, icono: '▶', etiqueta: 'Escuchar artistas', descripcion: 'Reproductor del estudio' },
-    { ruta: RUTAS.AGENDA, icono: '🗓', etiqueta: 'Agenda', descripcion: 'Reservas y actividades' },
-    { ruta: RUTAS.SESIONES, icono: '🎙', etiqueta: 'Sesiones', descripcion: 'Programa y registra' },
-    { ruta: RUTAS.SOLICITUDES, icono: '📩', etiqueta: 'Solicitudes', descripcion: 'Peticiones del estudio' },
-    { ruta: RUTAS.PROYECTOS, icono: '🎵', etiqueta: 'Proyectos', descripcion: 'Canciones y avances' },
-    { ruta: RUTAS.ARTISTAS, icono: '🎤', etiqueta: 'Artistas', descripcion: 'Talento del estudio' },
-    { ruta: RUTAS.PRODUCTORES, icono: '🎛', etiqueta: 'Productores', descripcion: 'Equipo de producción' },
-    { ruta: RUTAS.CATALOGO, icono: '📚', etiqueta: 'Catálogo', descripcion: 'Servicios y tarifas' },
-    { ruta: RUTAS.ESTADISTICAS, icono: '📊', etiqueta: 'Estadísticas', descripcion: 'Métricas del estudio' },
-    { ruta: RUTAS.PERMISOS, icono: '🔐', etiqueta: 'Permisos', descripcion: 'Roles y accesos' },
-    { ruta: RUTAS.CHATBOT, icono: '💬', etiqueta: 'Chatbot', descripcion: 'Asistente virtual' },
-    { ruta: RUTAS.CONFIGURACION, icono: '⚙', etiqueta: 'Configuración', descripcion: 'Ajustes de cuenta' },
+    { ruta: RUTAS.ESTUDIO, icono: Play, etiqueta: 'Escuchar artistas', descripcion: 'Reproductor del estudio' },
+    { ruta: RUTAS.AGENDA, icono: CalendarDays, etiqueta: 'Agenda', descripcion: 'Reservas y actividades' },
+    { ruta: RUTAS.SESIONES, icono: Mic, etiqueta: 'Sesiones', descripcion: 'Programa y registra' },
+    { ruta: RUTAS.SOLICITUDES, icono: Inbox, etiqueta: 'Solicitudes', descripcion: 'Peticiones del estudio' },
+    { ruta: RUTAS.PROYECTOS, icono: Music, etiqueta: 'Proyectos', descripcion: 'Canciones y avances' },
+    { ruta: RUTAS.ARTISTAS, icono: Mic2, etiqueta: 'Artistas', descripcion: 'Talento del estudio' },
+    { ruta: RUTAS.PRODUCTORES, icono: SlidersHorizontal, etiqueta: 'Productores', descripcion: 'Equipo de producción' },
+    { ruta: RUTAS.CATALOGO, icono: BookOpen, etiqueta: 'Catálogo', descripcion: 'Servicios y tarifas' },
+    { ruta: RUTAS.ESTADISTICAS, icono: BarChart3, etiqueta: 'Estadísticas', descripcion: 'Métricas del estudio' },
+    { ruta: RUTAS.PERMISOS, icono: ShieldCheck, etiqueta: 'Permisos', descripcion: 'Roles y accesos' },
+    { ruta: RUTAS.CHATBOT, icono: MessageCircle, etiqueta: 'Chatbot', descripcion: 'Asistente virtual' },
+    { ruta: RUTAS.CONFIGURACION, icono: Settings, etiqueta: 'Configuración', descripcion: 'Ajustes de cuenta' },
 ];
 
 export default function MenuPrincipal() {
@@ -95,10 +110,10 @@ export default function MenuPrincipal() {
     const accesos = ACCESOS.filter((item) => rutasPermitidas.includes(item.ruta)).slice(0, 8);
 
     const metricas = [
-        { etiqueta: 'Sesiones activas', valor: sesionesActivas, nota: 'Confirmadas o en proceso', icono: '◷', destacada: true },
-        { etiqueta: 'Sesiones registradas', valor: sesiones.length, nota: 'En la agenda del estudio', icono: '✦' },
-        { etiqueta: 'Artistas', valor: artistasDestacados.length, nota: 'Perfiles destacados', icono: '🎤', relleno: true },
-        { etiqueta: 'Canciones', valor: totalCanciones, nota: 'Disponibles para escuchar', icono: '♪', relleno: true },
+        { etiqueta: 'Sesiones activas', valor: sesionesActivas, nota: 'Confirmadas o en proceso', icono: Activity, destacada: true },
+        { etiqueta: 'Sesiones registradas', valor: sesiones.length, nota: 'En la agenda del estudio', icono: CalendarDays },
+        { etiqueta: 'Artistas', valor: artistasDestacados.length, nota: 'Perfiles destacados', icono: Mic2, relleno: true },
+        { etiqueta: 'Canciones', valor: totalCanciones, nota: 'Disponibles para escuchar', icono: Music, relleno: true },
     ];
 
     return (
@@ -145,7 +160,7 @@ export default function MenuPrincipal() {
                                     to={RUTAS.ESTUDIO}
                                     className="inline-flex min-h-[46px] items-center gap-2 rounded-xl border border-border bg-white/[0.05] px-5 text-sm font-bold text-texto transition hover:-translate-y-0.5 hover:border-accent/60"
                                 >
-                                    <span aria-hidden="true">▶</span> Escuchar artistas
+                                    <Play className="h-4 w-4" aria-hidden="true" /> Escuchar artistas
                                 </Link>
                             </div>
                         </div>
@@ -190,19 +205,24 @@ export default function MenuPrincipal() {
                 </section>
 
                 <section className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4" aria-label="Métricas del estudio">
-                    {metricas.map((metrica) => (
-                        <article key={metrica.etiqueta} data-tile className={TARJETA}>
-                            <span className="text-accent-soft" aria-hidden="true">{metrica.icono}</span>
-                            <p className="mt-3 text-sm text-sutil">{metrica.etiqueta}</p>
-                            <strong className="mt-1 block text-4xl font-extrabold tracking-tight text-texto-soft">
-                                <Contador valor={metrica.valor} relleno={metrica.relleno} />
-                            </strong>
-                            <span className="mt-1 block text-xs text-sutil/80">{metrica.nota}</span>
-                            {metrica.destacada && (
-                                <span className="pointer-events-none absolute -right-10 -top-10 h-28 w-28 rounded-full bg-[#9365f2]/25 blur-2xl" />
-                            )}
-                        </article>
-                    ))}
+                    {metricas.map((metrica) => {
+                        const Icono = metrica.icono;
+                        return (
+                            <article key={metrica.etiqueta} data-tile className={TARJETA}>
+                                <span className="grid h-10 w-10 place-items-center rounded-xl bg-white/[0.05] text-accent-soft" aria-hidden="true">
+                                    <Icono className="h-5 w-5" />
+                                </span>
+                                <p className="mt-3 text-sm text-sutil">{metrica.etiqueta}</p>
+                                <strong className="mt-1 block text-4xl font-extrabold tracking-tight text-texto-soft">
+                                    <Contador valor={metrica.valor} relleno={metrica.relleno} />
+                                </strong>
+                                <span className="mt-1 block text-xs text-sutil/80">{metrica.nota}</span>
+                                {metrica.destacada && (
+                                    <span className="pointer-events-none absolute -right-10 -top-10 h-28 w-28 rounded-full bg-[#9365f2]/25 blur-2xl" />
+                                )}
+                            </article>
+                        );
+                    })}
                 </section>
 
                 <section data-tile className="rounded-[2rem] border border-border bg-surface/60 p-6 backdrop-blur sm:p-8">
@@ -213,21 +233,24 @@ export default function MenuPrincipal() {
                         </div>
                     </div>
                     <div className="mt-5 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-                        {accesos.map((acceso) => (
-                            <Link
-                                key={acceso.ruta}
-                                to={acceso.ruta}
-                                className="group/acceso flex items-center gap-3 rounded-2xl border border-border bg-white/[0.02] p-3.5 transition hover:-translate-y-0.5 hover:border-accent/50 hover:bg-white/[0.05]"
-                            >
-                                <span className="grid h-11 w-11 shrink-0 place-items-center rounded-xl bg-gradient-to-br from-[#5b418f]/50 to-surface-2 text-lg transition group-hover/acceso:from-[#9365f2]/60 group-hover/acceso:to-[#e34ba6]/40">
-                                    {acceso.icono}
-                                </span>
-                                <span className="min-w-0">
-                                    <span className="block truncate text-sm font-bold text-texto-soft">{acceso.etiqueta}</span>
-                                    <span className="block truncate text-xs text-sutil">{acceso.descripcion}</span>
-                                </span>
-                            </Link>
-                        ))}
+                        {accesos.map((acceso) => {
+                            const Icono = acceso.icono;
+                            return (
+                                <Link
+                                    key={acceso.ruta}
+                                    to={acceso.ruta}
+                                    className="group/acceso flex items-center gap-3 rounded-2xl border border-border bg-white/[0.02] p-3.5 transition hover:-translate-y-0.5 hover:border-accent/50 hover:bg-white/[0.05]"
+                                >
+                                    <span className="grid h-11 w-11 shrink-0 place-items-center rounded-xl bg-gradient-to-br from-[#5b418f]/50 to-surface-2 text-accent-soft transition group-hover/acceso:from-[#9365f2]/60 group-hover/acceso:to-[#e34ba6]/40 group-hover/acceso:text-white">
+                                        <Icono className="h-5 w-5" aria-hidden="true" />
+                                    </span>
+                                    <span className="min-w-0">
+                                        <span className="block truncate text-sm font-bold text-texto-soft">{acceso.etiqueta}</span>
+                                        <span className="block truncate text-xs text-sutil">{acceso.descripcion}</span>
+                                    </span>
+                                </Link>
+                            );
+                        })}
                     </div>
                 </section>
 

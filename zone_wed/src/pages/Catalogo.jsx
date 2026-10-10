@@ -2,6 +2,7 @@
 import { useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import anime from 'animejs';
+import { Disc3, Mic, SlidersHorizontal, Wand2 } from 'lucide-react';
 import { useSalas } from '../hooks/useSalas.js';
 import { RUTAS } from '../config/rutas.js';
 import { formatearMoneda } from '../utils/helpers.js';
@@ -11,10 +12,10 @@ const MENOS_MOVIMIENTO = () =>
     typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
 const SERVICIOS = [
-    { nombre: 'Grabación', descripcion: 'Captura voces e instrumentos en una sesión de estudio.', icono: '🎙' },
-    { nombre: 'Producción musical', descripcion: 'Desarrolla arreglos, sonido y dirección para tus canciones.', icono: '🎛' },
-    { nombre: 'Mezcla', descripcion: 'Equilibra pistas y prepara la mezcla de tu proyecto.', icono: '🎚' },
-    { nombre: 'Masterización', descripcion: 'Da el acabado final y prepara el audio para su distribución.', icono: '💽' },
+    { nombre: 'Grabación', descripcion: 'Captura voces e instrumentos en una sesión de estudio.', icono: Mic },
+    { nombre: 'Producción musical', descripcion: 'Desarrolla arreglos, sonido y dirección para tus canciones.', icono: Wand2 },
+    { nombre: 'Mezcla', descripcion: 'Equilibra pistas y prepara la mezcla de tu proyecto.', icono: SlidersHorizontal },
+    { nombre: 'Masterización', descripcion: 'Da el acabado final y prepara el audio para su distribución.', icono: Disc3 },
 ];
 
 const ARTE_SALA = [
@@ -183,26 +184,29 @@ export default function Catalogo() {
                     </div>
                     <div className="relative mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
                         <span aria-hidden="true" className="pointer-events-none absolute left-0 right-0 top-7 hidden h-px bg-gradient-to-r from-transparent via-accent/40 to-transparent lg:block" />
-                        {SERVICIOS.map((servicio, index) => (
-                            <article
-                                key={servicio.nombre}
-                                className="group relative min-h-[172px] rounded-2xl border border-border bg-white/[0.025] p-5 transition duration-300 hover:-translate-y-1 hover:border-accent/50 hover:bg-white/[0.05]"
-                            >
-                                <div className="flex items-center justify-between">
-                                    <span
-                                        className="grid h-10 w-10 place-items-center rounded-xl bg-gradient-to-br from-[#5b418f]/60 to-surface-2 text-lg transition group-hover:from-[#9365f2]/70 group-hover:to-[#e34ba6]/50"
-                                        aria-hidden="true"
-                                    >
-                                        {servicio.icono}
-                                    </span>
-                                    <span className="text-xs font-extrabold tracking-[0.12em] text-accent-soft">
-                                        {String(index + 1).padStart(2, '0')}
-                                    </span>
-                                </div>
-                                <h3 className="mt-4 text-base font-bold text-texto-soft">{servicio.nombre}</h3>
-                                <p className="mt-2 text-sm leading-6 text-sutil">{servicio.descripcion}</p>
-                            </article>
-                        ))}
+                        {SERVICIOS.map((servicio, index) => {
+                            const Icono = servicio.icono;
+                            return (
+                                <article
+                                    key={servicio.nombre}
+                                    className="group relative min-h-[172px] rounded-2xl border border-border bg-white/[0.025] p-5 transition duration-300 hover:-translate-y-1 hover:border-accent/50 hover:bg-white/[0.05]"
+                                >
+                                    <div className="flex items-center justify-between">
+                                        <span
+                                            className="grid h-10 w-10 place-items-center rounded-xl bg-gradient-to-br from-[#5b418f]/60 to-surface-2 text-accent-soft transition group-hover:from-[#9365f2]/70 group-hover:to-[#e34ba6]/50 group-hover:text-white"
+                                            aria-hidden="true"
+                                        >
+                                            <Icono className="h-5 w-5" />
+                                        </span>
+                                        <span className="text-xs font-extrabold tracking-[0.12em] text-accent-soft">
+                                            {String(index + 1).padStart(2, '0')}
+                                        </span>
+                                    </div>
+                                    <h3 className="mt-4 text-base font-bold text-texto-soft">{servicio.nombre}</h3>
+                                    <p className="mt-2 text-sm leading-6 text-sutil">{servicio.descripcion}</p>
+                                </article>
+                            );
+                        })}
                     </div>
                 </section>
             </div>
