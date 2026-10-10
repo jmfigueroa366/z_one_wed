@@ -24,7 +24,6 @@ import { productoresDestacados } from '../data/productoresDestacados.js';
 import { cancionesArtistas } from '../data/cancionesArtistas.js';
 import { RUTAS, rutasPermitidasPorRol } from '../config/rutas.js';
 import '../styles/tailwind.css';
-import '../styles/principal.css';
 
 const MENOS_MOVIMIENTO = () =>
     typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -117,7 +116,7 @@ export default function MenuPrincipal() {
     ];
 
     return (
-        <main className="workspace-content dashboard-content" data-page="principal">
+        <main className="workspace-content" data-page="principal">
             <div ref={contenedorRef} className="grid gap-6">
                 <section className="grid gap-5 lg:grid-cols-3">
                     <article

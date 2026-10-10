@@ -4,7 +4,6 @@ import { createRoot } from 'react-dom/client';
 import App from './App.jsx';
 import { SEED_VERSION } from './data/seed.js';
 import { Storage } from './infrastructure/storage.js';
-import './styles/global.css';
 
 const root = document.getElementById('root');
 

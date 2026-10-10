@@ -8,6 +8,27 @@
 @import "tailwindcss/utilities.css" layer(utilities);
 
 @layer base {
+    *,
+    *::before,
+    *::after {
+        box-sizing: border-box;
+    }
+
+    html,
+    body,
+    #root {
+        margin: 0;
+        min-height: 100%;
+        min-width: 100%;
+        font-family: var(--font-sans);
+        background: var(--color-bg);
+        color: var(--color-texto);
+    }
+
+    body {
+        min-height: 100vh;
+    }
+
     button,
     input,
     select,
@@ -137,5 +158,38 @@
     }
     50% {
         transform: scaleY(1);
+    }
+}
+
+@layer components {
+    .workspace-content {
+        @apply mx-auto w-full max-w-[1200px] p-6 sm:p-8 lg:p-12;
+    }
+
+    .workspace-eyebrow {
+        @apply mb-[5px] block text-[0.7rem] font-extrabold uppercase tracking-[0.12em] text-accent;
+    }
+
+    .page-heading {
+        @apply mb-7;
+    }
+
+    .page-heading h1 {
+        @apply mt-0 mb-2 text-[clamp(1.8rem,4vw,2.6rem)] font-bold leading-tight tracking-[-0.04em] text-texto;
+    }
+
+    .page-heading > p:last-child {
+        @apply m-0 leading-relaxed text-sutil;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+        animation-duration: 0.001ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.001ms !important;
+        scroll-behavior: auto !important;
     }
 }
