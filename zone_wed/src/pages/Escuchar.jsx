@@ -183,6 +183,35 @@ function Ecualizador({ activo, referencia, barras = 5 }) {
 
 const ETIQUETA_REPETIR = { off: 'Repetir: desactivado', todas: 'Repetir: todas', una: 'Repetir: una canción' };
 
+const ESPECTROS = new WeakMap();
+
+function prepararEspectro(audio) {
+    if (!audio) return null;
+    if (ESPECTROS.has(audio)) return ESPECTROS.get(audio);
+
+    const Contexto = window.AudioContext || window.webkitAudioContext;
+    if (!Contexto) return null;
+
+    try {
+        const contexto = new Contexto();
+        const fuente = contexto.createMediaElementSource(audio);
+        const analizador = contexto.createAnalyser();
+        analizador.fftSize = 64;
+        analizador.smoothingTimeConstant = 0.82;
+        fuente.connect(analizador);
+        analizador.connect(contexto.destination);
+        const paquete = {
+            contexto,
+            analizador,
+            datos: new Uint8Array(analizador.frequencyBinCount),
+        };
+        ESPECTROS.set(audio, paquete);
+        return paquete;
+    } catch {
+        return null;
+    }
+}
+
 export default function Escuchar() {
     const [indiceArtista, setIndiceArtista] = useState(0);
     const [indiceCancion, setIndiceCancion] = useState(0);
@@ -246,8 +275,33 @@ export default function Escuchar() {
     useEffect(() => {
         const barras = eqRef.current?.querySelectorAll('[data-eq]');
         if (!barras || barras.length === 0) return undefined;
-        anime.set(barras, { scaleY: reproduciendo ? 0.4 : 0.2 });
-        if (MENOS_MOVIMIENTO() || !reproduciendo) return undefined;
+        anime.set(barras, { scaleY: reproduciendo ? 0.28 : 0.2 });
+
+        if (MENOS_MOVIMIENTO()) return undefined;
+
+        const paquete = reproduciendo ? prepararEspectro(audioRef.current) : null;
+        if (paquete) {
+            const { contexto, analizador, datos } = paquete;
+            if (contexto.state === 'suspended') {
+                const reanudar = contexto.resume();
+                if (reanudar && typeof reanudar.catch === 'function') reanudar.catch(() => {});
+            }
+
+            let cuadro = 0;
+            const paso = Math.max(1, Math.floor(datos.length / (barras.length * 2)));
+            const pintar = () => {
+                analizador.getByteFrequencyData(datos);
+                for (let i = 0; i < barras.length; i += 1) {
+                    const valor = datos[i * paso] / 255;
+                    barras[i].style.transform = `scaleY(${(0.2 + valor * 0.85).toFixed(3)})`;
+                }
+                cuadro = requestAnimationFrame(pintar);
+            };
+            pintar();
+            return () => cancelAnimationFrame(cuadro);
+        }
+
+        if (!reproduciendo) return undefined;
 
         const animacion = anime({
             targets: barras,

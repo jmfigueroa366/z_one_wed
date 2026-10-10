@@ -1,6 +1,6 @@
 // CAPA: Presentación
 import { useState } from 'react';
-import { Outlet } from 'react-router-dom';
+import { Outlet, useLocation } from 'react-router-dom';
 import Header from './Header.jsx';
 import Sidebar from './Sidebar.jsx';
 import '../styles/tailwind.css';
@@ -8,6 +8,7 @@ import '../styles/tailwind.css';
 const CLAVE_COLAPSO = 'zone.sidebar.colapsado';
 
 export default function WorkspaceLayout() {
+    const location = useLocation();
     const [colapsado, setColapsado] = useState(() => {
         if (typeof window === 'undefined') return false;
         return window.localStorage.getItem(CLAVE_COLAPSO) === '1';
@@ -42,7 +43,9 @@ export default function WorkspaceLayout() {
             />
             <div className="min-w-0">
                 <Header onAbrirMenu={() => setMovilAbierto(true)} />
-                <Outlet />
+                <div key={location.pathname} className="animate-rise">
+                    <Outlet />
+                </div>
             </div>
         </div>
     );

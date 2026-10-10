@@ -43,6 +43,42 @@ export const productoresDestacados = [
         licencia: 'CC BY-SA 3.0',
         fuenteLicencia: 'https://creativecommons.org/licenses/by-sa/3.0/',
     },
+    {
+        nombre: 'Nile Rodgers',
+        origen: 'Nueva York, Estados Unidos',
+        estilo: 'Producción · disco · funk',
+        historia: 'Guitarrista, compositor y productor, fundador de Chic y arquitecto del sonido disco. Su guitarra rítmica y su producción marcaron discos de Diana Ross, Madonna y Daft Punk, entre muchos otros.',
+        imagen: '/Imagenes/productores/Nile Rodgers.webp',
+        textoAlternativo: 'Retrato de Nile Rodgers',
+        credito: 'Archivo Z-ONE',
+    },
+    {
+        nombre: 'Brian Eno',
+        origen: 'Woodbridge, Inglaterra',
+        estilo: 'Producción · ambient · experimentación',
+        historia: 'Productor y músico británico, pionero de la música ambient y de la producción generativa. Ha trabajado con U2, Talking Heads, David Bowie y Coldplay, además de una extensa carrera solista.',
+        imagen: '/Imagenes/productores/Brian Eno.webp',
+        textoAlternativo: 'Retrato de Brian Eno',
+        credito: 'Archivo Z-ONE',
+    },
+    {
+        nombre: 'Brian Wilson',
+        origen: 'Inglewood, California',
+        estilo: 'Producción · pop · arreglos vocales',
+        historia: 'Cofundador y mente creativa de The Beach Boys. Sus ambiciosos arreglos vocales y su producción orquestal en álbumes como Pet Sounds redefinieron el pop de los años sesenta.',
+        imagen: '/Imagenes/productores/Brian wilson.webp',
+        textoAlternativo: 'Retrato de Brian Wilson',
+        credito: 'Archivo Z-ONE',
+    },
+    {
+        nombre: 'Bizarrap',
+        origen: 'Buenos Aires, Argentina',
+        estilo: 'Producción · trap · sesiones',
+        historia: 'Productor y DJ argentino conocido por sus «BZRP Music Sessions», formato que llevó la producción musical a una audiencia global y consolidó su estilo como una marca inconfundible.',
+        imagen: '/Imagenes/productores/bizzarap.jpg',
+        textoAlternativo: 'Retrato de Bizarrap',
+        credito: 'Archivo Z-ONE',
+    },
 ];
 
 export default productoresDestacados;
