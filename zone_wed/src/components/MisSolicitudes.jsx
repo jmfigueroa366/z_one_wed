@@ -1,6 +1,9 @@
 // CAPA: Presentación
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { useLocation } from 'react-router-dom';
+import anime from 'animejs';
+import { CalendarClock, Sparkles } from 'lucide-react';
+import { Contador, Ecualizador } from './Animados.jsx';
 import { useAuth } from '../context/AuthContext.jsx';
 import { useColaboradores } from '../hooks/useColaboradores.js';
 import { useSalas } from '../hooks/useSalas.js';
@@ -37,6 +40,22 @@ const estilos = {
     parteActiva: 'rounded-full border border-accent bg-accent/20 px-3 py-1 text-sm font-medium text-texto transition',
     parteInactiva: 'rounded-full border border-border bg-surface-2 px-3 py-1 text-sm text-sutil transition hover:border-accent/50 hover:text-texto',
 };
+
+const MENOS_MOVIMIENTO = () =>
+    typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+const ACENTO_ESTADO = {
+    confirmada: '#7be0b0',
+    completada: '#7be0b0',
+    en_proceso: '#7be0b0',
+    en_negociacion: '#a477ff',
+    solicitud: '#ffd166',
+    pendiente: '#ffd166',
+    rechazada: '#f2a4b1',
+    cancelada: '#f2a4b1',
+    expirada: '#f2a4b1',
+};
+const acentoEstado = (estado) => ACENTO_ESTADO[estado] ?? '#a477ff';
 
 export default function MisSolicitudes() {
     const { usuario } = useAuth();
@@ -77,6 +96,27 @@ export default function MisSolicitudes() {
             || (colaborador && String(solicitud.colaborador_id) === String(colaborador.id)))
         .sort((a, b) => String(a.fecha ?? '').localeCompare(String(b.fecha ?? ''))),
     [solicitudes, usuario, colaborador]);
+
+    const resumen = useMemo(() => ({
+        total: misSolicitudes.length,
+        activas: misSolicitudes.filter((solicitud) => ['solicitud', 'en_negociacion'].includes(solicitud.estado)).length,
+        confirmadas: misSolicitudes.filter((solicitud) => ['confirmada', 'completada'].includes(solicitud.estado)).length,
+    }), [misSolicitudes]);
+
+    const historialRef = useRef(null);
+    useEffect(() => {
+        const contenedor = historialRef.current;
+        if (!contenedor || MENOS_MOVIMIENTO()) return undefined;
+        const animacion = anime({
+            targets: contenedor.querySelectorAll('[data-solicitud]'),
+            opacity: [0, 1],
+            translateY: [18, 0],
+            duration: 480,
+            delay: anime.stagger(70),
+            easing: 'easeOutCubic',
+        });
+        return () => animacion.pause();
+    }, [misSolicitudes]);
 
     const salaSeleccionada = salas.find((sala) => String(sala.id) === String(form.sala_id));
     const franjaPropuesta = `${form.hora_inicio}-${form.hora_fin}`;
@@ -180,6 +220,45 @@ export default function MisSolicitudes() {
 
             {mensaje && <p className="mt-4 rounded-xl border border-exito/30 bg-exito/10 px-4 py-3 text-sm text-exito-soft" role="status">{mensaje}</p>}
             {error && <p className="mt-4 rounded-xl border border-peligro/30 bg-peligro/10 px-4 py-3 text-sm text-peligro-soft" role="alert">{error}</p>}
+
+            <section
+                className="relative mt-6 overflow-hidden rounded-[2rem] border border-accent/25 p-6 sm:p-7"
+                style={{
+                    background:
+                        'radial-gradient(ellipse at 90% 8%, rgba(227, 75, 166, 0.28), transparent 46%), radial-gradient(ellipse at 4% 100%, rgba(111, 75, 187, 0.34), transparent 50%), linear-gradient(120deg, rgba(111, 75, 187, 0.34), rgba(23, 19, 34, 0.97) 72%)',
+                }}
+            >
+                <div aria-hidden="true" className="pointer-events-none absolute -right-12 -top-24 h-60 w-60 animate-aurora rounded-full bg-[#e34ba6]/25 blur-3xl" />
+                <CalendarClock aria-hidden="true" className="pointer-events-none absolute right-8 top-1/2 hidden h-40 w-40 -translate-y-1/2 text-white/[0.05] lg:block" />
+                <div className="relative flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
+                    <div className="max-w-xl">
+                        <p className="workspace-eyebrow flex items-center gap-2">
+                            <Sparkles className="h-3.5 w-3.5" aria-hidden="true" /> TU AGENDA DE ESTUDIO
+                        </p>
+                        <h2 className="mt-1 text-3xl font-extrabold tracking-tight text-texto-soft sm:text-4xl">
+                            Reserva, produce, suena.
+                        </h2>
+                        <p className="mt-3 text-sm leading-7 text-sutil">
+                            Pide tu cabina para grabar, mezclar o ensayar. El estudio confirma y tú sigues el estado de cada reserva.
+                        </p>
+                    </div>
+                    <div className="flex items-center gap-3">
+                        <div className="rounded-2xl border border-white/10 bg-black/25 px-4 py-3 text-center">
+                            <strong className="block text-3xl font-black tracking-tight text-texto-soft"><Contador valor={resumen.total} pad={2} /></strong>
+                            <span className="mt-1 block text-[0.62rem] font-bold uppercase tracking-[0.12em] text-sutil">Total</span>
+                        </div>
+                        <div className="rounded-2xl border border-white/10 bg-black/25 px-4 py-3 text-center">
+                            <strong className="block text-3xl font-black tracking-tight text-aviso-soft"><Contador valor={resumen.activas} pad={2} /></strong>
+                            <span className="mt-1 block text-[0.62rem] font-bold uppercase tracking-[0.12em] text-sutil">Activas</span>
+                        </div>
+                        <div className="rounded-2xl border border-white/10 bg-black/25 px-4 py-3 text-center">
+                            <strong className="block text-3xl font-black tracking-tight text-exito-soft"><Contador valor={resumen.confirmadas} pad={2} /></strong>
+                            <span className="mt-1 block text-[0.62rem] font-bold uppercase tracking-[0.12em] text-sutil">Confirmadas</span>
+                        </div>
+                        <Ecualizador />
+                    </div>
+                </div>
+            </section>
 
             <section className="mx-auto mb-8 max-w-4xl rounded-[2rem] border border-border bg-surface/60 p-6 shadow-lg shadow-black/20 backdrop-blur sm:p-7">
                 <div className="mb-5 flex items-center gap-3">
@@ -368,14 +447,21 @@ export default function MisSolicitudes() {
                 </div>
 
                 {misSolicitudes.length ? (
-                    <div className="grid gap-4">
+                    <div className="grid gap-4" ref={historialRef}>
                         {misSolicitudes.map((solicitud) => {
                             const sala = salas.find((sala) => String(sala.id) === String(solicitud.sala_id));
                             const estimado = estimadoSala(sala, solicitud.franja);
+                            const acento = acentoEstado(solicitud.estado);
 
                             return (
-                                <article className="relative overflow-hidden rounded-2xl border border-border bg-white/[0.02] p-5 transition hover:border-accent/40" key={solicitud.id}>
-                                    <span aria-hidden="true" className="absolute inset-y-0 left-0 w-1 bg-gradient-to-b from-[#9365f2] to-[#e34ba6]" />
+                                <article
+                                    data-solicitud
+                                    className="relative overflow-hidden rounded-2xl border border-border bg-white/[0.02] p-5 transition hover:-translate-y-1 hover:shadow-xl hover:shadow-black/40"
+                                    style={{ borderColor: `${acento}44` }}
+                                    key={solicitud.id}
+                                >
+                                    <span aria-hidden="true" className="absolute inset-y-0 left-0 w-1" style={{ background: `linear-gradient(to bottom, ${acento}, ${acento}55)` }} />
+                                    <span aria-hidden="true" className="pointer-events-none absolute -right-10 -top-10 h-24 w-24 rounded-full blur-2xl" style={{ background: `${acento}22` }} />
                                     <div>
                                         <div className="flex flex-wrap items-start justify-between gap-3">
                                             <div>

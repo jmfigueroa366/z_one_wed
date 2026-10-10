@@ -3,6 +3,7 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import anime from 'animejs';
 import FormularioArtista from '../components/FormularioArtista.jsx';
 import TarjetaArtista, { iniciales } from '../components/TarjetaArtista.jsx';
+import { Contador, Ecualizador } from '../components/Animados.jsx';
 import { useArtistas } from '../hooks/useArtistas.js';
 import { CAMPO, ETIQUETA } from '../styles/clases.js';
 import '../styles/tailwind.css';
@@ -12,62 +13,6 @@ const MENOS_MOVIMIENTO = () =>
 
 const ACENTOS = ['#f04fa6', '#a477ff', '#9ecbff', '#7be0b0', '#ffd166', '#f2a4b1'];
 const colorDeGenero = (genero, generos) => ACENTOS[Math.max(0, generos.indexOf(genero)) % ACENTOS.length];
-
-function Contador({ valor, sufijo = '' }) {
-    const ref = useRef(null);
-    useEffect(() => {
-        const el = ref.current;
-        if (!el) return undefined;
-        const objetivo = Number(valor) || 0;
-        if (MENOS_MOVIMIENTO()) {
-            el.textContent = `${String(objetivo).padStart(2, '0')}${sufijo}`;
-            return undefined;
-        }
-        const estado = { actual: 0 };
-        const animacion = anime({
-            targets: estado,
-            actual: objetivo,
-            round: 1,
-            duration: 1200,
-            easing: 'easeOutExpo',
-            update() {
-                el.textContent = `${String(estado.actual).padStart(2, '0')}${sufijo}`;
-            },
-        });
-        return () => animacion.pause();
-    }, [valor, sufijo]);
-    return <span ref={ref}>00{sufijo}</span>;
-}
-
-function Ecualizador() {
-    const ref = useRef(null);
-    useEffect(() => {
-        const barras = ref.current?.querySelectorAll('[data-eq]');
-        if (!barras || barras.length === 0 || MENOS_MOVIMIENTO()) return undefined;
-        const animacion = anime({
-            targets: barras,
-            scaleY: [0.25, 1],
-            duration: 620,
-            direction: 'alternate',
-            loop: true,
-            delay: anime.stagger(90),
-            easing: 'easeInOutSine',
-        });
-        return () => animacion.pause();
-    }, []);
-    return (
-        <span ref={ref} className="flex h-8 items-end gap-1" aria-hidden="true">
-            {Array.from({ length: 6 }).map((_, indice) => (
-                <span
-                    key={indice}
-                    data-eq
-                    className="w-1.5 origin-bottom rounded-full bg-gradient-to-t from-[#e34ba6] to-[#9365f2]"
-                    style={{ height: '100%', transform: 'scaleY(0.3)' }}
-                />
-            ))}
-        </span>
-    );
-}
 
 export default function Artistas() {
     const [artistas] = useArtistas();
@@ -136,11 +81,11 @@ export default function Artistas() {
                     </div>
                     <div className="flex items-center gap-4">
                         <div className="rounded-2xl border border-white/10 bg-black/25 px-5 py-3 text-center">
-                            <strong className="block text-3xl font-black tracking-tight text-texto-soft"><Contador valor={artistas.length} /></strong>
+                            <strong className="block text-3xl font-black tracking-tight text-texto-soft"><Contador valor={artistas.length} pad={2} /></strong>
                             <span className="mt-1 block text-[0.62rem] font-bold uppercase tracking-[0.12em] text-sutil">Artistas</span>
                         </div>
                         <div className="rounded-2xl border border-white/10 bg-black/25 px-5 py-3 text-center">
-                            <strong className="block text-3xl font-black tracking-tight text-accent-soft"><Contador valor={generos.length} /></strong>
+                            <strong className="block text-3xl font-black tracking-tight text-accent-soft"><Contador valor={generos.length} pad={2} /></strong>
                             <span className="mt-1 block text-[0.62rem] font-bold uppercase tracking-[0.12em] text-sutil">Estilos</span>
                         </div>
                     </div>

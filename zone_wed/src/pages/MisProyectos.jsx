@@ -2,6 +2,8 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import anime from 'animejs';
+import { Folder, Music, Sparkles } from 'lucide-react';
+import { Contador, Ecualizador } from '../components/Animados.jsx';
 import { useAuth } from '../context/AuthContext.jsx';
 import { RUTAS } from '../config/rutas.js';
 import { useProyectos } from '../hooks/useProyectos.js';
@@ -15,6 +17,8 @@ import '../styles/tailwind.css';
 
 const MENOS_MOVIMIENTO = () =>
     typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+const ACENTOS_CARPETA = ['#a477ff', '#f04fa6', '#9ecbff', '#7be0b0', '#ffd166'];
 
 function duracionTexto(cancion) {
     if (!cancion.duracion) return 'Sin duración';
@@ -104,6 +108,11 @@ export default function MisProyectos() {
 
     const proyectoActivo = proyectos.find((proyecto) => String(proyecto.id) === String(proyectoActivoId)) ?? null;
 
+    const totalCanciones = useMemo(
+        () => proyectos.reduce((suma, proyecto) => suma + (conteoCanciones.get(String(proyecto.id)) ?? 0), 0),
+        [conteoCanciones, proyectos]
+    );
+
     useEffect(() => {
         if (MENOS_MOVIMIENTO()) return undefined;
         const panel = panelRef.current;
@@ -189,6 +198,41 @@ export default function MisProyectos() {
             {mensaje && <p className="mt-5 rounded-xl border border-exito/30 bg-exito/10 px-4 py-2 text-sm text-exito" role="status">{mensaje}</p>}
             {error && <p className="mt-5 rounded-xl border border-peligro/30 bg-peligro/10 px-4 py-2 text-sm text-peligro" role="alert">{error}</p>}
 
+            <section
+                className="relative mt-6 overflow-hidden rounded-[2rem] border border-accent/25 p-6 sm:p-7"
+                style={{
+                    background:
+                        'radial-gradient(ellipse at 90% 8%, rgba(227, 75, 166, 0.28), transparent 46%), radial-gradient(ellipse at 4% 100%, rgba(111, 75, 187, 0.34), transparent 50%), linear-gradient(120deg, rgba(111, 75, 187, 0.34), rgba(23, 19, 34, 0.97) 72%)',
+                }}
+            >
+                <div aria-hidden="true" className="pointer-events-none absolute -right-12 -top-24 h-60 w-60 animate-aurora rounded-full bg-[#e34ba6]/25 blur-3xl" />
+                <Music aria-hidden="true" className="pointer-events-none absolute right-8 top-1/2 hidden h-40 w-40 -translate-y-1/2 text-white/[0.05] lg:block" />
+                <div className="relative flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
+                    <div className="max-w-xl">
+                        <p className="workspace-eyebrow flex items-center gap-2">
+                            <Sparkles className="h-3.5 w-3.5" aria-hidden="true" /> ESTUDIO PERSONAL
+                        </p>
+                        <h2 className="mt-1 text-3xl font-extrabold tracking-tight text-texto-soft sm:text-4xl">
+                            Tus carpetas, tu propio ritmo.
+                        </h2>
+                        <p className="mt-3 text-sm leading-7 text-sutil">
+                            Agrupa tus ideas, nombra cada canción y lanza la solicitud de grabación cuando estés listo.
+                        </p>
+                    </div>
+                    <div className="flex items-center gap-4">
+                        <div className="rounded-2xl border border-white/10 bg-black/25 px-5 py-3 text-center">
+                            <strong className="block text-3xl font-black tracking-tight text-texto-soft"><Contador valor={proyectos.length} pad={2} /></strong>
+                            <span className="mt-1 block text-[0.62rem] font-bold uppercase tracking-[0.12em] text-sutil">Carpetas</span>
+                        </div>
+                        <div className="rounded-2xl border border-white/10 bg-black/25 px-5 py-3 text-center">
+                            <strong className="block text-3xl font-black tracking-tight text-accent-soft"><Contador valor={totalCanciones} pad={2} /></strong>
+                            <span className="mt-1 block text-[0.62rem] font-bold uppercase tracking-[0.12em] text-sutil">Canciones</span>
+                        </div>
+                        <Ecualizador />
+                    </div>
+                </div>
+            </section>
+
             <div className="mt-6 grid gap-6 lg:grid-cols-[340px_1fr]">
                 <section
                     className="h-fit rounded-[2rem] border border-border bg-surface/60 p-5 backdrop-blur"
@@ -218,16 +262,18 @@ export default function MisProyectos() {
 
                     {proyectos.length ? (
                         <ul className="flex flex-col gap-2">
-                            {proyectos.map((proyecto) => {
+                            {proyectos.map((proyecto, index) => {
                                 const activa = String(proyecto.id) === String(proyectoActivo?.id);
+                                const acento = ACENTOS_CARPETA[index % ACENTOS_CARPETA.length];
                                 return (
                                     <li key={proyecto.id}>
                                         <div
                                             className={`group flex items-center justify-between gap-2 rounded-2xl border px-3 py-3 text-left transition ${
                                                 activa
-                                                    ? 'border-accent/60 bg-gradient-to-r from-[#5b418f]/45 to-transparent'
+                                                    ? 'bg-gradient-to-r from-[#5b418f]/45 to-transparent'
                                                     : 'border-border bg-white/[0.02] hover:border-accent/50'
                                             }`}
+                                            style={activa ? { borderColor: `${acento}99` } : undefined}
                                             role="button"
                                             tabIndex={0}
                                             onClick={() => setProyectoActivoId(proyecto.id)}
@@ -239,12 +285,15 @@ export default function MisProyectos() {
                                         >
                                             <div className="flex min-w-0 items-center gap-3">
                                                 <span
-                                                    className={`grid h-9 w-9 shrink-0 place-items-center rounded-xl text-base ${
-                                                        activa ? 'bg-gradient-to-br from-[#9365f2] to-[#e34ba6] text-white' : 'bg-white/[0.05] text-accent-soft'
-                                                    }`}
+                                                    className="grid h-9 w-9 shrink-0 place-items-center rounded-xl transition"
+                                                    style={
+                                                        activa
+                                                            ? { background: `linear-gradient(135deg, ${acento}, #e34ba6)`, color: '#fff', boxShadow: `0 0 16px ${acento}55` }
+                                                            : { background: 'rgba(255,255,255,0.05)', color: acento }
+                                                    }
                                                     aria-hidden="true"
                                                 >
-                                                    ♫
+                                                    <Folder className="h-4 w-4" />
                                                 </span>
                                                 <div className="min-w-0">
                                                     <p className="truncate font-semibold text-texto-soft">{proyecto.nombre}</p>

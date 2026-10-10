@@ -3,6 +3,7 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import anime from 'animejs';
 import { SlidersHorizontal, Sparkles } from 'lucide-react';
 import RegistroGrabacionSesiones from '../components/RegistroGrabacionSesiones.jsx';
+import { Contador, Ecualizador } from '../components/Animados.jsx';
 import { useProductores } from '../hooks/useProductores.js';
 import { ProductorService } from '../services/productorService.js';
 import { BOTON_PRIMARIO, CAMPO, ETIQUETA } from '../styles/clases.js';
@@ -34,62 +35,6 @@ function iniciales(nombre) {
         .map((parte) => parte[0] ?? '')
         .join('')
         .toLocaleUpperCase();
-}
-
-function Contador({ valor, sufijo = '' }) {
-    const ref = useRef(null);
-    useEffect(() => {
-        const el = ref.current;
-        if (!el) return undefined;
-        const objetivo = Number(valor) || 0;
-        if (MENOS_MOVIMIENTO()) {
-            el.textContent = `${String(objetivo).padStart(2, '0')}${sufijo}`;
-            return undefined;
-        }
-        const estado = { actual: 0 };
-        const animacion = anime({
-            targets: estado,
-            actual: objetivo,
-            round: 1,
-            duration: 1200,
-            easing: 'easeOutExpo',
-            update() {
-                el.textContent = `${String(estado.actual).padStart(2, '0')}${sufijo}`;
-            },
-        });
-        return () => animacion.pause();
-    }, [valor, sufijo]);
-    return <span ref={ref}>00{sufijo}</span>;
-}
-
-function Ecualizador() {
-    const ref = useRef(null);
-    useEffect(() => {
-        const barras = ref.current?.querySelectorAll('[data-eq]');
-        if (!barras || barras.length === 0 || MENOS_MOVIMIENTO()) return undefined;
-        const animacion = anime({
-            targets: barras,
-            scaleY: [0.25, 1],
-            duration: 620,
-            direction: 'alternate',
-            loop: true,
-            delay: anime.stagger(90),
-            easing: 'easeInOutSine',
-        });
-        return () => animacion.pause();
-    }, []);
-    return (
-        <span ref={ref} className="flex h-8 items-end gap-1" aria-hidden="true">
-            {Array.from({ length: 6 }).map((_, indice) => (
-                <span
-                    key={indice}
-                    data-eq
-                    className="w-1.5 origin-bottom rounded-full bg-gradient-to-t from-[#9365f2] to-[#9ecbff]"
-                    style={{ height: '100%', transform: 'scaleY(0.3)' }}
-                />
-            ))}
-        </span>
-    );
 }
 
 export default function Productores() {
@@ -213,11 +158,11 @@ export default function Productores() {
                     </div>
                     <div className="flex items-center gap-4">
                         <div className="rounded-2xl border border-white/10 bg-black/25 px-5 py-3 text-center">
-                            <strong className="block text-3xl font-black tracking-tight text-texto-soft"><Contador valor={productores.length} /></strong>
+                            <strong className="block text-3xl font-black tracking-tight text-texto-soft"><Contador valor={productores.length} pad={2} /></strong>
                             <span className="mt-1 block text-[0.62rem] font-bold uppercase tracking-[0.12em] text-sutil">Productores</span>
                         </div>
                         <div className="rounded-2xl border border-white/10 bg-black/25 px-5 py-3 text-center">
-                            <strong className="block text-3xl font-black tracking-tight text-[#9ecbff]"><Contador valor={ESPECIALIDADES.length} /></strong>
+                            <strong className="block text-3xl font-black tracking-tight text-[#9ecbff]"><Contador valor={ESPECIALIDADES.length} pad={2} /></strong>
                             <span className="mt-1 block text-[0.62rem] font-bold uppercase tracking-[0.12em] text-sutil">Especialidades</span>
                         </div>
                     </div>
@@ -271,7 +216,7 @@ export default function Productores() {
                             <h3 className="mt-1 text-2xl font-black tracking-tight text-texto-soft">{destacado.nombre}</h3>
                             <p className="mt-1 text-sm text-sutil">{destacado.especialidad} · {destacado.usuario_id ? 'Cuenta vinculada' : 'Perfil del estudio'}</p>
                         </div>
-                        <Ecualizador />
+                        <Ecualizador desde="#9365f2" hasta="#9ecbff" />
                     </div>
                 </section>
             )}
