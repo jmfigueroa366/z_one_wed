@@ -103,6 +103,7 @@ export default function Notificaciones() {
     const rolTitulo = {
         [ROLES.ADMINISTRADOR]: 'Solicitudes por gestionar',
         [ROLES.COLABORADOR]: 'Mis solicitudes y sesiones',
+        [ROLES.COORDINADOR]: 'Mis solicitudes y sesiones',
         [ROLES.CLIENTE]: 'Mis solicitudes',
     };
 

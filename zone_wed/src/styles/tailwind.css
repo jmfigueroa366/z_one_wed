@@ -3,9 +3,42 @@
    Se importan SOLO en las secciones nuevas; sin preflight para
    no alterar el diseño CSS existente. */
 
-@layer theme, components, utilities;
+@layer theme, base, components, utilities;
 @import "tailwindcss/theme.css" layer(theme);
 @import "tailwindcss/utilities.css" layer(utilities);
+
+@layer base {
+    button,
+    input,
+    select,
+    textarea {
+        font: inherit;
+        color: inherit;
+    }
+
+    button {
+        background: transparent;
+        border: 0;
+        cursor: pointer;
+    }
+
+    a {
+        color: inherit;
+        text-decoration: none;
+    }
+
+    ul,
+    ol {
+        margin: 0;
+        padding: 0;
+        list-style: none;
+    }
+
+    :focus-visible {
+        outline: 2px solid var(--color-accent);
+        outline-offset: 2px;
+    }
+}
 
 @theme {
     --font-sans: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;

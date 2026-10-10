@@ -1,6 +1,18 @@
 // CAPA: Presentación
 import { useEffect, useMemo, useRef, useState } from 'react';
 import anime from 'animejs';
+import {
+    Play,
+    Pause,
+    SkipBack,
+    SkipForward,
+    Shuffle,
+    Repeat,
+    Repeat1,
+    Volume2,
+    Volume1,
+    VolumeX,
+} from 'lucide-react';
 import { cancionesArtistas, urlCancion } from '../data/cancionesArtistas.js';
 import '../styles/tailwind.css';
 
@@ -42,7 +54,7 @@ function Barra({ valor, max, onCambiar, etiqueta }) {
     const porcentaje = seguro > 0 ? Math.min((valor / seguro) * 100, 100) : 0;
 
     return (
-        <div className="group/barra relative h-5 w-28">
+        <div className="group/barra relative h-5 w-24 sm:w-28">
             <div className="absolute inset-x-0 top-1/2 h-1.5 -translate-y-1/2 overflow-hidden rounded-full bg-white/10">
                 <div
                     className="h-full rounded-full bg-gradient-to-r from-[#9365f2] to-[#e34ba6]"
@@ -58,7 +70,7 @@ function Barra({ valor, max, onCambiar, etiqueta }) {
                 type="range"
                 min="0"
                 max={seguro}
-                step="0.1"
+                step="0.01"
                 value={Math.min(valor, seguro)}
                 onChange={onCambiar}
                 aria-label={etiqueta}
@@ -89,15 +101,34 @@ function Onda({ valores, progreso, duracion, onSeek }) {
         }
     };
 
+    const manejarTecla = (evento) => {
+        if (!duracion) return;
+        if (evento.key === 'ArrowRight') {
+            evento.preventDefault();
+            onSeek(Math.min(progreso + 5, duracion));
+        } else if (evento.key === 'ArrowLeft') {
+            evento.preventDefault();
+            onSeek(Math.max(progreso - 5, 0));
+        } else if (evento.key === 'Home') {
+            evento.preventDefault();
+            onSeek(0);
+        } else if (evento.key === 'End') {
+            evento.preventDefault();
+            onSeek(duracion);
+        }
+    };
+
     return (
         <div
             ref={ref}
             role="slider"
             tabIndex={0}
             aria-label="Progreso de la canción"
+            aria-orientation="horizontal"
             aria-valuemin={0}
             aria-valuemax={Math.round(duracion) || 0}
             aria-valuenow={Math.round(progreso) || 0}
+            aria-valuetext={`${formatearTiempo(progreso)} de ${formatearTiempo(duracion)}`}
             onPointerDown={(evento) => {
                 setArrastrando(true);
                 evento.currentTarget.setPointerCapture?.(evento.pointerId);
@@ -114,7 +145,8 @@ function Onda({ valores, progreso, duracion, onSeek }) {
                 setArrastrando(false);
                 soltarCaptura(evento);
             }}
-            className="flex h-14 w-full cursor-pointer items-center gap-[2px]"
+            onKeyDown={manejarTecla}
+            className="flex h-14 w-full cursor-pointer items-center gap-[2px] rounded-xl focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-accent"
         >
             {valores.map((altura, indice) => {
                 const activo = (indice / valores.length) * 100 <= porcentaje;
@@ -147,6 +179,8 @@ function Ecualizador({ activo, referencia, barras = 5 }) {
     );
 }
 
+const ETIQUETA_REPETIR = { off: 'Repetir: desactivado', todas: 'Repetir: todas', una: 'Repetir: una canción' };
+
 export default function Escuchar() {
     const [indiceArtista, setIndiceArtista] = useState(0);
     const [indiceCancion, setIndiceCancion] = useState(0);
@@ -154,18 +188,24 @@ export default function Escuchar() {
     const [progreso, setProgreso] = useState(0);
     const [duracion, setDuracion] = useState(0);
     const [volumen, setVolumen] = useState(0.9);
+    const [silenciado, setSilenciado] = useState(false);
+    const [aleatorio, setAleatorio] = useState(false);
+    const [repetir, setRepetir] = useState('off');
+    const [duraciones, setDuraciones] = useState({});
     const [error, setError] = useState('');
 
     const audioRef = useRef(null);
     const listaRef = useRef(null);
     const eqRef = useRef(null);
     const debeSonarRef = useRef(false);
+    const silenciadoRef = useRef(false);
 
     const artista = cancionesArtistas[indiceArtista];
     const cancion = artista.canciones[indiceCancion];
     const totalCanciones = artista.canciones.length;
     const origenActual = urlCancion(artista.carpeta, cancion.archivo);
     const ondas = useOndas(cancion.archivo);
+    const menosMovimiento = MENOS_MOVIMIENTO();
     const totalGeneral = useMemo(
         () => cancionesArtistas.reduce((suma, item) => suma + item.canciones.length, 0),
         []
@@ -176,9 +216,10 @@ export default function Escuchar() {
     }, [reproduciendo]);
 
     useEffect(() => {
+        silenciadoRef.current = silenciado;
         const audio = audioRef.current;
-        if (audio) audio.volume = volumen;
-    }, [volumen]);
+        if (audio) audio.volume = silenciado ? 0 : volumen;
+    }, [volumen, silenciado]);
 
     useEffect(() => {
         const audio = audioRef.current;
@@ -244,25 +285,31 @@ export default function Escuchar() {
         }
     };
 
-    const seleccionarArtista = (indice) => {
-        if (indice === indiceArtista) return;
-        setIndiceArtista(indice);
-        setIndiceCancion(0);
-        setReproduciendo(false);
-        setProgreso(0);
+    const buscar = (tiempo) => {
+        const audio = audioRef.current;
+        if (!audio || !Number.isFinite(tiempo)) return;
+        const limite = Number.isFinite(audio.duration) && audio.duration > 0 ? audio.duration : tiempo;
+        const destino = Math.min(Math.max(tiempo, 0), limite);
+        audio.currentTime = destino;
+        setProgreso(destino);
     };
 
-    const seleccionarCancion = (indice) => {
-        if (indice === indiceCancion) {
-            setReproduciendo((actual) => !actual);
-            return;
+    const elegirAleatoria = () => {
+        const totalArtistas = cancionesArtistas.length;
+        const nuevoArtista = Math.floor(Math.random() * totalArtistas);
+        const nuevoIndice = Math.floor(Math.random() * cancionesArtistas[nuevoArtista].canciones.length);
+        if (nuevoArtista === indiceArtista && nuevoIndice === indiceCancion) {
+            return [nuevoArtista, (nuevoIndice + 1) % cancionesArtistas[nuevoArtista].canciones.length];
         }
-        setIndiceCancion(indice);
-        setReproduciendo(true);
+        return [nuevoArtista, nuevoIndice];
     };
 
     const irSiguiente = () => {
-        if (indiceCancion + 1 < totalCanciones) {
+        if (aleatorio) {
+            const [na, nc] = elegirAleatoria();
+            setIndiceArtista(na);
+            setIndiceCancion(nc);
+        } else if (indiceCancion + 1 < totalCanciones) {
             setIndiceCancion(indiceCancion + 1);
         } else {
             setIndiceArtista((indiceArtista + 1) % cancionesArtistas.length);
@@ -272,7 +319,11 @@ export default function Escuchar() {
     };
 
     const irAnterior = () => {
-        if (indiceCancion > 0) {
+        if (aleatorio) {
+            const [na, nc] = elegirAleatoria();
+            setIndiceArtista(na);
+            setIndiceCancion(nc);
+        } else if (indiceCancion > 0) {
             setIndiceCancion(indiceCancion - 1);
         } else {
             const anterior = (indiceArtista - 1 + cancionesArtistas.length) % cancionesArtistas.length;
@@ -292,15 +343,85 @@ export default function Escuchar() {
         irAnterior();
     };
 
-    const buscar = (tiempo) => {
+    const alTerminar = () => {
         const audio = audioRef.current;
-        if (!audio || !Number.isFinite(tiempo)) return;
-        audio.currentTime = tiempo;
-        setProgreso(tiempo);
+        if (repetir === 'una') {
+            if (audio) {
+                audio.currentTime = 0;
+                const intento = audio.play();
+                if (intento && typeof intento.catch === 'function') intento.catch(() => {});
+            }
+            setProgreso(0);
+            return;
+        }
+        const ultimo = !aleatorio
+            && indiceArtista === cancionesArtistas.length - 1
+            && indiceCancion === totalCanciones - 1;
+        if (repetir === 'off' && ultimo) {
+            if (audio) audio.currentTime = 0;
+            setProgreso(0);
+            setReproduciendo(false);
+            return;
+        }
+        irSiguiente();
     };
 
-    const discoAnimado = !MENOS_MOVIMIENTO();
-    const anguloBrazo = reproduciendo ? '-9deg' : '-32deg';
+    const seleccionarArtista = (indice) => {
+        if (indice === indiceArtista) return;
+        setIndiceArtista(indice);
+        setIndiceCancion(0);
+        setReproduciendo(false);
+        setProgreso(0);
+    };
+
+    const seleccionarCancion = (indice) => {
+        if (indice === indiceCancion) {
+            setReproduciendo((actual) => !actual);
+            return;
+        }
+        setIndiceCancion(indice);
+        setReproduciendo(true);
+    };
+
+    const ciclarRepetir = () => {
+        setRepetir((actual) => (actual === 'off' ? 'todas' : actual === 'todas' ? 'una' : 'off'));
+    };
+
+    const alternarSilencio = () => setSilenciado((actual) => !actual);
+
+    useEffect(() => {
+        const manejar = (evento) => {
+            const objetivo = evento.target;
+            if (objetivo && (objetivo.isContentEditable || ['INPUT', 'TEXTAREA', 'SELECT'].includes(objetivo.tagName))) {
+                return;
+            }
+            if (evento.code === 'Space') {
+                if (objetivo?.closest?.('button, a, [role="slider"]')) return;
+                evento.preventDefault();
+                setReproduciendo((actual) => !actual);
+                return;
+            }
+            const audio = audioRef.current;
+            if (evento.key === 'ArrowRight') {
+                evento.preventDefault();
+                buscar((audio?.currentTime ?? 0) + 5);
+            } else if (evento.key === 'ArrowLeft') {
+                evento.preventDefault();
+                buscar((audio?.currentTime ?? 0) - 5);
+            } else if (evento.key === 'n' || evento.key === 'N') {
+                evento.preventDefault();
+                irSiguiente();
+            } else if (evento.key === 'p' || evento.key === 'P') {
+                evento.preventDefault();
+                reiniciarOAvanzar();
+            }
+        };
+        window.addEventListener('keydown', manejar);
+        return () => window.removeEventListener('keydown', manejar);
+    });
+
+    const anguloBrazo = reproduciendo ? '-8deg' : '-26deg';
+    const IconoVolumen = silenciado ? VolumeX : volumen < 0.5 ? Volume1 : Volume2;
 
     return (
         <main className="workspace-content relative" data-page="estudio">
@@ -315,23 +436,23 @@ export default function Escuchar() {
 
             <div className="relative mt-6 grid gap-5 lg:grid-cols-[minmax(230px,260px)_1fr]">
                 <section
-                    className="h-fit rounded-[1.75rem] border border-border bg-surface/60 p-3 backdrop-blur"
+                    className="order-2 h-fit rounded-[1.75rem] border border-border bg-surface/60 p-3 backdrop-blur lg:order-1"
                     aria-label="Seleccionar artista"
                 >
                     <p className="workspace-eyebrow px-2 py-2">ARTISTAS</p>
-                    <ul className="flex gap-2 overflow-x-auto pb-1 lg:flex-col lg:overflow-visible lg:pb-0">
+                    <ul className="flex snap-x snap-mandatory gap-2 overflow-x-auto pb-1 lg:snap-none lg:flex-col lg:overflow-visible lg:pb-0">
                         {cancionesArtistas.map((item, indice) => {
                             const activo = indice === indiceArtista;
                             return (
-                                <li key={item.artista} className="shrink-0">
+                                <li key={item.artista} className="shrink-0 snap-start">
                                     <button
                                         type="button"
                                         onClick={() => seleccionarArtista(indice)}
                                         aria-pressed={activo}
                                         className={`group flex w-full items-center gap-3 rounded-2xl border p-2.5 text-left transition ${
                                             activo
-                                                ? 'border-accent/60 bg-gradient-to-r from-[#5b418f]/45 to-transparent'
-                                                : 'border-transparent hover:border-border hover:bg-white/[0.03]'
+                                                ? 'border-accent/60 bg-gradient-to-r from-[#5b418f]/50 to-transparent'
+                                                : 'border-transparent bg-white/[0.03] hover:border-accent/30 hover:bg-white/[0.06]'
                                         }`}
                                     >
                                         <span className="relative shrink-0">
@@ -353,7 +474,9 @@ export default function Escuchar() {
                                         </span>
                                         <span className="min-w-0">
                                             <span className="block truncate text-sm font-bold text-texto-soft">{item.artista}</span>
-                                            <span className="block truncate text-xs text-sutil">{item.canciones.length} canciones</span>
+                                            <span className="block truncate text-xs text-[#c8c1d7]">
+                                                {activo && reproduciendo ? 'Sonando ahora' : `${item.canciones.length} canciones`}
+                                            </span>
                                         </span>
                                     </button>
                                 </li>
@@ -362,7 +485,7 @@ export default function Escuchar() {
                     </ul>
                 </section>
 
-                <div className="grid gap-5">
+                <div className="order-1 grid gap-5 lg:order-2">
                     <article className="relative overflow-hidden rounded-[2rem] border border-border">
                         <img
                             src={artista.imagen}
@@ -380,11 +503,11 @@ export default function Escuchar() {
                         />
 
                         <div className="relative grid gap-8 p-6 sm:p-8 md:grid-cols-[auto_1fr] md:items-center">
-                            <div className="relative mx-auto w-fit">
+                            <div className="relative mx-auto w-fit overflow-hidden rounded-full">
                                 <div className="absolute inset-0 rounded-full bg-[#9365f2]/30 blur-2xl" aria-hidden="true" />
                                 <div
                                     className={`relative grid h-52 w-52 place-items-center rounded-full border border-white/10 shadow-2xl shadow-black/70 sm:h-60 sm:w-60 ${
-                                        discoAnimado ? 'animate-spin' : ''
+                                        menosMovimiento ? '' : 'animate-spin'
                                     }`}
                                     style={{
                                         background: 'repeating-radial-gradient(circle at center, #1b1528 0 3px, #0a0712 3px 7px)',
@@ -397,21 +520,19 @@ export default function Escuchar() {
                                         <img src={artista.imagen} alt="" className="h-full w-full object-cover" />
                                     </span>
                                     <span className="absolute h-3 w-3 rounded-full bg-[#0a0712] ring-2 ring-white/10" />
-                                </div>
-
-                                <div
-                                    className="pointer-events-none absolute -right-5 -top-5 origin-top-right"
-                                    style={{
-                                        transform: `rotate(${anguloBrazo})`,
-                                        transition: MENOS_MOVIMIENTO() ? 'none' : 'transform 0.8s cubic-bezier(0.2, 0.8, 0.2, 1)',
-                                    }}
-                                    aria-hidden="true"
-                                >
-                                    <div className="flex flex-col items-center">
-                                        <span className="h-5 w-5 rounded-full border border-white/20 bg-[#e6dcff] shadow-lg" />
-                                        <span className="h-32 w-1.5 rounded-b-full bg-gradient-to-b from-[#e6dcff] via-[#b7a6e6] to-[#6b5aa0]" />
-                                        <span className="h-3 w-3 rotate-45 rounded-sm bg-[#e34ba6]" />
-                                    </div>
+                                    <span
+                                        className="pointer-events-none absolute right-1 top-1 origin-top-right"
+                                        style={{
+                                            transform: `rotate(${anguloBrazo})`,
+                                            transition: menosMovimiento ? 'none' : 'transform 0.8s cubic-bezier(0.2, 0.8, 0.2, 1)',
+                                        }}
+                                    >
+                                        <span className="flex flex-col items-center">
+                                            <span className="h-4 w-4 rounded-full border border-white/20 bg-[#e6dcff] shadow-lg" />
+                                            <span className="h-24 w-1.5 rounded-b-full bg-gradient-to-b from-[#e6dcff] via-[#b7a6e6] to-[#6b5aa0]" />
+                                            <span className="h-3 w-3 rotate-45 rounded-sm bg-[#e34ba6]" />
+                                        </span>
+                                    </span>
                                 </div>
                             </div>
 
@@ -423,13 +544,13 @@ export default function Escuchar() {
                                 <h2 className="mt-2 line-clamp-2 text-2xl font-extrabold tracking-tight text-texto-soft sm:text-3xl">
                                     {cancion.titulo}
                                 </h2>
-                                <p className="mt-1 text-sm text-sutil">
+                                <p className="mt-1 text-sm text-[#c8c1d7]">
                                     {artista.artista} · {artista.origen}
                                 </p>
 
                                 <div className="mt-5">
                                     <Onda valores={ondas} progreso={progreso} duracion={duracion} onSeek={buscar} />
-                                    <div className="mt-1 flex items-center justify-between text-xs tabular-nums text-sutil">
+                                    <div className="mt-1 flex items-center justify-between text-xs tabular-nums text-[#c8c1d7]">
                                         <span>{formatearTiempo(progreso)}</span>
                                         <span>
                                             Pista {indiceCancion + 1} de {totalCanciones}
@@ -439,41 +560,84 @@ export default function Escuchar() {
                                 </div>
 
                                 <div className="mt-4 flex flex-wrap items-center gap-4">
-                                    <div className="flex items-center gap-3">
+                                    <div className="flex items-center gap-2.5">
+                                        <button
+                                            type="button"
+                                            onClick={() => setAleatorio((actual) => !actual)}
+                                            aria-label={aleatorio ? 'Desactivar aleatorio' : 'Activar aleatorio'}
+                                            aria-pressed={aleatorio}
+                                            title="Aleatorio"
+                                            className={`grid h-10 w-10 place-items-center rounded-full border transition ${
+                                                aleatorio
+                                                    ? 'border-accent/60 bg-accent/15 text-accent'
+                                                    : 'border-border bg-white/[0.05] text-[#c8c1d7] hover:border-accent/60 hover:text-accent'
+                                            }`}
+                                        >
+                                            <Shuffle className="h-4 w-4" aria-hidden="true" />
+                                        </button>
                                         <button
                                             type="button"
                                             onClick={reiniciarOAvanzar}
                                             aria-label="Canción anterior"
-                                            className="grid h-11 w-11 place-items-center rounded-full border border-border bg-white/[0.05] text-lg text-texto transition hover:border-accent/60 hover:text-accent"
+                                            title="Anterior (P)"
+                                            className="grid h-11 w-11 place-items-center rounded-full border border-border bg-white/[0.05] text-texto transition hover:border-accent/60 hover:text-accent"
                                         >
-                                            ⏮
+                                            <SkipBack className="h-5 w-5" aria-hidden="true" />
                                         </button>
                                         <button
                                             type="button"
                                             onClick={() => setReproduciendo((actual) => !actual)}
                                             aria-label={reproduciendo ? 'Pausar' : 'Reproducir'}
-                                            className={`grid h-16 w-16 place-items-center rounded-full bg-gradient-to-r from-[#9365f2] to-[#e34ba6] text-2xl text-white transition hover:scale-105 ${
+                                            title="Reproducir / Pausar (Espacio)"
+                                            className={`grid h-16 w-16 place-items-center rounded-full bg-gradient-to-r from-[#9365f2] to-[#e34ba6] text-white transition hover:scale-105 ${
                                                 reproduciendo ? 'shadow-[0_0_45px_rgba(147,101,242,0.55)]' : 'shadow-xl shadow-accent/30'
                                             }`}
                                         >
-                                            {reproduciendo ? '❚❚' : '▶'}
+                                            {reproduciendo ? <Pause className="h-6 w-6" aria-hidden="true" /> : <Play className="ml-0.5 h-6 w-6" aria-hidden="true" />}
                                         </button>
                                         <button
                                             type="button"
                                             onClick={irSiguiente}
                                             aria-label="Canción siguiente"
-                                            className="grid h-11 w-11 place-items-center rounded-full border border-border bg-white/[0.05] text-lg text-texto transition hover:border-accent/60 hover:text-accent"
+                                            title="Siguiente (N)"
+                                            className="grid h-11 w-11 place-items-center rounded-full border border-border bg-white/[0.05] text-texto transition hover:border-accent/60 hover:text-accent"
                                         >
-                                            ⏭
+                                            <SkipForward className="h-5 w-5" aria-hidden="true" />
+                                        </button>
+                                        <button
+                                            type="button"
+                                            onClick={ciclarRepetir}
+                                            aria-label={ETIQUETA_REPETIR[repetir]}
+                                            aria-pressed={repetir !== 'off'}
+                                            title="Repetir"
+                                            className={`grid h-10 w-10 place-items-center rounded-full border transition ${
+                                                repetir !== 'off'
+                                                    ? 'border-accent/60 bg-accent/15 text-accent'
+                                                    : 'border-border bg-white/[0.05] text-[#c8c1d7] hover:border-accent/60 hover:text-accent'
+                                            }`}
+                                        >
+                                            {repetir === 'una' ? <Repeat1 className="h-4 w-4" aria-hidden="true" /> : <Repeat className="h-4 w-4" aria-hidden="true" />}
                                         </button>
                                     </div>
 
-                                    <div className="ml-auto flex items-center gap-3">
-                                        <span aria-hidden="true" className="text-sm text-sutil">🔊</span>
+                                    <div className="ml-auto flex items-center gap-2.5">
+                                        <button
+                                            type="button"
+                                            onClick={alternarSilencio}
+                                            aria-label={silenciado ? 'Activar sonido' : 'Silenciar'}
+                                            aria-pressed={silenciado}
+                                            title={silenciado ? 'Activar sonido' : 'Silenciar'}
+                                            className="grid h-9 w-9 place-items-center rounded-full text-[#c8c1d7] transition hover:text-accent"
+                                        >
+                                            <IconoVolumen className="h-5 w-5" aria-hidden="true" />
+                                        </button>
                                         <Barra
-                                            valor={volumen}
+                                            valor={silenciado ? 0 : volumen}
                                             max={1}
-                                            onCambiar={(evento) => setVolumen(Number(evento.target.value))}
+                                            onCambiar={(evento) => {
+                                                setVolumen(Number(evento.target.value));
+                                                setSilenciado(false);
+                                            }}
                                             etiqueta="Volumen"
                                         />
                                     </div>
@@ -491,10 +655,14 @@ export default function Escuchar() {
                             ref={audioRef}
                             preload="metadata"
                             onTimeUpdate={(evento) => setProgreso(evento.currentTarget.currentTime)}
-                            onLoadedMetadata={(evento) => setDuracion(evento.currentTarget.duration)}
+                            onLoadedMetadata={(evento) => {
+                                const audio = evento.currentTarget;
+                                setDuracion(audio.duration);
+                                setDuraciones((actual) => ({ ...actual, [cancion.archivo]: audio.duration }));
+                            }}
                             onCanPlay={reintentar}
                             onLoadedData={reintentar}
-                            onEnded={irSiguiente}
+                            onEnded={alTerminar}
                             onError={() => {
                                 setError('error');
                                 setReproduciendo(false);
@@ -512,39 +680,45 @@ export default function Escuchar() {
                         <ul ref={listaRef} className="mt-4 grid gap-2">
                             {artista.canciones.map((pista, indice) => {
                                 const activa = indice === indiceCancion;
+                                const dur = duraciones[pista.archivo];
                                 return (
                                     <li key={pista.archivo} data-pista>
-                                        <button
-                                            type="button"
-                                            onClick={() => seleccionarCancion(indice)}
-                                            aria-current={activa}
-                                            className={`flex w-full items-center gap-3 rounded-2xl border px-4 py-3 text-left transition ${
+                                        <div
+                                            className={`flex items-center gap-3 rounded-2xl border px-3 py-2.5 transition ${
                                                 activa
                                                     ? 'border-accent/60 bg-white/[0.05]'
-                                                    : 'border-transparent hover:border-border hover:bg-white/[0.025]'
+                                                    : 'border-transparent bg-white/[0.02] hover:border-border hover:bg-white/[0.045]'
                                             }`}
                                         >
-                                            <span className={`grid h-8 w-8 place-items-center rounded-full text-xs ${activa ? 'bg-gradient-to-br from-[#9365f2] to-[#e34ba6] text-white' : 'bg-white/[0.05] text-sutil'}`}>
-                                                {activa && reproduciendo ? '❚❚' : indice + 1}
-                                            </span>
-                                            <span className="min-w-0 flex-1">
-                                                <span className={`block truncate text-sm font-semibold ${activa ? 'text-texto-soft' : 'text-texto'}`}>
-                                                    {pista.titulo}
-                                                </span>
+                                            <button
+                                                type="button"
+                                                onClick={() => seleccionarCancion(indice)}
+                                                aria-label={activa && reproduciendo ? `Pausar ${pista.titulo}` : `Reproducir ${pista.titulo}`}
+                                                className={`grid h-9 w-9 shrink-0 place-items-center rounded-full transition ${
+                                                    activa
+                                                        ? 'bg-gradient-to-br from-[#9365f2] to-[#e34ba6] text-white'
+                                                        : 'bg-white/[0.06] text-[#c8c1d7] hover:bg-white/10 hover:text-texto'
+                                                }`}
+                                            >
+                                                {activa && reproduciendo ? <Pause className="h-4 w-4" aria-hidden="true" /> : <Play className="ml-0.5 h-4 w-4" aria-hidden="true" />}
+                                            </button>
+                                            <span className="w-5 shrink-0 text-center text-xs tabular-nums text-[#c8c1d7]">{indice + 1}</span>
+                                            <span className={`min-w-0 flex-1 truncate text-sm font-semibold ${activa ? 'text-texto-soft' : 'text-texto'}`}>
+                                                {pista.titulo}
                                             </span>
                                             {activa && reproduciendo && (
                                                 <span className="flex h-4 items-end gap-0.5" aria-hidden="true">
                                                     {[0, 1, 2].map((barra) => (
                                                         <span
                                                             key={barra}
-                                                            className="w-0.5 origin-bottom rounded-full bg-magenta [animation:ecu_0.9s_ease-in-out_infinite]"
+                                                            className={`w-0.5 origin-bottom rounded-full bg-magenta ${menosMovimiento ? '' : '[animation:ecu_0.9s_ease-in-out_infinite]'}`}
                                                             style={{ height: `${[60, 100, 40][barra]}%`, animationDelay: `${barra * 120}ms` }}
                                                         />
                                                     ))}
                                                 </span>
                                             )}
-                                            <span className="hidden text-xs text-sutil sm:block">{activa ? 'Sonando' : 'Reproducir'}</span>
-                                        </button>
+                                            <span className="shrink-0 text-xs tabular-nums text-[#c8c1d7]">{dur ? formatearTiempo(dur) : '--:--'}</span>
+                                        </div>
                                     </li>
                                 );
                             })}

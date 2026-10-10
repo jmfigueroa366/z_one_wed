@@ -3,6 +3,7 @@
 export const ROLES = Object.freeze({
     ADMINISTRADOR: 'administrador',
     COLABORADOR: 'colaborador',
+    COORDINADOR: 'coordinador',
     CLIENTE: 'cliente',
 });
 
@@ -30,7 +31,11 @@ export function esAdministrador(usuario) {
 }
 
 export function esColaborador(usuario) {
-    return tieneRol(usuario, ROLES.COLABORADOR);
+    return tieneAlgunoDeLosRoles(usuario, [ROLES.COLABORADOR, ROLES.COORDINADOR]);
+}
+
+export function esCoordinador(usuario) {
+    return tieneRol(usuario, ROLES.COORDINADOR);
 }
 
 export function esCliente(usuario) {
