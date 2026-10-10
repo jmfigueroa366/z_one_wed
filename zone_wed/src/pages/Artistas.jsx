@@ -2,13 +2,72 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import anime from 'animejs';
 import FormularioArtista from '../components/FormularioArtista.jsx';
-import TarjetaArtista from '../components/TarjetaArtista.jsx';
+import TarjetaArtista, { iniciales } from '../components/TarjetaArtista.jsx';
 import { useArtistas } from '../hooks/useArtistas.js';
 import { CAMPO, ETIQUETA } from '../styles/clases.js';
 import '../styles/tailwind.css';
 
 const MENOS_MOVIMIENTO = () =>
     typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+const ACENTOS = ['#f04fa6', '#a477ff', '#9ecbff', '#7be0b0', '#ffd166', '#f2a4b1'];
+const colorDeGenero = (genero, generos) => ACENTOS[Math.max(0, generos.indexOf(genero)) % ACENTOS.length];
+
+function Contador({ valor, sufijo = '' }) {
+    const ref = useRef(null);
+    useEffect(() => {
+        const el = ref.current;
+        if (!el) return undefined;
+        const objetivo = Number(valor) || 0;
+        if (MENOS_MOVIMIENTO()) {
+            el.textContent = `${String(objetivo).padStart(2, '0')}${sufijo}`;
+            return undefined;
+        }
+        const estado = { actual: 0 };
+        const animacion = anime({
+            targets: estado,
+            actual: objetivo,
+            round: 1,
+            duration: 1200,
+            easing: 'easeOutExpo',
+            update() {
+                el.textContent = `${String(estado.actual).padStart(2, '0')}${sufijo}`;
+            },
+        });
+        return () => animacion.pause();
+    }, [valor, sufijo]);
+    return <span ref={ref}>00{sufijo}</span>;
+}
+
+function Ecualizador() {
+    const ref = useRef(null);
+    useEffect(() => {
+        const barras = ref.current?.querySelectorAll('[data-eq]');
+        if (!barras || barras.length === 0 || MENOS_MOVIMIENTO()) return undefined;
+        const animacion = anime({
+            targets: barras,
+            scaleY: [0.25, 1],
+            duration: 620,
+            direction: 'alternate',
+            loop: true,
+            delay: anime.stagger(90),
+            easing: 'easeInOutSine',
+        });
+        return () => animacion.pause();
+    }, []);
+    return (
+        <span ref={ref} className="flex h-8 items-end gap-1" aria-hidden="true">
+            {Array.from({ length: 6 }).map((_, indice) => (
+                <span
+                    key={indice}
+                    data-eq
+                    className="w-1.5 origin-bottom rounded-full bg-gradient-to-t from-[#e34ba6] to-[#9365f2]"
+                    style={{ height: '100%', transform: 'scaleY(0.3)' }}
+                />
+            ))}
+        </span>
+    );
+}
 
 export default function Artistas() {
     const [artistas] = useArtistas();
@@ -26,6 +85,9 @@ export default function Artistas() {
             .includes(busqueda.trim().toLocaleLowerCase());
         return coincideBusqueda && (filtroGenero === 'Todos' || artista.especialidad === filtroGenero);
     }), [artistas, busqueda, filtroGenero]);
+
+    const destacado = artistasFiltrados[0] ?? null;
+    const acentoDestacado = destacado ? colorDeGenero(destacado.especialidad, generos) : '#a477ff';
 
     useEffect(() => {
         const grid = gridRef.current;
@@ -55,57 +117,89 @@ export default function Artistas() {
                 className="relative mt-6 overflow-hidden rounded-[2rem] border border-magenta/25 p-6 sm:p-8"
                 style={{
                     background:
-                        'radial-gradient(ellipse at 88% 8%, rgba(240, 79, 166, 0.3), transparent 48%), linear-gradient(120deg, rgba(111, 75, 187, 0.34), rgba(23, 19, 34, 0.97) 72%)',
+                        'radial-gradient(ellipse at 88% 8%, rgba(240, 79, 166, 0.32), transparent 48%), radial-gradient(ellipse at 6% 100%, rgba(111, 75, 187, 0.34), transparent 50%), linear-gradient(120deg, rgba(111, 75, 187, 0.34), rgba(23, 19, 34, 0.97) 72%)',
                 }}
             >
                 <div aria-hidden="true" className="pointer-events-none absolute -right-12 -top-24 h-60 w-60 animate-aurora rounded-full bg-[#e34ba6]/25 blur-3xl" />
-                <div aria-hidden="true" className="pointer-events-none absolute right-8 top-1/2 hidden -translate-y-1/2 select-none text-[10rem] font-black leading-none tracking-tighter text-white/[0.04] lg:block">
+                <div aria-hidden="true" className="pointer-events-none absolute right-8 top-1/2 hidden -translate-y-1/2 select-none text-[10rem] font-black leading-none tracking-tighter text-white/[0.045] lg:block">
                     ♪
                 </div>
-                <div className="relative">
-                    <p className="workspace-eyebrow">VOCES DEL ESTUDIO</p>
-                    <h2 className="mt-1 text-3xl font-extrabold tracking-tight text-texto-soft sm:text-4xl">
-                        El talento que da vida al sonido.
-                    </h2>
-                    <p className="mt-3 max-w-xl text-sm leading-7 text-sutil">
-                        Artistas vinculados a Z-ONE listos para grabar, ensayar y producir. Explora por estilo y encuentra la próxima voz de tu proyecto.
-                    </p>
-                    <div className="mt-6 flex flex-wrap items-center gap-4">
-                        <div className="rounded-2xl border border-white/10 bg-black/20 px-4 py-3">
-                            <span className="block text-[0.62rem] font-bold uppercase tracking-[0.12em] text-sutil">Artistas activos</span>
-                            <strong className="text-2xl font-black text-texto-soft">{String(artistas.length).padStart(2, '0')}</strong>
+                <div className="relative flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
+                    <div className="max-w-xl">
+                        <p className="workspace-eyebrow">VOCES DEL ESTUDIO</p>
+                        <h2 className="mt-1 text-3xl font-extrabold tracking-tight text-texto-soft sm:text-4xl">
+                            El talento que da vida al sonido.
+                        </h2>
+                        <p className="mt-3 text-sm leading-7 text-sutil">
+                            Artistas vinculados a Z-ONE listos para grabar, ensayar y producir. Explora por estilo y encuentra la próxima voz de tu proyecto.
+                        </p>
+                    </div>
+                    <div className="flex items-center gap-4">
+                        <div className="rounded-2xl border border-white/10 bg-black/25 px-5 py-3 text-center">
+                            <strong className="block text-3xl font-black tracking-tight text-texto-soft"><Contador valor={artistas.length} /></strong>
+                            <span className="mt-1 block text-[0.62rem] font-bold uppercase tracking-[0.12em] text-sutil">Artistas</span>
                         </div>
-                        <div className="rounded-2xl border border-white/10 bg-black/20 px-4 py-3">
-                            <span className="block text-[0.62rem] font-bold uppercase tracking-[0.12em] text-sutil">Géneros y estilos</span>
-                            <strong className="text-2xl font-black text-accent-soft">{String(generos.length).padStart(2, '0')}</strong>
+                        <div className="rounded-2xl border border-white/10 bg-black/25 px-5 py-3 text-center">
+                            <strong className="block text-3xl font-black tracking-tight text-accent-soft"><Contador valor={generos.length} /></strong>
+                            <span className="mt-1 block text-[0.62rem] font-bold uppercase tracking-[0.12em] text-sutil">Estilos</span>
                         </div>
                     </div>
-                    {generos.length > 0 && (
-                        <div className="mt-5 flex flex-wrap gap-2">
-                            {['Todos', ...generos].map((genero) => {
-                                const activo = filtroGenero === genero;
-                                return (
-                                    <button
-                                        key={genero}
-                                        type="button"
-                                        onClick={() => setFiltroGenero(genero)}
-                                        aria-pressed={activo}
-                                        className={
-                                            activo
-                                                ? 'rounded-full border border-accent/60 bg-gradient-to-r from-[#9365f2]/50 to-[#e34ba6]/40 px-3.5 py-1.5 text-xs font-bold text-white transition'
-                                                : 'rounded-full border border-border bg-white/[0.04] px-3.5 py-1.5 text-xs font-medium text-sutil transition hover:border-accent/50 hover:text-texto'
-                                        }
-                                    >
-                                        {genero}
-                                    </button>
-                                );
-                            })}
-                        </div>
-                    )}
                 </div>
+
+                {generos.length > 0 && (
+                    <div className="relative mt-6 flex flex-wrap gap-2">
+                        {['Todos', ...generos].map((genero) => {
+                            const activo = filtroGenero === genero;
+                            const acento = genero === 'Todos' ? '#a477ff' : colorDeGenero(genero, generos);
+                            return (
+                                <button
+                                    key={genero}
+                                    type="button"
+                                    onClick={() => setFiltroGenero(genero)}
+                                    aria-pressed={activo}
+                                    className="rounded-full border px-3.5 py-1.5 text-xs font-bold transition hover:-translate-y-0.5"
+                                    style={
+                                        activo
+                                            ? { borderColor: acento, background: `${acento}33`, color: '#fff', boxShadow: `0 0 18px ${acento}44` }
+                                            : { borderColor: 'var(--color-border, #2d2a45)', background: 'rgba(255,255,255,0.04)', color: '#a69ebd' }
+                                    }
+                                >
+                                    {genero}
+                                </button>
+                            );
+                        })}
+                    </div>
+                )}
             </section>
 
-            <section className="mt-6 rounded-[2rem] border border-border bg-surface/60 p-6 backdrop-blur" aria-labelledby="artists-directory-title">
+            {destacado && (
+                <section
+                    className="relative mt-5 overflow-hidden rounded-[2rem] border p-5 sm:p-6"
+                    style={{ borderColor: `${acentoDestacado}55`, background: 'linear-gradient(120deg, rgba(23,19,34,0.9), rgba(18,15,29,0.95))' }}
+                    aria-label="Artista destacado"
+                >
+                    <span aria-hidden="true" className="pointer-events-none absolute -left-16 top-1/2 h-56 w-56 -translate-y-1/2 rounded-full blur-3xl" style={{ background: `${acentoDestacado}33` }} />
+                    <div className="relative flex flex-col items-center gap-5 sm:flex-row">
+                        <span className="relative shrink-0">
+                            <span className="grid h-24 w-24 place-items-center overflow-hidden rounded-2xl text-4xl font-black text-white sm:h-28 sm:w-28" style={{ background: `linear-gradient(135deg, ${acentoDestacado}, #e34ba6)` }}>
+                                {destacado.imagen ? (
+                                    <img src={destacado.imagen} alt="" className="h-full w-full object-cover" />
+                                ) : (
+                                    iniciales(destacado.nombre)
+                                )}
+                            </span>
+                        </span>
+                        <div className="min-w-0 flex-1 text-center sm:text-left">
+                            <p className="text-[0.62rem] font-extrabold uppercase tracking-[0.16em]" style={{ color: acentoDestacado }}>Spotlight · Artista destacado</p>
+                            <h3 className="mt-1 text-2xl font-black tracking-tight text-texto-soft">{destacado.nombre}</h3>
+                            <p className="mt-1 text-sm text-sutil">{destacado.especialidad || 'Artista'} · {destacado.usuario_id ? 'Cuenta vinculada' : 'Perfil del estudio'}</p>
+                        </div>
+                        <Ecualizador />
+                    </div>
+                </section>
+            )}
+
+            <section className="mt-5 rounded-[2rem] border border-border bg-surface/60 p-6 backdrop-blur" aria-labelledby="artists-directory-title">
                 <div className="flex flex-wrap items-end justify-between gap-4">
                     <div>
                         <p className="workspace-eyebrow">DIRECTORIO</p>
@@ -141,7 +235,13 @@ export default function Artistas() {
                 {artistasFiltrados.length ? (
                     <div className="mt-5 grid gap-4 sm:grid-cols-2 lg:grid-cols-3" ref={gridRef}>
                         {artistasFiltrados.map((artista, index) => (
-                            <TarjetaArtista key={artista.id ?? artista.nombre} artista={artista} index={index} />
+                            <TarjetaArtista
+                                key={artista.id ?? artista.nombre}
+                                artista={artista}
+                                index={index}
+                                acento={colorDeGenero(artista.especialidad, generos)}
+                                destacado={artista === destacado}
+                            />
                         ))}
                     </div>
                 ) : (
