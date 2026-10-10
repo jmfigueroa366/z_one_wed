@@ -207,7 +207,7 @@ export default function Escuchar() {
                                     value={Math.min(progreso, duracion || 0)}
                                     onChange={manejarBusqueda}
                                     aria-label="Progreso de la canción"
-                                    className="h-1.5 w-full cursor-pointer appearance-none rounded-full bg-surface-3 accent-accent"
+                                    className="h-1.5 w-full cursor-pointer accent-accent"
                                 />
                                 <span className="w-12 text-xs tabular-nums text-sutil">{formatearTiempo(duracion)}</span>
                             </div>
@@ -239,7 +239,7 @@ export default function Escuchar() {
                                     value={volumen}
                                     onChange={(evento) => setVolumen(Number(evento.target.value))}
                                     aria-label="Volumen"
-                                    className="h-1.5 w-40 cursor-pointer appearance-none rounded-full bg-surface-3 accent-accent"
+                                    className="h-1.5 w-40 cursor-pointer accent-accent"
                                 />
                             </div>
                         </div>

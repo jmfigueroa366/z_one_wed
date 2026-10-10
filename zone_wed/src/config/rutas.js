@@ -43,6 +43,7 @@ export const rutasPorRol = Object.freeze({
         RUTAS.SESIONES,
         RUTAS.PROYECTOS,
         RUTAS.CATALOGO,
+        RUTAS.CHATBOT,
         RUTAS.CONFIGURACION,
     ],
     [ROLES.CLIENTE]: [
@@ -53,6 +54,7 @@ export const rutasPorRol = Object.freeze({
         RUTAS.SESIONES,
         RUTAS.PROYECTOS,
         RUTAS.CATALOGO,
+        RUTAS.CHATBOT,
         RUTAS.CONFIGURACION,
     ],
 });
