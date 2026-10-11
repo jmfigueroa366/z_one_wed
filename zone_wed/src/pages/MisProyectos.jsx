@@ -2,12 +2,13 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import anime from 'animejs';
-import { Folder, Music, Sparkles } from 'lucide-react';
-import { Contador, Ecualizador } from '../components/Animados.jsx';
+import { Folder, FolderOpen, Music, Sparkles, X } from 'lucide-react';
+import { Contador, Ecualizador, FondoHero } from '../components/Animados.jsx';
 import { useAuth } from '../context/AuthContext.jsx';
 import { RUTAS } from '../config/rutas.js';
 import { useProyectos } from '../hooks/useProyectos.js';
 import { useCanciones } from '../hooks/useCanciones.js';
+import { useSpotlight } from '../hooks/useSpotlight.js';
 import { ProyectoService } from '../services/proyectoService.js';
 import { CancionService } from '../services/cancionService.js';
 import AudioCancion from '../components/AudioCancion.jsx';
@@ -60,7 +61,7 @@ function PartesCancion({ cancion }) {
                                 type="button"
                                 aria-label={`Quitar parte ${parte}`}
                             >
-                                ×
+                                <X className="h-3.5 w-3.5" />
                             </button>
                         </span>
                     ))}
@@ -91,6 +92,7 @@ export default function MisProyectos() {
     const [canciones] = useCanciones(proyectoActivoId);
     const [partesAbierta, setPartesAbierta] = useState(null);
     const panelRef = useRef(null);
+    const [heroRef, seguirSpotlight] = useSpotlight();
 
     const [nombreProyecto, setNombreProyecto] = useState('');
     const [nombreCancion, setNombreCancion] = useState('');
@@ -199,12 +201,15 @@ export default function MisProyectos() {
             {error && <p className="mt-5 rounded-xl border border-peligro/30 bg-peligro/10 px-4 py-2 text-sm text-peligro" role="alert">{error}</p>}
 
             <section
-                className="relative mt-6 overflow-hidden rounded-[2rem] border border-accent/25 p-6 sm:p-7"
+                ref={heroRef}
+                onMouseMove={seguirSpotlight}
+                className="group/hero relative mt-6 overflow-hidden rounded-[2rem] border border-accent/25 p-6 sm:p-7"
                 style={{
                     background:
                         'radial-gradient(ellipse at 90% 8%, rgba(227, 75, 166, 0.28), transparent 46%), radial-gradient(ellipse at 4% 100%, rgba(111, 75, 187, 0.34), transparent 50%), linear-gradient(120deg, rgba(111, 75, 187, 0.34), rgba(23, 19, 34, 0.97) 72%)',
                 }}
             >
+                <FondoHero acento="#e34ba6" />
                 <div aria-hidden="true" className="pointer-events-none absolute -right-12 -top-24 h-60 w-60 animate-aurora rounded-full bg-[#e34ba6]/25 blur-3xl" />
                 <Music aria-hidden="true" className="pointer-events-none absolute right-8 top-1/2 hidden h-40 w-40 -translate-y-1/2 text-white/[0.05] lg:block" />
                 <div className="relative flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
@@ -213,7 +218,7 @@ export default function MisProyectos() {
                             <Sparkles className="h-3.5 w-3.5" aria-hidden="true" /> ESTUDIO PERSONAL
                         </p>
                         <h2 className="mt-1 text-3xl font-extrabold tracking-tight text-texto-soft sm:text-4xl">
-                            Tus carpetas, tu propio ritmo.
+                            Tus carpetas, <span className="texto-degradado">tu propio ritmo.</span>
                         </h2>
                         <p className="mt-3 text-sm leading-7 text-sutil">
                             Agrupa tus ideas, nombra cada canción y lanza la solicitud de grabación cuando estés listo.
@@ -311,7 +316,7 @@ export default function MisProyectos() {
                                                 type="button"
                                                 aria-label={`Eliminar carpeta ${proyecto.nombre}`}
                                             >
-                                                ✕
+                                                <X className="h-4 w-4" />
                                             </button>
                                         </div>
                                     </li>
@@ -330,8 +335,8 @@ export default function MisProyectos() {
                         <>
                             <div className="mb-6 flex flex-wrap items-start justify-between gap-4">
                                 <div className="flex items-center gap-4">
-                                    <span className="grid h-14 w-14 shrink-0 place-items-center rounded-2xl bg-gradient-to-br from-[#9365f2] to-[#e34ba6] text-2xl text-white" aria-hidden="true">
-                                        ♫
+                                    <span className="grid h-14 w-14 shrink-0 place-items-center rounded-2xl bg-gradient-to-br from-[#9365f2] to-[#e34ba6] text-white" aria-hidden="true">
+                                        <Music className="h-6 w-6" />
                                     </span>
                                     <div>
                                         <h2 className="text-xl font-bold tracking-tight text-texto-soft">{proyectoActivo.nombre}</h2>
@@ -379,7 +384,7 @@ export default function MisProyectos() {
                                         const partesVisible = partesAbierta === cancion.id;
 
                                         return (
-                                            <li key={cancion.id} data-pista className="rounded-2xl border border-border bg-white/[0.02] p-4 transition hover:border-accent/40">
+                                            <li key={cancion.id} data-pista className="tarjeta-brillo rounded-2xl border border-border bg-white/[0.02] p-4 transition hover:border-accent/40">
                                                 <div className="flex flex-wrap items-center justify-between gap-3">
                                                     <div className="flex min-w-0 items-center gap-3">
                                                         <span className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-white/[0.05] text-sm font-bold tabular-nums text-accent-soft" aria-hidden="true">
@@ -435,7 +440,7 @@ export default function MisProyectos() {
                         </>
                     ) : (
                         <div className="flex h-full min-h-48 flex-col items-center justify-center rounded-2xl border border-dashed border-border bg-surface/40 px-6 py-12 text-center">
-                            <span className="grid h-14 w-14 place-items-center rounded-2xl bg-gradient-to-br from-[#5b418f]/60 to-surface-2 text-2xl text-accent-soft" aria-hidden="true">♫</span>
+                            <span className="grid h-14 w-14 place-items-center rounded-2xl bg-gradient-to-br from-[#5b418f]/60 to-surface-2 text-accent-soft" aria-hidden="true"><FolderOpen className="h-6 w-6" /></span>
                             <p className="mt-3 font-semibold text-texto-soft">Selecciona una carpeta</p>
                             <p className="text-sm text-sutil">Elige una carpeta para ver y nombrar sus canciones.</p>
                         </div>

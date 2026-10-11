@@ -20,6 +20,7 @@ import {
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext.jsx';
 import { useSesiones } from '../hooks/useSesiones.js';
+import { useSpotlight } from '../hooks/useSpotlight.js';
 import { artistasDestacados } from '../data/artistasDestacados.js';
 import { productoresDestacados } from '../data/productoresDestacados.js';
 import { cancionesArtistas } from '../data/cancionesArtistas.js';
@@ -104,15 +105,7 @@ export default function MenuPrincipal() {
     const rutasPermitidas = rutasPermitidasPorRol(usuario?.rol);
     const [sesiones] = useSesiones();
     const contenedorRef = useRef(null);
-    const heroRef = useRef(null);
-
-    const seguirSpotlight = (evento) => {
-        const hero = heroRef.current;
-        if (!hero) return;
-        const caja = hero.getBoundingClientRect();
-        hero.style.setProperty('--mx', `${evento.clientX - caja.left}px`);
-        hero.style.setProperty('--my', `${evento.clientY - caja.top}px`);
-    };
+    const [heroRef, seguirSpotlight] = useSpotlight();
 
     const sesionesActivas = sesiones.filter((sesion) => ['confirmada', 'en_proceso'].includes(sesion.estado)).length;
     const totalCanciones = useMemo(

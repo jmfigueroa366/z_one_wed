@@ -1,5 +1,6 @@
 // CAPA: Presentación
 import { useState } from 'react';
+import { Mic } from 'lucide-react';
 import { useGrabaciones } from '../hooks/useGrabaciones.js';
 import GrabadorAudio from './GrabadorAudio.jsx';
 import '../styles/tailwind.css';
@@ -12,13 +13,13 @@ export default function AudioCancion({ cancion, estilo }) {
     return (
         <>
             <button
-                className={estilo}
+                className={`${estilo} gap-2`}
                 onClick={() => setAbierto((actual) => !actual)}
                 type="button"
                 aria-expanded={abierto}
                 aria-label={`Audio de ${cancion.nombre}`}
             >
-                🎙 Audio{grabaciones.length > 0 ? ` (${grabaciones.length})` : ''}
+                <Mic className="h-4 w-4" aria-hidden="true" /> Audio{grabaciones.length > 0 ? ` (${grabaciones.length})` : ''}
             </button>
 
             {abierto && (

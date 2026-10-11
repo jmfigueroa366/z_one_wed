@@ -1,10 +1,12 @@
 // CAPA: Presentación
 import { useEffect, useMemo, useRef, useState } from 'react';
 import anime from 'animejs';
+import { Mic2 } from 'lucide-react';
 import FormularioArtista from '../components/FormularioArtista.jsx';
 import TarjetaArtista, { iniciales } from '../components/TarjetaArtista.jsx';
-import { Contador, Ecualizador } from '../components/Animados.jsx';
+import { Contador, Ecualizador, FondoHero } from '../components/Animados.jsx';
 import { useArtistas } from '../hooks/useArtistas.js';
+import { useSpotlight } from '../hooks/useSpotlight.js';
 import { CAMPO, ETIQUETA } from '../styles/clases.js';
 import '../styles/tailwind.css';
 
@@ -19,6 +21,7 @@ export default function Artistas() {
     const [busqueda, setBusqueda] = useState('');
     const [filtroGenero, setFiltroGenero] = useState('Todos');
     const gridRef = useRef(null);
+    const [heroRef, seguirSpotlight] = useSpotlight();
 
     const generos = useMemo(
         () => [...new Set(artistas.map((artista) => artista.especialidad).filter(Boolean))].sort(),
@@ -59,21 +62,22 @@ export default function Artistas() {
             </header>
 
             <section
-                className="relative mt-6 overflow-hidden rounded-[2rem] border border-magenta/25 p-6 sm:p-8"
+                ref={heroRef}
+                onMouseMove={seguirSpotlight}
+                className="group/hero relative mt-6 overflow-hidden rounded-[2rem] border border-magenta/25 p-6 sm:p-8"
                 style={{
                     background:
                         'radial-gradient(ellipse at 88% 8%, rgba(240, 79, 166, 0.32), transparent 48%), radial-gradient(ellipse at 6% 100%, rgba(111, 75, 187, 0.34), transparent 50%), linear-gradient(120deg, rgba(111, 75, 187, 0.34), rgba(23, 19, 34, 0.97) 72%)',
                 }}
             >
+                <FondoHero acento="#f04fa6" />
                 <div aria-hidden="true" className="pointer-events-none absolute -right-12 -top-24 h-60 w-60 animate-aurora rounded-full bg-[#e34ba6]/25 blur-3xl" />
-                <div aria-hidden="true" className="pointer-events-none absolute right-8 top-1/2 hidden -translate-y-1/2 select-none text-[10rem] font-black leading-none tracking-tighter text-white/[0.045] lg:block">
-                    ♪
-                </div>
+                <Mic2 aria-hidden="true" className="pointer-events-none absolute right-8 top-1/2 hidden h-40 w-40 -translate-y-1/2 text-white/[0.045] lg:block" />
                 <div className="relative flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
                     <div className="max-w-xl">
                         <p className="workspace-eyebrow">VOCES DEL ESTUDIO</p>
                         <h2 className="mt-1 text-3xl font-extrabold tracking-tight text-texto-soft sm:text-4xl">
-                            El talento que da vida al sonido.
+                            El talento que <span className="texto-degradado">da vida al sonido.</span>
                         </h2>
                         <p className="mt-3 text-sm leading-7 text-sutil">
                             Artistas vinculados a Z-ONE listos para grabar, ensayar y producir. Explora por estilo y encuentra la próxima voz de tu proyecto.

@@ -2,8 +2,10 @@
 import { useEffect, useMemo, useRef } from 'react';
 import anime from 'animejs';
 import { Activity, CheckCircle2, Gauge, Inbox, Flame, Sparkles, TrendingUp, Radio } from 'lucide-react';
+import { FondoHero } from '../components/Animados.jsx';
 import { useSesiones } from '../hooks/useSesiones.js';
 import { useSolicitudes } from '../hooks/useSolicitudes.js';
+import { useSpotlight } from '../hooks/useSpotlight.js';
 import { EstadisticasService } from '../services/estadisticasService.js';
 import { formatearMoneda } from '../utils/helpers.js';
 import { clasePillEstado } from '../styles/clases.js';
@@ -31,7 +33,7 @@ const TONOS = {
     magenta: 'border-magenta/25 bg-magenta/[0.07] text-magenta',
 };
 
-const TARJETA = 'relative overflow-hidden rounded-[2rem] border border-border bg-surface/60 p-6 backdrop-blur transition duration-300 hover:border-accent/40';
+const TARJETA = 'tarjeta-brillo relative overflow-hidden rounded-[2rem] border border-border bg-surface/60 p-6 backdrop-blur transition duration-300 hover:border-accent/40';
 
 const ESTADOS_ORDEN = { pagada: 'Cobrado', facturada: 'Por cobrar', borrador: 'Borrador' };
 
@@ -67,6 +69,7 @@ export default function Estadisticas() {
     const [sesiones] = useSesiones();
     const [solicitudes] = useSolicitudes();
     const contenedorRef = useRef(null);
+    const [heroRef, seguirSpotlight] = useSpotlight();
 
     const datos = useMemo(() => EstadisticasService.obtenerAnalitica(), [sesiones, solicitudes]);
 
@@ -134,12 +137,15 @@ export default function Estadisticas() {
             <div ref={contenedorRef} className="mt-6 grid gap-5">
                 <section
                     data-tile
-                    className="relative overflow-hidden rounded-[2.25rem] border border-accent/25 p-6 sm:p-8"
+                    ref={heroRef}
+                    onMouseMove={seguirSpotlight}
+                    className="group/hero relative overflow-hidden rounded-[2.25rem] border border-accent/25 p-6 sm:p-8"
                     style={{
                         background:
                             'radial-gradient(ellipse at 88% 4%, rgba(240, 79, 166, 0.3), transparent 46%), radial-gradient(ellipse at 4% 100%, rgba(111, 75, 187, 0.34), transparent 50%), linear-gradient(120deg, rgba(111, 75, 187, 0.36), rgba(23, 19, 34, 0.97) 72%)',
                     }}
                 >
+                    <FondoHero acento="#f04fa6" />
                     <div aria-hidden="true" className="pointer-events-none absolute -right-10 -top-24 h-64 w-64 animate-aurora rounded-full bg-[#e34ba6]/25 blur-3xl" />
                     <div aria-hidden="true" className="pointer-events-none absolute right-6 top-1/2 hidden -translate-y-1/2 select-none text-[11rem] font-black leading-none tracking-tighter text-white/[0.04] lg:block">
                         Z·1
@@ -151,7 +157,7 @@ export default function Estadisticas() {
                                 En vivo
                             </span>
                             <h2 className="mt-3 text-3xl font-extrabold tracking-tight text-texto-soft sm:text-4xl">
-                                El estudio, latiendo en tiempo real.
+                                El estudio, <span className="texto-degradado">latiendo en tiempo real.</span>
                             </h2>
                             <p className="mt-3 text-sm leading-7 text-sutil">
                                 Ocupación, ingresos y talento en una sola lectura. Detecta el ritmo de la semana y dónde poner el foco.

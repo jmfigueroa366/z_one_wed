@@ -2,10 +2,12 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import anime from 'animejs';
 import { Clock, Mic, SlidersHorizontal } from 'lucide-react';
+import { FondoHero } from '../components/Animados.jsx';
 import { useColaboradores } from '../hooks/useColaboradores.js';
 import { useSalas } from '../hooks/useSalas.js';
 import { useSesiones } from '../hooks/useSesiones.js';
 import { useSolicitudes } from '../hooks/useSolicitudes.js';
+import { useSpotlight } from '../hooks/useSpotlight.js';
 import { formatearFecha } from '../utils/helpers.js';
 import { clasePillEstado } from '../styles/clases.js';
 import '../styles/tailwind.css';
@@ -48,6 +50,7 @@ export default function Agenda() {
     const [salas] = useSalas();
     const [colaboradores] = useColaboradores();
     const boardRef = useRef(null);
+    const [heroRef, seguirSpotlight] = useSpotlight();
     const [filtroEstado, setFiltroEstado] = useState('todas');
     const [filtroFecha, setFiltroFecha] = useState('');
     const hoy = useMemo(() => fechaHoy(), []);
@@ -131,12 +134,15 @@ export default function Agenda() {
 
             {proximo && (
                 <section
-                    className="relative mt-6 overflow-hidden rounded-[2rem] border border-accent/25 p-6 sm:p-8"
+                    ref={heroRef}
+                    onMouseMove={seguirSpotlight}
+                    className="group/hero relative mt-6 overflow-hidden rounded-[2rem] border border-accent/25 p-6 sm:p-8"
                     style={{
                         background:
                             'radial-gradient(ellipse at 90% 8%, rgba(240, 79, 166, 0.26), transparent 48%), linear-gradient(120deg, rgba(111, 75, 187, 0.36), rgba(23, 19, 34, 0.97) 72%)',
                     }}
                 >
+                    <FondoHero acento="#9365f2" />
                     <div aria-hidden="true" className="pointer-events-none absolute -right-12 -top-20 h-56 w-56 animate-aurora rounded-full bg-[#9365f2]/30 blur-3xl" />
                     <div className="relative flex flex-wrap items-center justify-between gap-5">
                         <div className="flex flex-wrap items-center gap-6">
@@ -147,7 +153,9 @@ export default function Agenda() {
                             </div>
                             <div>
                                 <p className="workspace-eyebrow">PRÓXIMO EN AGENDA</p>
-                                <h2 className="mt-1 text-2xl font-extrabold tracking-tight text-texto-soft">{proximo.titulo || 'Sesión sin título'}</h2>
+                                <h2 className="mt-1 text-2xl font-extrabold tracking-tight text-texto-soft">
+                                    <span className="texto-degradado">{proximo.titulo || 'Sesión sin título'}</span>
+                                </h2>
                                 <div className="mt-2 flex flex-wrap items-center gap-x-5 gap-y-1 text-sm text-sutil">
                                     <span className="inline-flex items-center gap-1.5"><Clock className="h-3.5 w-3.5" aria-hidden="true" /> {proximo.hora_inicio || '--:--'}{proximo.hora_fin ? ` – ${proximo.hora_fin}` : ''}</span>
                                     <span className="inline-flex items-center gap-1.5"><SlidersHorizontal className="h-3.5 w-3.5" aria-hidden="true" /> {obtenerSala(proximo.sala_id)}</span>
@@ -164,7 +172,7 @@ export default function Agenda() {
                 {resumen.map((item) => (
                     <article
                         key={item.etiqueta}
-                        className={`relative flex items-center justify-between gap-3 overflow-hidden rounded-2xl border border-border bg-gradient-to-br ${item.tono} to-surface/40 p-4`}
+                        className={`tarjeta-brillo relative flex items-center justify-between gap-3 overflow-hidden rounded-2xl border border-border bg-gradient-to-br ${item.tono} to-surface/40 p-4`}
                     >
                         <span className="text-sm text-sutil">{item.etiqueta}</span>
                         <strong className={`text-3xl font-black ${item.texto}`}>{item.valor}</strong>
@@ -249,7 +257,7 @@ export default function Agenda() {
                                             <article
                                                 key={evento.eventoId}
                                                 data-evento
-                                                className="rounded-2xl border border-border bg-surface/70 p-3.5 transition hover:-translate-y-0.5 hover:border-accent/50"
+                                                className="tarjeta-brillo rounded-2xl border border-border bg-surface/70 p-3.5 transition hover:-translate-y-0.5 hover:border-accent/50"
                                             >
                                                 <div className="flex items-center justify-between gap-2">
                                                     <span className="text-xs font-bold tabular-nums text-texto-soft">

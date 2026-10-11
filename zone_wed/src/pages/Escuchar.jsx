@@ -14,8 +14,10 @@ import {
     VolumeX,
     Music,
     Mic2,
+    Search,
 } from 'lucide-react';
 import { cancionesArtistas, urlCancion } from '../data/cancionesArtistas.js';
+import { useSpotlight } from '../hooks/useSpotlight.js';
 import '../styles/tailwind.css';
 
 const MENOS_MOVIMIENTO = () =>
@@ -224,10 +226,13 @@ export default function Escuchar() {
     const [repetir, setRepetir] = useState('off');
     const [duraciones, setDuraciones] = useState({});
     const [error, setError] = useState('');
+    const [busquedaArtista, setBusquedaArtista] = useState('');
 
     const audioRef = useRef(null);
     const listaRef = useRef(null);
     const eqRef = useRef(null);
+    const artistaActivoRef = useRef(null);
+    const [heroRef, seguirSpotlight] = useSpotlight();
     const debeSonarRef = useRef(false);
     const silenciadoRef = useRef(false);
 
@@ -241,10 +246,23 @@ export default function Escuchar() {
         () => cancionesArtistas.reduce((suma, item) => suma + item.canciones.length, 0),
         []
     );
+    const artistasVisibles = useMemo(() => {
+        const consulta = busquedaArtista.trim().toLocaleLowerCase();
+        return cancionesArtistas
+            .map((item, indice) => ({ item, indice }))
+            .filter(({ item }) => !consulta || item.artista.toLocaleLowerCase().includes(consulta));
+    }, [busquedaArtista]);
 
     useEffect(() => {
         debeSonarRef.current = reproduciendo;
     }, [reproduciendo]);
+
+    useEffect(() => {
+        const nodo = artistaActivoRef.current;
+        if (nodo && typeof nodo.scrollIntoView === 'function') {
+            nodo.scrollIntoView({ block: 'nearest', inline: 'nearest' });
+        }
+    }, [indiceArtista, artistasVisibles]);
 
     useEffect(() => {
         silenciadoRef.current = silenciado;
@@ -506,57 +524,87 @@ export default function Escuchar() {
 
             <div className="relative mt-6 grid gap-5 lg:grid-cols-[minmax(230px,260px)_1fr]">
                 <section
-                    className="order-2 h-fit rounded-[1.75rem] border border-border bg-surface/60 p-3 backdrop-blur lg:order-1"
+                    className="order-2 flex max-h-80 flex-col rounded-[1.75rem] border border-border bg-surface/60 backdrop-blur lg:sticky lg:top-4 lg:order-1 lg:max-h-[calc(100vh-2rem)]"
                     aria-label="Seleccionar artista"
                 >
-                    <p className="workspace-eyebrow px-2 py-2">ARTISTAS</p>
-                    <ul className="flex snap-x snap-mandatory gap-2 overflow-x-auto pb-1 lg:snap-none lg:flex-col lg:overflow-visible lg:pb-0">
-                        {cancionesArtistas.map((item, indice) => {
-                            const activo = indice === indiceArtista;
-                            return (
-                                <li key={item.artista} className="shrink-0 snap-start">
-                                    <button
-                                        type="button"
-                                        onClick={() => seleccionarArtista(indice)}
-                                        aria-pressed={activo}
-                                        className={`group flex w-full items-center gap-3 rounded-2xl border p-2.5 text-left transition ${
-                                            activo
-                                                ? 'border-accent/60 bg-gradient-to-r from-[#5b418f]/50 to-transparent'
-                                                : 'border-transparent bg-white/[0.03] hover:border-accent/30 hover:bg-white/[0.06]'
-                                        }`}
-                                    >
-                                        <span className="relative shrink-0">
-                                            <span
-                                                className={`grid h-12 w-12 place-items-center overflow-hidden rounded-full ${
-                                                    activo ? 'bg-gradient-to-br from-[#9365f2] to-[#e34ba6] p-[2px]' : 'border border-border'
-                                                }`}
-                                            >
-                                                <img
-                                                    src={item.imagen}
-                                                    alt=""
-                                                    loading="lazy"
-                                                    className="h-full w-full rounded-full object-cover transition duration-300 group-hover:scale-105"
-                                                />
+                    <div className="flex items-center justify-between gap-2 px-3 pt-3">
+                        <p className="workspace-eyebrow">ARTISTAS</p>
+                        <span className="rounded-full border border-accent/30 bg-accent/10 px-2.5 py-1 text-[0.62rem] font-bold tabular-nums text-accent-soft">
+                            {cancionesArtistas.length}
+                        </span>
+                    </div>
+
+                    <div className="p-3 pb-2">
+                        <label className="relative block">
+                            <Search aria-hidden="true" className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-sutil" />
+                            <input
+                                type="search"
+                                value={busquedaArtista}
+                                onChange={(event) => setBusquedaArtista(event.target.value)}
+                                placeholder="Buscar artista"
+                                aria-label="Buscar artista"
+                                className="w-full rounded-xl border border-border bg-surface-2 py-2 pl-9 pr-3 text-sm text-texto outline-none transition placeholder:text-sutil/70 focus:border-accent focus:ring-2 focus:ring-accent/30"
+                            />
+                        </label>
+                    </div>
+
+                    <div className="min-h-0 flex-1 px-3 pb-3">
+                        <ul className="flex -mx-3 snap-x snap-mandatory gap-2 overflow-x-auto px-3 pb-1 lg:mx-0 lg:h-full lg:snap-none lg:flex-col lg:overflow-x-hidden lg:overflow-y-auto lg:px-0 lg:pb-1 lg:pr-1 lg:[scrollbar-width:thin]">
+                            {artistasVisibles.length === 0 && (
+                                <li className="px-2 py-6 text-center text-xs text-sutil">Sin resultados.</li>
+                            )}
+                            {artistasVisibles.map(({ item, indice }) => {
+                                const activo = indice === indiceArtista;
+                                return (
+                                    <li key={item.artista} className="shrink-0 snap-start">
+                                        <button
+                                            ref={activo ? artistaActivoRef : undefined}
+                                            type="button"
+                                            onClick={() => seleccionarArtista(indice)}
+                                            aria-pressed={activo}
+                                            className={`group flex w-full items-center gap-3 rounded-2xl border p-2.5 text-left transition ${
+                                                activo
+                                                    ? 'border-accent/60 bg-gradient-to-r from-[#5b418f]/50 to-transparent'
+                                                    : 'border-transparent bg-white/[0.03] hover:border-accent/30 hover:bg-white/[0.06]'
+                                            }`}
+                                        >
+                                            <span className="relative shrink-0">
+                                                <span
+                                                    className={`grid h-11 w-11 place-items-center overflow-hidden rounded-full ${
+                                                        activo ? 'bg-gradient-to-br from-[#9365f2] to-[#e34ba6] p-[2px]' : 'border border-border'
+                                                    }`}
+                                                >
+                                                    <img
+                                                        src={item.imagen}
+                                                        alt=""
+                                                        loading="lazy"
+                                                        className="h-full w-full rounded-full object-cover transition duration-300 group-hover:scale-105"
+                                                    />
+                                                </span>
+                                                {activo && reproduciendo && (
+                                                    <span className="absolute -bottom-0.5 -right-0.5 h-3 w-3 animate-pulse rounded-full border-2 border-surface bg-magenta" />
+                                                )}
                                             </span>
-                                            {activo && reproduciendo && (
-                                                <span className="absolute -bottom-0.5 -right-0.5 h-3 w-3 animate-pulse rounded-full border-2 border-surface bg-magenta" />
-                                            )}
-                                        </span>
-                                        <span className="min-w-0">
-                                            <span className="block truncate text-sm font-bold text-texto-soft">{item.artista}</span>
-                                            <span className="block truncate text-xs text-[#c8c1d7]">
-                                                {activo && reproduciendo ? 'Sonando ahora' : `${item.canciones.length} canciones`}
+                                            <span className="min-w-0 flex-1">
+                                                <span className="block truncate text-sm font-bold text-texto-soft">{item.artista}</span>
+                                                <span className={`block truncate text-xs ${activo ? 'text-accent-soft' : 'text-[#c8c1d7]'}`}>
+                                                    {activo && reproduciendo ? 'Sonando ahora' : `${item.canciones.length} canciones`}
+                                                </span>
                                             </span>
-                                        </span>
-                                    </button>
-                                </li>
-                            );
-                        })}
-                    </ul>
+                                        </button>
+                                    </li>
+                                );
+                            })}
+                        </ul>
+                    </div>
                 </section>
 
                 <div className="order-1 grid gap-5 lg:order-2">
-                    <article className="relative overflow-hidden rounded-[2rem] border border-border">
+                    <article
+                        ref={heroRef}
+                        onMouseMove={seguirSpotlight}
+                        className="group/hero relative overflow-hidden rounded-[2rem] border border-border"
+                    >
                         <img
                             src={artista.imagen}
                             alt=""
@@ -570,6 +618,10 @@ export default function Escuchar() {
                                 background:
                                     'radial-gradient(ellipse at 85% 0%, rgba(214, 70, 169, 0.24), transparent 45%), radial-gradient(ellipse at 5% 100%, rgba(111, 75, 187, 0.3), transparent 50%)',
                             }}
+                        />
+                        <div
+                            aria-hidden="true"
+                            className="pointer-events-none absolute inset-0 opacity-0 transition-opacity duration-500 group-hover/hero:opacity-100 [background:radial-gradient(420px_circle_at_var(--mx,50%)_var(--my,50%),rgba(240,79,166,0.22),transparent_62%)]"
                         />
 
                         <div className="relative grid gap-8 p-6 sm:p-8 md:grid-cols-[auto_1fr] md:items-center">
@@ -611,8 +663,8 @@ export default function Escuchar() {
                                     <Ecualizador activo={reproduciendo} referencia={eqRef} />
                                     <p className="workspace-eyebrow mb-0">SONANDO AHORA</p>
                                 </div>
-                                <h2 className="mt-2 line-clamp-2 text-2xl font-extrabold tracking-tight text-texto-soft sm:text-3xl">
-                                    {cancion.titulo}
+                                <h2 className="mt-2 line-clamp-2 text-2xl font-extrabold tracking-tight sm:text-3xl">
+                                    <span className="texto-degradado">{cancion.titulo}</span>
                                 </h2>
                                 <p className="mt-1 text-sm text-[#c8c1d7]">
                                     {artista.artista} · {artista.origen}

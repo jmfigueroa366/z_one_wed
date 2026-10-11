@@ -1,4 +1,6 @@
 // CAPA: Presentación
+import { AudioLines } from 'lucide-react';
+
 export function iniciales(nombre) {
     return String(nombre ?? '')
         .trim()
@@ -19,7 +21,7 @@ const RETRATO = [
 export default function TarjetaArtista({ artista, index, acento = '#a477ff', destacado = false }) {
     return (
         <article
-            className="group relative overflow-hidden rounded-[1.75rem] border bg-[#120f1d]/80 transition duration-300 hover:-translate-y-1.5 hover:shadow-2xl hover:shadow-black/50"
+            className="tarjeta-brillo group relative overflow-hidden rounded-[1.75rem] border bg-[#120f1d]/80 transition duration-300 hover:-translate-y-1.5 hover:shadow-2xl hover:shadow-black/50"
             style={{ borderColor: destacado ? acento : 'var(--color-border, #2d2a45)' }}
         >
             <span
@@ -68,7 +70,7 @@ export default function TarjetaArtista({ artista, index, acento = '#a477ff', des
                     style={{ background: `linear-gradient(135deg, ${acento}, #e34ba6)` }}
                     aria-hidden="true"
                 >
-                    ♪
+                    <AudioLines className="h-4 w-4" />
                 </span>
             </div>
         </article>

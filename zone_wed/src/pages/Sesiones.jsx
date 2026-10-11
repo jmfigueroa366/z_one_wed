@@ -1,6 +1,7 @@
 // CAPA: Presentación
 import { useEffect, useMemo, useRef, useState } from 'react';
 import anime from 'animejs';
+import { CheckCircle2, Mic, Music, Search, SlidersHorizontal } from 'lucide-react';
 import FormularioSesion from '../components/FormularioSesion.jsx';
 import { useColaboradores } from '../hooks/useColaboradores.js';
 import { useSalas } from '../hooks/useSalas.js';
@@ -49,15 +50,46 @@ export default function Sesiones() {
     const [salas] = useSalas(true);
     const [colaboradores] = useColaboradores(true);
     const [filtro, setFiltro] = useState('todas');
+    const [busqueda, setBusqueda] = useState('');
     const listaRef = useRef(null);
 
-    const sesionesFiltradas = useMemo(
-        () =>
-            sesiones
-                .filter((sesion) => filtro === 'todas' || sesion.estado === filtro)
-                .sort((a, b) => `${a.fecha} ${a.hora_inicio ?? ''}`.localeCompare(`${b.fecha} ${b.hora_inicio ?? ''}`)),
-        [sesiones, filtro]
-    );
+    const canciones = useMemo(() => CancionService.listar(), []);
+    const proyectos = useMemo(() => ProyectoService.listar(), []);
+
+    const obtenerNombreSala = (id) =>
+        salas.find((sala) => String(sala.id) === String(id))?.nombre ?? 'Sala no disponible';
+    const obtenerNombreColaborador = (id) =>
+        colaboradores.find((colaborador) => String(colaborador.id) === String(id))?.nombre ?? 'Sin asignar';
+
+    const detalleCancion = (id) => {
+        const cancion = canciones.find((c) => String(c.id) === String(id));
+        if (!cancion) return null;
+        const proyecto = proyectos.find((p) => String(p.id) === String(cancion.proyecto_id));
+        const partes = Array.isArray(cancion.partes) && cancion.partes.length > 0 ? ` · ${cancion.partes.join(', ')}` : '';
+        return `${cancion.nombre}${proyecto ? ` · ${proyecto.nombre}` : ''}${partes}`;
+    };
+
+    const sesionesFiltradas = useMemo(() => {
+        const consulta = busqueda.trim().toLocaleLowerCase();
+        return sesiones
+            .filter((sesion) => filtro === 'todas' || sesion.estado === filtro)
+            .filter((sesion) => {
+                if (!consulta) return true;
+                const texto = [
+                    sesion.titulo,
+                    sesion.tipo,
+                    ESTADOS[sesion.estado] ?? sesion.estado,
+                    obtenerNombreSala(sesion.sala_id),
+                    obtenerNombreColaborador(sesion.colaborador_id),
+                    detalleCancion(sesion.cancion_id),
+                ]
+                    .filter(Boolean)
+                    .join(' ')
+                    .toLocaleLowerCase();
+                return texto.includes(consulta);
+            })
+            .sort((a, b) => `${a.fecha} ${a.hora_inicio ?? ''}`.localeCompare(`${b.fecha} ${b.hora_inicio ?? ''}`));
+    }, [sesiones, filtro, busqueda, salas, colaboradores, canciones, proyectos]);
 
     const dias = useMemo(() => {
         const mapa = new Map();
@@ -91,25 +123,10 @@ export default function Sesiones() {
         return () => animacion.pause();
     }, [dias]);
 
-    const obtenerNombreSala = (id) =>
-        salas.find((sala) => String(sala.id) === String(id))?.nombre ?? 'Sala no disponible';
-    const obtenerNombreColaborador = (id) =>
-        colaboradores.find((colaborador) => String(colaborador.id) === String(id))?.nombre ?? 'Sin asignar';
-
-    const canciones = useMemo(() => CancionService.listar(), []);
-    const proyectos = useMemo(() => ProyectoService.listar(), []);
-    const detalleCancion = (id) => {
-        const cancion = canciones.find((c) => String(c.id) === String(id));
-        if (!cancion) return null;
-        const proyecto = proyectos.find((p) => String(p.id) === String(cancion.proyecto_id));
-        const partes = Array.isArray(cancion.partes) && cancion.partes.length > 0 ? ` · ${cancion.partes.join(', ')}` : '';
-        return `${cancion.nombre}${proyecto ? ` · ${proyecto.nombre}` : ''}${partes}`;
-    };
-
     const resumen = [
-        { etiqueta: 'Sesiones registradas', valor: sesiones.length, icono: '🎤', clase: 'from-[#5b418f]/50' },
-        { etiqueta: 'Confirmadas', valor: sesiones.filter((sesion) => sesion.estado === 'confirmada').length, icono: '✓', clase: 'from-exito/30' },
-        { etiqueta: 'Cabinas disponibles', valor: salas.length, icono: '🎚', clase: 'from-[#5393da]/30' },
+        { etiqueta: 'Sesiones registradas', valor: sesiones.length, Icono: Mic, clase: 'from-[#5b418f]/50' },
+        { etiqueta: 'Confirmadas', valor: sesiones.filter((sesion) => sesion.estado === 'confirmada').length, Icono: CheckCircle2, clase: 'from-exito/30' },
+        { etiqueta: 'Cabinas disponibles', valor: salas.length, Icono: SlidersHorizontal, clase: 'from-[#5393da]/30' },
     ];
 
     return (
@@ -122,20 +139,23 @@ export default function Sesiones() {
             </header>
 
             <section className="mt-6 grid grid-cols-1 gap-3 sm:grid-cols-3" aria-label="Resumen de sesiones">
-                {resumen.map((item) => (
-                    <article
-                        key={item.etiqueta}
-                        className={`relative flex items-center justify-between gap-3 overflow-hidden rounded-2xl border border-border bg-gradient-to-br ${item.clase} to-surface/40 p-4 transition hover:-translate-y-0.5 hover:border-accent/50`}
-                    >
-                        <div>
-                            <span className="block text-xs text-sutil">{item.etiqueta}</span>
-                            <strong className="block text-3xl font-bold text-texto-soft">{item.valor}</strong>
-                        </div>
-                        <span className="grid h-11 w-11 shrink-0 place-items-center rounded-xl border border-white/10 bg-black/20 text-lg" aria-hidden="true">
-                            {item.icono}
-                        </span>
-                    </article>
-                ))}
+                {resumen.map((item) => {
+                    const Icono = item.Icono;
+                    return (
+                        <article
+                            key={item.etiqueta}
+                            className={`tarjeta-brillo relative flex items-center justify-between gap-3 overflow-hidden rounded-2xl border border-border bg-gradient-to-br ${item.clase} to-surface/40 p-4 transition hover:-translate-y-0.5 hover:border-accent/50`}
+                        >
+                            <div>
+                                <span className="block text-xs text-sutil">{item.etiqueta}</span>
+                                <strong className="block text-3xl font-bold text-texto-soft">{item.valor}</strong>
+                            </div>
+                            <span className="grid h-11 w-11 shrink-0 place-items-center rounded-xl border border-white/10 bg-black/20 text-accent-soft" aria-hidden="true">
+                                <Icono className="h-5 w-5" />
+                            </span>
+                        </article>
+                    );
+                })}
             </section>
 
             <div className="mt-6 grid items-start gap-4 lg:grid-cols-[minmax(0,1.55fr)_minmax(320px,0.9fr)]">
@@ -143,36 +163,54 @@ export default function Sesiones() {
                     <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
                         <div>
                             <p className="workspace-eyebrow">PROGRAMACIÓN</p>
-                            <h2 className="text-xl font-bold tracking-tight text-texto-soft">Línea de sesiones</h2>
+                            <div className="flex items-center gap-2">
+                                <h2 className="text-xl font-bold tracking-tight text-texto-soft">Línea de sesiones</h2>
+                                <span className="rounded-full border border-accent/30 bg-accent/10 px-2.5 py-1 text-[0.62rem] font-bold tabular-nums text-accent-soft">
+                                    {sesionesFiltradas.length}
+                                </span>
+                            </div>
                         </div>
                         <a className="shrink-0 text-sm font-bold text-accent transition hover:text-magenta" href="#crear">
                             + Nueva sesión
                         </a>
                     </div>
 
-                    <div className="mb-5 flex flex-wrap gap-2" aria-label="Filtrar sesiones">
-                        {FILTROS.map(([valor, etiqueta]) => {
-                            const activo = filtro === valor;
-                            return (
-                                <button
-                                    key={valor}
-                                    type="button"
-                                    onClick={() => setFiltro(valor)}
-                                    aria-pressed={activo}
-                                    className={
-                                        activo
-                                            ? 'rounded-full border border-accent/70 bg-gradient-to-r from-[#9365f2]/40 to-[#e34ba6]/30 px-3.5 py-1.5 text-xs font-bold text-white transition'
-                                            : 'rounded-full border border-border bg-white/[0.04] px-3.5 py-1.5 text-xs font-medium text-sutil transition hover:border-accent/50 hover:text-texto'
-                                    }
-                                >
-                                    {etiqueta}
-                                </button>
-                            );
-                        })}
+                    <div className="mb-5 flex flex-col gap-3">
+                        <label className="relative block">
+                            <Search aria-hidden="true" className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-sutil" />
+                            <input
+                                type="search"
+                                value={busqueda}
+                                onChange={(event) => setBusqueda(event.target.value)}
+                                placeholder="Buscar por título, sala, artista o canción"
+                                aria-label="Buscar sesión"
+                                className="w-full rounded-xl border border-border bg-surface-2 py-2.5 pl-9 pr-3 text-sm text-texto outline-none transition placeholder:text-sutil/70 focus:border-accent focus:ring-2 focus:ring-accent/30"
+                            />
+                        </label>
+                        <div className="flex flex-wrap gap-2" aria-label="Filtrar sesiones">
+                            {FILTROS.map(([valor, etiqueta]) => {
+                                const activo = filtro === valor;
+                                return (
+                                    <button
+                                        key={valor}
+                                        type="button"
+                                        onClick={() => setFiltro(valor)}
+                                        aria-pressed={activo}
+                                        className={
+                                            activo
+                                                ? 'rounded-full border border-accent/70 bg-gradient-to-r from-[#9365f2]/40 to-[#e34ba6]/30 px-3.5 py-1.5 text-xs font-bold text-white transition'
+                                                : 'rounded-full border border-border bg-white/[0.04] px-3.5 py-1.5 text-xs font-medium text-sutil transition hover:border-accent/50 hover:text-texto'
+                                        }
+                                    >
+                                        {etiqueta}
+                                    </button>
+                                );
+                            })}
+                        </div>
                     </div>
 
                     {sesionesFiltradas.length > 0 ? (
-                        <div ref={listaRef} className="grid gap-6">
+                        <div ref={listaRef} className="grid gap-6 pr-1 lg:max-h-[68vh] lg:overflow-y-auto lg:[scrollbar-width:thin]">
                             {dias.map(([fecha, items]) => (
                                 <div key={fecha}>
                                     <div className="mb-3 flex items-center gap-3">
@@ -197,7 +235,7 @@ export default function Sesiones() {
                                                         className={`relative mt-5 h-3 w-3 rounded-full ring-4 ring-surface ${PUNTO[sesion.estado] ?? 'bg-sutil'}`}
                                                     />
                                                 </div>
-                                                <article className="group rounded-2xl border border-border bg-white/[0.02] p-4 transition hover:border-accent/50 hover:bg-white/[0.04]">
+                                                <article className="tarjeta-brillo group rounded-2xl border border-border bg-white/[0.02] p-4 transition hover:border-accent/50 hover:bg-white/[0.04]">
                                                     <div className="flex items-start justify-between gap-3">
                                                         <h3 className="text-sm font-bold text-texto-soft">
                                                             {sesion.titulo || sesion.tipo || 'Sesión de estudio'}
@@ -208,15 +246,15 @@ export default function Sesiones() {
                                                     </div>
                                                     <div className="mt-3 flex flex-wrap gap-x-5 gap-y-1.5 text-xs text-sutil">
                                                         <span className="inline-flex items-center gap-1.5">
-                                                            <span aria-hidden="true">🎚</span> {obtenerNombreSala(sesion.sala_id)}
+                                                            <SlidersHorizontal className="h-3.5 w-3.5" aria-hidden="true" /> {obtenerNombreSala(sesion.sala_id)}
                                                         </span>
                                                         <span className="inline-flex items-center gap-1.5">
-                                                            <span aria-hidden="true">🎤</span> {obtenerNombreColaborador(sesion.colaborador_id)}
+                                                            <Mic className="h-3.5 w-3.5" aria-hidden="true" /> {obtenerNombreColaborador(sesion.colaborador_id)}
                                                         </span>
                                                     </div>
                                                     {detalleCancion(sesion.cancion_id) && (
-                                                        <p className="mt-2 rounded-lg border border-border/60 bg-black/20 px-2.5 py-1.5 text-xs text-sutil">
-                                                            ♪ {detalleCancion(sesion.cancion_id)}
+                                                        <p className="mt-2 flex items-center gap-1.5 rounded-lg border border-border/60 bg-black/20 px-2.5 py-1.5 text-xs text-sutil">
+                                                            <Music className="h-3.5 w-3.5 shrink-0" aria-hidden="true" /> {detalleCancion(sesion.cancion_id)}
                                                         </p>
                                                     )}
                                                 </article>
@@ -228,8 +266,12 @@ export default function Sesiones() {
                         </div>
                     ) : (
                         <div className="flex flex-col items-center justify-center gap-1 rounded-2xl border border-dashed border-border bg-surface/40 py-12 text-center">
-                            <span className="text-2xl text-sutil/60" aria-hidden="true">♪</span>
-                            <p className="text-sm text-sutil">No hay sesiones en esta categoría.</p>
+                            <Music className="h-6 w-6 text-sutil/60" aria-hidden="true" />
+                            <p className="text-sm text-sutil">
+                                {busqueda.trim() || filtro !== 'todas'
+                                    ? 'No hay sesiones que coincidan con el filtro o la búsqueda.'
+                                    : 'Aún no hay sesiones registradas.'}
+                            </p>
                         </div>
                     )}
                 </section>

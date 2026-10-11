@@ -70,4 +70,35 @@ export function Ecualizador({ desde = '#e34ba6', hasta = '#9365f2', alto = 32 })
     );
 }
 
-export default { Contador, Ecualizador };
+export function FondoHero({ acento = '#f04fa6' }) {
+    const particulas = [
+        { t: '14%', l: '64%', d: '0s', s: 4 },
+        { t: '72%', l: '80%', d: '1.4s', s: 3 },
+        { t: '36%', l: '90%', d: '2.6s', s: 4 },
+        { t: '82%', l: '48%', d: '0.8s', s: 3 },
+    ];
+
+    return (
+        <>
+            <div
+                aria-hidden="true"
+                className="pointer-events-none absolute inset-0 opacity-[0.12] [background-image:linear-gradient(rgba(255,255,255,0.06)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.06)_1px,transparent_1px)] [background-size:40px_40px] [mask-image:radial-gradient(ellipse_at_50%_50%,black,transparent_78%)]"
+            />
+            <div
+                aria-hidden="true"
+                className="pointer-events-none absolute inset-0 opacity-0 transition-opacity duration-500 group-hover/hero:opacity-100 [background:radial-gradient(360px_circle_at_var(--mx,50%)_var(--my,50%),var(--hero-spot,rgba(240,79,166,0.25)),transparent_62%)]"
+                style={{ '--hero-spot': `${acento}40` }}
+            />
+            {particulas.map((p, indice) => (
+                <span
+                    key={indice}
+                    aria-hidden="true"
+                    className="pointer-events-none absolute rounded-full bg-white/70 blur-[1px] [animation:flotar_7s_ease-in-out_infinite]"
+                    style={{ top: p.t, left: p.l, width: p.s, height: p.s, animationDelay: p.d }}
+                />
+            ))}
+        </>
+    );
+}
+
+export default { Contador, Ecualizador, FondoHero };

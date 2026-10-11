@@ -3,8 +3,9 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import anime from 'animejs';
 import { SlidersHorizontal, Sparkles } from 'lucide-react';
 import RegistroGrabacionSesiones from '../components/RegistroGrabacionSesiones.jsx';
-import { Contador, Ecualizador } from '../components/Animados.jsx';
+import { Contador, Ecualizador, FondoHero } from '../components/Animados.jsx';
 import { useProductores } from '../hooks/useProductores.js';
+import { useSpotlight } from '../hooks/useSpotlight.js';
 import { ProductorService } from '../services/productorService.js';
 import { BOTON_PRIMARIO, CAMPO, ETIQUETA } from '../styles/clases.js';
 import '../styles/tailwind.css';
@@ -45,6 +46,7 @@ export default function Productores() {
     const [productorGrabacion, setProductorGrabacion] = useState(null);
     const [filtroEspecialidad, setFiltroEspecialidad] = useState('Todas');
     const gridRef = useRef(null);
+    const [heroRef, seguirSpotlight] = useSpotlight();
 
     const especialidadesPresentes = useMemo(
         () => [...new Set(productores.map((productor) => productor.especialidad).filter(Boolean))],
@@ -138,19 +140,22 @@ export default function Productores() {
             </header>
 
             <section
-                className="relative mt-6 overflow-hidden rounded-[2rem] border border-[#9ecbff]/25 p-6 sm:p-8"
+                ref={heroRef}
+                onMouseMove={seguirSpotlight}
+                className="group/hero relative mt-6 overflow-hidden rounded-[2rem] border border-[#9ecbff]/25 p-6 sm:p-8"
                 style={{
                     background:
                         'radial-gradient(ellipse at 88% 8%, rgba(158, 203, 255, 0.26), transparent 48%), radial-gradient(ellipse at 6% 100%, rgba(111, 75, 187, 0.32), transparent 50%), linear-gradient(120deg, rgba(37, 55, 74, 0.5), rgba(23, 19, 34, 0.97) 72%)',
                 }}
             >
+                <FondoHero acento="#9ecbff" />
                 <div aria-hidden="true" className="pointer-events-none absolute -right-12 -top-24 h-60 w-60 animate-aurora rounded-full bg-[#9ecbff]/25 blur-3xl" />
                 <SlidersHorizontal aria-hidden="true" className="pointer-events-none absolute right-8 top-1/2 hidden h-40 w-40 -translate-y-1/2 text-white/[0.045] lg:block" />
                 <div className="relative flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
                     <div className="max-w-xl">
                         <p className="workspace-eyebrow">ARQUITECTOS DEL SONIDO</p>
                         <h2 className="mt-1 text-3xl font-extrabold tracking-tight text-texto-soft sm:text-4xl">
-                            El equipo detrás del micrófono.
+                            El equipo <span className="texto-degradado">detrás del micrófono.</span>
                         </h2>
                         <p className="mt-3 text-sm leading-7 text-sutil">
                             Productores e ingenieros que convierten una idea en una grabación. Regístralos y coordina la grabación por sesiones.
@@ -242,7 +247,7 @@ export default function Productores() {
                             return (
                                 <article
                                     key={productor.id}
-                                    className="group relative overflow-hidden rounded-[1.75rem] border bg-[#120f1d]/80 transition duration-300 hover:-translate-y-1.5 hover:shadow-2xl hover:shadow-black/50"
+                                    className="tarjeta-brillo group relative overflow-hidden rounded-[1.75rem] border bg-[#120f1d]/80 transition duration-300 hover:-translate-y-1.5 hover:shadow-2xl hover:shadow-black/50"
                                     style={{ borderColor: esDestacado ? acento : 'var(--color-border, #2d2a45)' }}
                                 >
                                     <span
