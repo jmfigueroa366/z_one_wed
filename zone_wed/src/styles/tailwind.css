@@ -167,6 +167,15 @@
     }
 }
 
+@keyframes kenburns {
+    from {
+        transform: scale(1.08) translate3d(0, 0, 0);
+    }
+    to {
+        transform: scale(1.16) translate3d(-1.5%, -2%, 0);
+    }
+}
+
 @keyframes degradado {
     0%,
     100% {
