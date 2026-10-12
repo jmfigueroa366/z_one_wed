@@ -1,11 +1,12 @@
 // CAPA: Presentación
 import { Fragment, useEffect, useLayoutEffect, useRef, useState } from 'react';
 import anime from 'animejs';
-import { Disc3, Mic, Play, SlidersHorizontal } from 'lucide-react';
+import { Disc3, Mic, Pause, Play, SlidersHorizontal } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { RUTAS } from '../config/rutas.js';
 import { cancionesArtistas } from '../data/cancionesArtistas.js';
 import { salaRepo } from '../repositories/salaRepo.js';
+import VinylDisc from '../components/VinylDisc.jsx';
 import { formatearMoneda } from '../utils/helpers.js';
 import { useSpotlight } from '../hooks/useSpotlight.js';
 import '../styles/tailwind.css';
@@ -19,20 +20,11 @@ const BOTON_PRIMARIO =
 const BOTON_SECUNDARIO =
     'inline-flex min-h-[52px] items-center justify-center rounded-md border border-white/20 px-7 text-sm font-semibold text-texto-soft transition duration-300 hover:border-magenta/60 hover:bg-magenta/10';
 
-const IMAGENES_SALON = [
-    '/landing/piano.jpg',
-    '/landing/diseno.jpg',
-    '/landing/produccion-visual.jpg',
-];
+const IMAGENES_SALON = ['/landing/cabina%201.jpg', '/landing/cabina%202.jpg', '/landing/cabina%203.jpg'];
+const BARRAS_SALON = [50, 92, 64, 100, 46, 78, 60, 38, 84, 54];
 
 const ARTISTA_DESTACADO = cancionesArtistas[0];
 const CANCION_DESTACADA = ARTISTA_DESTACADO.canciones[0];
-
-const ONDAS_DESTACADA = [40, 75, 100, 55, 30, 85, 45, 95, 60, 75, 35, 60, 90, 50, 70, 40];
-const ONDAS_HERO = [18, 34, 62, 44, 92, 66, 122, 50, 30, 76, 98, 42, 64, 112, 58, 26, 46, 82, 38, 62, 88, 48, 24, 56, 96, 70, 110, 40, 92, 52, 30, 68, 104, 46, 74, 36, 60, 100, 80, 28];
-
-const acortar = (texto, maximo = 17) =>
-    texto.length > maximo ? `${texto.slice(0, maximo - 1)}…` : texto;
 
 const SERVICIOS = [
     { n: '01', icono: Mic, t: 'Grabación', d: 'Cabinas tratadas acústicamente para voces, instrumentos y ensayos, con ingeniero de sonido.' },
@@ -114,104 +106,10 @@ function Numero({ valor, relleno = false }) {
     return <span ref={ref}>{MENOS_MOVIMIENTO() ? formatear(objetivo) : formatear(0)}</span>;
 }
 
-const SURCOS = Array.from({ length: 24 }, (_, i) => 96 + i * 4.25);
-
-function Disco({ titulo, artista }) {
-    return (
-        <svg
-            viewBox="0 0 400 400"
-            role="img"
-            aria-label={`Vinilo de la canción ${titulo}`}
-            className="relative z-10 h-auto w-[min(78%,340px)] will-change-transform [animation:girar_26s_linear_infinite] hover:[animation-play-state:paused] drop-shadow-[0_48px_90px_rgba(0,0,0,0.75)]"
-        >
-            <defs>
-                <radialGradient id="dBase" cx="50%" cy="50%" r="50%">
-                    <stop offset="0%" stopColor="#1c1931" />
-                    <stop offset="55%" stopColor="#0c0a16" />
-                    <stop offset="100%" stopColor="#05040a" />
-                </radialGradient>
-                <linearGradient id="dBrilo" x1="0" y1="0" x2="1" y2="1">
-                    <stop offset="0%" stopColor="#ffffff" stopOpacity="0.16" />
-                    <stop offset="30%" stopColor="#ffffff" stopOpacity="0" />
-                    <stop offset="70%" stopColor="#ffffff" stopOpacity="0" />
-                    <stop offset="100%" stopColor="#ffffff" stopOpacity="0.06" />
-                </linearGradient>
-                <linearGradient id="dAnillo" x1="0" y1="0" x2="1" y2="0">
-                    <stop offset="0%" stopColor="#9365f2" />
-                    <stop offset="50%" stopColor="#e34ba6" />
-                    <stop offset="100%" stopColor="#9365f2" />
-                </linearGradient>
-                <linearGradient id="dEtiqueta" x1="0" y1="0" x2="1" y2="1">
-                    <stop offset="0%" stopColor="#9365f2" />
-                    <stop offset="100%" stopColor="#e34ba6" />
-                </linearGradient>
-                <filter id="dHalo">
-                    <feGaussianBlur in="SourceGraphic" stdDeviation="2.6" result="b" />
-                    <feMerge>
-                        <feMergeNode in="b" />
-                        <feMergeNode in="SourceGraphic" />
-                    </feMerge>
-                </filter>
-                <clipPath id="dClip">
-                    <circle cx="200" cy="200" r="198" />
-                </clipPath>
-                <mask id="dGiro">
-                    <rect x="0" y="0" width="400" height="400" fill="white" />
-                    <circle cx="200" cy="200" r="86" fill="black" />
-                </mask>
-            </defs>
-            <circle cx="200" cy="200" r="198" fill="url(#dBase)" />
-            <g clipPath="url(#dClip)" fill="none" stroke="#ffffff" strokeOpacity="0.035">
-                {SURCOS.map((radio) => (
-                    <circle key={radio} cx="200" cy="200" r={radio} />
-                ))}
-            </g>
-            <rect x="0" y="0" width="400" height="400" fill="url(#dBrilo)" clipPath="url(#dClip)" />
-            <circle
-                cx="200"
-                cy="200"
-                r="84"
-                fill="none"
-                stroke="url(#dAnillo)"
-                strokeWidth="8"
-                opacity="0.9"
-                filter="url(#dHalo)"
-                strokeLinecap="round"
-                strokeDasharray="22 20"
-                mask="url(#dGiro)"
-                className="[animation:girar_12s_linear_infinite_reverse]"
-            />
-            <circle
-                cx="200"
-                cy="200"
-                r="72"
-                fill="none"
-                stroke="#e34ba6"
-                strokeWidth="3"
-                opacity="0.35"
-                strokeDasharray="14 12"
-                mask="url(#dGiro)"
-                className="[animation:girar_16s_linear_infinite_reverse]"
-            />
-            <circle cx="200" cy="200" r="80" fill="#0a0813" stroke="#ffffff" strokeOpacity="0.08" />
-            <circle cx="200" cy="200" r="34" fill="url(#dEtiqueta)" />
-            <text x="200" y="190" textAnchor="middle" fill="#ffffff" fontSize="13" fontWeight="700" letterSpacing="3" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
-                Z-ONE
-            </text>
-            <text x="200" y="205" textAnchor="middle" fill="#ffffff" opacity="0.8" fontSize="8" style={{ fontFamily: 'monospace' }}>
-                {acortar(titulo, 22)}
-            </text>
-            <text x="200" y="216" textAnchor="middle" fill="#ffffff" opacity="0.55" fontSize="7" style={{ fontFamily: 'monospace' }}>
-                {acortar(artista, 26)}
-            </text>
-            <circle cx="200" cy="200" r="3.5" fill="#05040a" />
-        </svg>
-    );
-}
-
 export default function LandingPage() {
     const landingRef = useRef(null);
     const [compacto, setCompacto] = useState(false);
+    const [reproduciendo, setReproduciendo] = useState(true);
     const [spotRef, seguirSpotlight] = useSpotlight();
     const salas = salaRepo.listar().filter((sala) => sala.activo !== false);
     const animar = !MENOS_MOVIMIENTO();
@@ -384,77 +282,45 @@ export default function LandingPage() {
                         </dl>
                     </div>
 
-                    <div data-hero-art style={oculto} className="relative min-h-[520px] overflow-hidden border-t border-border/60 lg:min-h-[560px] lg:border-l lg:border-t-0" aria-label="Disco de vinilo con la vista de audio del estudio Z-ONE">
-                        <div aria-hidden="true" className="pointer-events-none absolute -left-20 -top-20 h-[24rem] w-[24rem] rounded-full bg-[#9365f2]/25 blur-[120px]" />
-                        <div aria-hidden="true" className="pointer-events-none absolute -bottom-24 -right-20 h-[26rem] w-[26rem] rounded-full bg-[#e34ba6]/20 blur-[130px]" />
-                        <div aria-hidden="true" className="pointer-events-none absolute left-1/2 top-1/2 h-[32rem] w-[32rem] -translate-x-1/2 -translate-y-1/2 rounded-full bg-[#a477ff]/15 blur-[140px]" />
-                        <div className="absolute inset-0 flex items-center justify-center px-6 py-10 [animation:kenburns_30s_ease-in-out_infinite_alternate_reverse]">
-                            <div
-                                data-media
-                                className="relative flex items-center justify-center will-change-transform"
-                                onMouseMove={(event) => {
-                                    const rect = event.currentTarget.getBoundingClientRect();
-                                    const x = ((event.clientX - rect.left) / rect.width - 0.5) * 6;
-                                    const y = ((event.clientY - rect.top) / rect.height - 0.5) * 6;
-                                    event.currentTarget.style.setProperty('--rx', `${y * 0.8}deg`);
-                                    event.currentTarget.style.setProperty('--ry', `${-x}deg`);
-                                }}
-                                onMouseLeave={(event) => {
-                                    event.currentTarget.style.setProperty('--rx', '0deg');
-                                    event.currentTarget.style.setProperty('--ry', '0deg');
-                                }}
-                                style={{ transform: 'perspective(900px) rotateX(var(--rx,0deg)) rotateY(var(--ry,0deg))' }}
-                            >
-                                <span
-                    aria-hidden="true"
-                    className="pointer-events-none absolute h-[120%] w-[120%] rounded-full bg-gradient-to-r from-[#9365f2]/0 via-[#e34ba6]/10 to-[#9365f2]/0 opacity-70 blur-3xl [animation:girar_40s_linear_infinite]"
-                />
-                <span
-                    aria-hidden="true"
-                    className="pointer-events-none absolute h-[150%] w-[150%] rounded-full bg-gradient-to-r from-[#a477ff]/0 via-[#f04fa6]/8 to-[#a477ff]/0 opacity-40 blur-[100px] [animation:girar_60s_linear_infinite_reverse]"
-                />
-                <span
-                    aria-hidden="true"
-                    className="pointer-events-none absolute h-[90%] w-[90%] rounded-full bg-[#f04fa6]/20 opacity-60 blur-[60px] [animation:pulse_2.8s_ease-in-out_infinite]"
-                />
-                <Disco titulo={CANCION_DESTACADA.titulo} artista={ARTISTA_DESTACADO.artista} />
+<div data-hero-art style={oculto} className="relative min-h-[560px] overflow-hidden border-t border-border/60 lg:min-h-[620px] lg:border-l lg:border-t-0" aria-label="Estudio Z-ONE: disco de vinilo sobre la sala de piano">
+                        <div aria-hidden="true" className="absolute inset-0 [animation:kenburns_36s_ease-in-out_infinite_alternate]">
+                            <img src="/landing/piano.jpg" alt="" className="h-full w-full object-cover opacity-40" />
+                        </div>
+                        <div aria-hidden="true" className="absolute inset-0 bg-[#0b0814]/60" />
+                        <div aria-hidden="true" className="pointer-events-none absolute -left-24 -top-24 h-[28rem] w-[28rem] rounded-full bg-[#8b5cf6]/30 blur-[150px]" />
+                        <div aria-hidden="true" className="pointer-events-none absolute -bottom-28 -right-24 h-[30rem] w-[30rem] rounded-full bg-[#ec4899]/24 blur-[160px]" />
+                        <div aria-hidden="true" className="pointer-events-none absolute left-1/2 top-1/2 h-[36rem] w-[36rem] -translate-x-1/2 -translate-y-1/2 rounded-full bg-[#a855f7]/18 blur-[170px]" />
+                        <div className="absolute inset-0 flex items-center justify-center px-6 py-12">
+                            <div data-media className="relative flex items-center justify-center">
+                                <VinylDisc
+                                    titulo={CANCION_DESTACADA.titulo}
+                                    artista={ARTISTA_DESTACADO.artista}
+                                    activo={reproduciendo}
+                                    onToggle={() => setReproduciendo((v) => !v)}
+                                />
                             </div>
                         </div>
+                        <button
+                            type="button"
+                            onClick={() => setReproduciendo((v) => !v)}
+                            aria-pressed={!reproduciendo}
+                            className="absolute bottom-5 right-5 z-20 inline-flex items-center gap-2 rounded-full border border-white/15 bg-[#0d0a17]/85 px-4 py-2 text-xs font-semibold text-texto-soft backdrop-blur-xl transition duration-300 hover:border-magenta/60 hover:text-magenta"
+                        >
+                            {reproduciendo ? <Pause className="h-3.5 w-3.5" /> : <Play className="h-3.5 w-3.5" />}
+                            {reproduciendo ? 'Pausar girar' : 'Reproducir girar'}
+                        </button>
                         <div aria-hidden="true" className="absolute inset-x-0 bottom-0 [mask-image:linear-gradient(to_right,transparent,black_14%,black_86%,transparent)]">
-                            <div className="mx-auto flex h-20 w-[min(92%,470px)] items-end gap-1 pb-3 opacity-70">
-                                {ONDAS_HERO.map((altura, i) => (
+                            <div className="mx-auto flex h-20 w-[min(92%,520px)] items-end justify-center gap-1 pb-4 opacity-70">
+                                {Array.from({ length: 36 }, (_, i) => (
                                     <span
                                         key={i}
-                                        className="w-1 shrink-0 rounded-full bg-gradient-to-t from-[#9365f2]/50 to-[#e34ba6]/80 opacity-0 [animation:ecu_2.2s_ease-in-out_infinite]"
-                                        style={{ height: `${altura}%`, animationDelay: `${i * 110}ms`, animationDuration: `${1.6 + (i % 5) * 0.35}s` }}
+                                        className={`w-1 shrink-0 origin-bottom rounded-full bg-gradient-to-t from-[#8b5cf6]/50 to-[#ec4899]/85 [animation:ecu_2.2s_ease-in-out_infinite] ${reproduciendo ? '' : '[animation-play-state:paused]'}`}
+                                        style={{ height: `${40 + ((i * 7) % 90)}%`, animationDelay: `${i * 95}ms`, animationDuration: `${1.7 + (i % 6) * 0.25}s` }}
                                     />
                                 ))}
                             </div>
                         </div>
-                        <div aria-hidden="true" className="absolute inset-0 bg-gradient-to-t from-bg via-transparent to-transparent lg:bg-gradient-to-r lg:from-bg/55 lg:via-transparent lg:to-transparent" />
-                        <span className="absolute left-6 top-6 font-mono text-[0.65rem] uppercase tracking-[0.22em] text-white/75">Sala de control — Z-ONE</span>
-                        <div className="absolute bottom-5 left-5 z-10 w-[min(19rem,calc(100%-2.5rem))] rounded-xl border border-white/10 bg-[#0d0a17]/85 p-3.5 shadow-[0_24px_70px_-24px_rgba(0,0,0,0.95)] backdrop-blur-xl">
-                            <div className="flex items-center gap-3">
-                                <img src={ARTISTA_DESTACADO.imagen} alt="" className="h-11 w-11 rounded-lg object-cover" />
-                                <div className="min-w-0 flex-1">
-                                    <p className="font-mono text-[0.62rem] uppercase tracking-[0.2em] text-magenta">Sonando ahora</p>
-                                    <p className="mt-0.5 truncate text-sm font-semibold text-texto-soft">{CANCION_DESTACADA.titulo}</p>
-                                    <p className="truncate text-xs text-sutil">{ARTISTA_DESTACADO.artista}</p>
-                                </div>
-                                <span className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-white/10 text-texto-soft">
-                                    <Play className="h-4 w-4" />
-                                </span>
-                            </div>
-                            <div className="mt-3 flex h-5 items-end gap-0.5">
-                                {ONDAS_DESTACADA.map((altura, i) => (
-                                    <i
-                                        key={i}
-                                        className="w-1 origin-bottom rounded-full bg-gradient-to-t from-[#9365f2] to-[#e34ba6] [animation:ecu_1.3s_ease-in-out_infinite]"
-                                        style={{ height: `${altura}%`, animationDelay: `${i * 90}ms` }}
-                                    />
-                                ))}
-                            </div>
-                        </div>
+                        <div aria-hidden="true" className="absolute inset-0 bg-gradient-to-t from-bg via-transparent to-transparent lg:bg-gradient-to-r lg:from-bg/50 lg:via-transparent lg:to-transparent" />
                     </div>
                 </div>
             </section>
@@ -520,27 +386,40 @@ export default function LandingPage() {
 
                     <div className="mt-12 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
                         {salas.map((sala, index) => (
-                            <article key={sala.id ?? sala.nombre} data-revelar {...modificadorReveal(index)} className="group relative overflow-hidden rounded-lg border border-border bg-surface transition duration-500 hover:-translate-y-1 hover:border-magenta/60 hover:shadow-[0_28px_60px_-24px_rgba(0,0,0,0.9)]">
-                                <span aria-hidden="true" className="absolute inset-x-0 top-0 z-10 h-px origin-left scale-x-0 bg-magenta transition-transform duration-500 group-hover:scale-x-100" />
+                            <article key={sala.id ?? sala.nombre} data-revelar {...modificadorReveal(index)} className="group relative flex flex-col overflow-hidden rounded-xl border border-border bg-surface transition duration-500 hover:-translate-y-1.5 hover:border-magenta/50 hover:shadow-[0_36px_70px_-28px_rgba(0,0,0,0.95)]">
+                                <span aria-hidden="true" className="absolute inset-x-0 top-0 z-10 h-px origin-left scale-x-0 bg-gradient-to-r from-[#8b5cf6] to-[#ec4899] transition-transform duration-500 group-hover:scale-x-100" />
                                 <div className="relative aspect-[4/3] overflow-hidden">
                                     <img
                                         src={IMAGENES_SALON[index % IMAGENES_SALON.length]}
                                         alt={`${sala.nombre} del estudio Z-ONE`}
                                         loading="lazy"
-                                        className="h-full w-full object-cover transition duration-[900ms] ease-out group-hover:scale-105"
+                                        className="h-full w-full object-cover transition duration-[1200ms] ease-out group-hover:scale-[1.08] group-hover:brightness-110"
                                     />
-                                    <div aria-hidden="true" className="absolute inset-0 bg-gradient-to-t from-bg/70 to-transparent" />
-                                    <span className="absolute left-4 top-4 font-mono text-[0.65rem] tracking-[0.2em] text-white/80">{String(index + 1).padStart(2, '0')}</span>
+                                    <span aria-hidden="true" className="pointer-events-none absolute inset-y-0 -left-1/2 w-1/2 -skew-x-12 bg-white/10 blur-md transition-transform duration-700 ease-out group-hover:translate-x-[520%]" />
+                                    <div aria-hidden="true" className="absolute inset-0 bg-gradient-to-t from-bg/80 via-bg/10 to-transparent" />
+                                    <span className="absolute left-4 top-4 rounded-md border border-white/10 bg-bg/70 px-2 py-1 font-mono text-[0.65rem] tracking-[0.2em] text-white/85 backdrop-blur-sm transition-colors duration-500 group-hover:border-magenta/40 group-hover:text-magenta">
+                                        {String(index + 1).padStart(2, '0')}
+                                    </span>
+                                    <div className="absolute bottom-4 right-4 flex h-5 items-end gap-0.5 opacity-0 transition-all duration-500 group-hover:opacity-100">
+                                        {BARRAS_SALON.map((altura, i) => (
+                                            <i
+                                                key={i}
+                                                className="w-[3px] origin-bottom rounded-full bg-gradient-to-t from-[#8b5cf6] to-[#ec4899] [animation:ecu_1.1s_ease-in-out_infinite]"
+                                                style={{ height: `${altura}%`, animationDelay: `${i * 70}ms` }}
+                                            />
+                                        ))}
+                                    </div>
                                 </div>
-                                <div className="flex items-center justify-between gap-4 px-5 py-4">
+                                <div className="flex flex-1 items-start justify-between gap-4 px-5 pt-5">
                                     <div>
                                         <h3 style={FUENTE_TITULO} className="text-base font-bold tracking-tight text-texto-soft">{sala.nombre}</h3>
-                                        <p className="mt-0.5 font-mono text-[0.7rem] text-sutil">Por hora</p>
+                                        <p className="mt-0.5 font-mono text-[0.7rem] text-sutil">Disponible por hora</p>
                                     </div>
-                                    <strong style={FUENTE_TITULO} className="text-base font-bold text-texto-soft">{formatearMoneda(sala.precio_hora)}</strong>
+                                    <strong style={FUENTE_TITULO} className="text-base font-bold text-texto-soft transition-colors duration-300 group-hover:text-magenta">{formatearMoneda(sala.precio_hora)}</strong>
                                 </div>
-                                <Link className="flex items-center justify-between border-t border-border px-5 py-3.5 text-sm font-semibold text-texto-soft transition group-hover:text-magenta" to={`${RUTAS.SESIONES}#crear`}>
-                                    Reservar <span aria-hidden="true" className="transition group-hover:translate-x-1">→</span>
+                                <Link className="mt-4 flex items-center justify-between border-t border-border px-5 py-3.5 text-sm font-semibold text-texto-soft transition duration-300 group-hover:bg-magenta/5 group-hover:text-magenta" to={`${RUTAS.SESIONES}#crear`}>
+                                    Reservar
+                                    <span aria-hidden="true" className="grid h-6 w-6 place-items-center rounded-full border border-border transition duration-300 group-hover:translate-x-1 group-hover:border-magenta/50">→</span>
                                 </Link>
                             </article>
                         ))}

@@ -176,6 +176,41 @@
     }
 }
 
+@keyframes pulse {
+    0%,
+    100% {
+        opacity: 0.5;
+    }
+    50% {
+        opacity: 0.9;
+    }
+}
+
+[data-vinilo] [data-giro] {
+    animation: girar 7.2s linear infinite;
+    will-change: transform;
+}
+
+[data-vinilo] [data-vuelta] {
+    animation: girar 7.2s linear infinite reverse;
+    will-change: transform;
+}
+
+[data-giro],
+[data-vuelta] {
+    transition: animation-duration 0.4s ease;
+}
+
+[data-vinilo]:hover [data-giro],
+[data-vinilo]:hover [data-vuelta] {
+    animation-duration: 4.2s;
+}
+
+[data-vinilo][data-detenido] [data-giro],
+[data-vinilo][data-detenido] [data-vuelta] {
+    animation-play-state: paused;
+}
+
 @keyframes degradado {
     0%,
     100% {
