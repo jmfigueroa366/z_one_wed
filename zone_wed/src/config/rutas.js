@@ -12,7 +12,7 @@ export const RUTAS = Object.freeze({
     CHATBOT: '/chatbot',
     CONFIGURACION: '/configuracion',
     ESTADISTICAS: '/estadisticas',
-    PERMISOS: '/permisos',
+    CUANDO_SUENA: '/cuando-suena',
     PRODUCTORES: '/productores',
     PROYECTOS: '/proyectos',
     SESIONES: '/sesiones',
@@ -31,7 +31,7 @@ export const rutasPorRol = Object.freeze({
         RUTAS.PRODUCTORES,
         RUTAS.CATALOGO,
         RUTAS.ESTADISTICAS,
-        RUTAS.PERMISOS,
+        RUTAS.CUANDO_SUENA,
         RUTAS.CHATBOT,
         RUTAS.CONFIGURACION,
     ],
@@ -99,7 +99,7 @@ export const NAVEGACION = Object.freeze([
         titulo: 'Administración',
         items: [
             { ruta: RUTAS.ESTADISTICAS, etiqueta: 'Estadísticas', icono: 'BarChart3' },
-            { ruta: RUTAS.PERMISOS, etiqueta: 'Permisos', icono: 'ShieldCheck' },
+            { ruta: RUTAS.CUANDO_SUENA, etiqueta: 'Cuándo suena', icono: 'Flame' },
         ],
     },
     {

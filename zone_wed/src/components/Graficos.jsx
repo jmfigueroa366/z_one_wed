@@ -5,11 +5,11 @@ import anime from 'animejs';
 const MENOS_MOVIMIENTO = () =>
     typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-export const PALETA = ['#a477ff', '#f04fa6', '#7be0b0', '#ffd166', '#9ecbff', '#f2a4b1'];
+export const PALETA = ['#a477ff', '#f04fa6', '#7be0b0', '#c9b6ff', '#f2a4b1', '#8f6fd8'];
 
 function colorDe(estado, indice) {
     if (['completada', 'en_proceso', 'confirmada', 'pagada'].includes(estado)) return '#7be0b0';
-    if (['pendiente', 'solicitud', 'en_negociacion', 'facturada'].includes(estado)) return '#ffd166';
+    if (['pendiente', 'solicitud', 'en_negociacion', 'facturada'].includes(estado)) return '#c9b6ff';
     if (['cancelada', 'rechazada', 'expirada'].includes(estado)) return '#ff8a8a';
     return PALETA[indice % PALETA.length];
 }
@@ -259,7 +259,7 @@ export function Anillo({ valor, etiqueta, subetiqueta, tamano = 200, grosor = 16
     );
 }
 
-export function MapaCalor({ filas, columnas, celdas, max }) {
+export function MapaCalor({ filas, columnas, celdas, max, grande = false }) {
     const ref = useRef(null);
     const tope = Math.max(1, max || 1);
 
@@ -280,18 +280,25 @@ export function MapaCalor({ filas, columnas, celdas, max }) {
     return (
         <div ref={ref} className="overflow-x-auto">
             <div
-                className="grid min-w-[420px] gap-1.5"
+                className={`grid gap-1.5 ${grande ? 'min-w-[720px] gap-2.5' : 'min-w-[420px]'}`}
                 style={{ gridTemplateColumns: `auto repeat(${columnas.length}, minmax(0, 1fr))` }}
             >
                 <span aria-hidden="true" />
                 {columnas.map((columna) => (
-                    <span key={columna} className="text-center text-[0.62rem] font-bold uppercase tracking-wider text-sutil">
+                    <span
+                        key={columna}
+                        className={`text-center font-bold uppercase tracking-wider text-sutil ${
+                            grande ? 'text-xs' : 'text-[0.62rem]'
+                        }`}
+                    >
                         {columna}
                     </span>
                 ))}
                 {filas.map((fila, i) => (
                     <Fragment key={fila}>
-                        <span className="pr-1.5 text-right text-[0.68rem] font-semibold text-sutil">{fila}</span>
+                        <span className={`pr-1.5 text-right font-semibold text-sutil ${grande ? 'text-xs' : 'text-[0.68rem]'}`}>
+                            {fila}
+                        </span>
                         {columnas.map((columna, j) => {
                             const valor = celdas[i]?.[j] ?? 0;
                             const intensidad = valor / tope;
@@ -301,7 +308,11 @@ export function MapaCalor({ filas, columnas, celdas, max }) {
                                     key={`${fila}-${columna}`}
                                     data-celda
                                     title={`${fila} ${columna} · ${valor} sesión(es)`}
-                                    className="grid aspect-square place-items-center rounded-lg border text-[0.7rem] font-bold transition hover:scale-[1.08]"
+                                    className={
+                                        grande
+                                            ? 'grid h-16 place-items-center rounded-2xl border text-lg font-bold transition hover:scale-[1.06] sm:h-20'
+                                            : 'grid aspect-square place-items-center rounded-lg border text-[0.7rem] font-bold transition hover:scale-[1.08]'
+                                    }
                                     style={
                                         vacio
                                             ? { background: 'rgba(255,255,255,0.03)', borderColor: 'rgba(255,255,255,0.05)', color: '#7c7490' }
@@ -309,7 +320,7 @@ export function MapaCalor({ filas, columnas, celdas, max }) {
                                                 background: `linear-gradient(135deg, rgba(147,101,242,${0.22 + intensidad * 0.7}), rgba(240,79,166,${0.16 + intensidad * 0.74}))`,
                                                 borderColor: 'rgba(192,148,255,0.4)',
                                                 color: intensidad > 0.45 ? '#ffffff' : '#e8e2ff',
-                                                boxShadow: intensidad > 0.6 ? '0 0 16px rgba(240,79,166,0.35)' : 'none',
+                                                boxShadow: intensidad > 0.6 ? '0 0 18px rgba(240,79,166,0.4)' : 'none',
                                             }
                                     }
                                 >

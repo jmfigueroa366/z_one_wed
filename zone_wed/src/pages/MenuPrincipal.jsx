@@ -15,7 +15,6 @@ import {
     Music,
     Play,
     Settings,
-    ShieldCheck,
     SlidersHorizontal,
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext.jsx';
@@ -95,7 +94,6 @@ const ACCESOS = [
     { ruta: RUTAS.PRODUCTORES, icono: SlidersHorizontal, etiqueta: 'Productores', descripcion: 'Equipo de producción' },
     { ruta: RUTAS.CATALOGO, icono: BookOpen, etiqueta: 'Catálogo', descripcion: 'Servicios y tarifas' },
     { ruta: RUTAS.ESTADISTICAS, icono: BarChart3, etiqueta: 'Estadísticas', descripcion: 'Métricas del estudio' },
-    { ruta: RUTAS.PERMISOS, icono: ShieldCheck, etiqueta: 'Permisos', descripcion: 'Roles y accesos' },
     { ruta: RUTAS.CHATBOT, icono: MessageCircle, etiqueta: 'Chatbot', descripcion: 'Asistente virtual' },
     { ruta: RUTAS.CONFIGURACION, icono: Settings, etiqueta: 'Configuración', descripcion: 'Ajustes de cuenta' },
 ];

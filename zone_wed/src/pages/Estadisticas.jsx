@@ -1,7 +1,7 @@
 // CAPA: Presentación
 import { useEffect, useMemo, useRef } from 'react';
 import anime from 'animejs';
-import { Activity, CheckCircle2, Gauge, Inbox, Flame, Sparkles, TrendingUp, Radio } from 'lucide-react';
+import { Activity, CheckCircle2, Gauge, Inbox, Sparkles, TrendingUp, Radio } from 'lucide-react';
 import { FondoHero } from '../components/Animados.jsx';
 import { useSesiones } from '../hooks/useSesiones.js';
 import { useSolicitudes } from '../hooks/useSolicitudes.js';
@@ -9,7 +9,7 @@ import { useSpotlight } from '../hooks/useSpotlight.js';
 import { EstadisticasService } from '../services/estadisticasService.js';
 import { formatearMoneda } from '../utils/helpers.js';
 import { clasePillEstado } from '../styles/clases.js';
-import { Donut, BarrasHorizontales, ColumnasDias, Anillo, MapaCalor } from '../components/Graficos.jsx';
+import { Donut, BarrasHorizontales, ColumnasDias, Anillo } from '../components/Graficos.jsx';
 import '../styles/tailwind.css';
 
 const MENOS_MOVIMIENTO = () =>
@@ -95,7 +95,7 @@ export default function Estadisticas() {
         { etiqueta: 'Sesiones totales', valor: datos.kpis.totalSesiones, nota: `${datos.kpis.confirmadas} confirmadas`, Icono: Activity, tono: 'from-[#9365f2] to-[#6f4bbb]' },
         { etiqueta: 'Sesiones completadas', valor: datos.kpis.completadas, nota: 'Cierre exitoso', Icono: CheckCircle2, tono: 'from-[#7be0b0] to-[#3fae82]' },
         { etiqueta: 'Ocupación semanal', valor: datos.kpis.ocupacion, sufijo: '%', nota: 'Sobre capacidad operativa', Icono: Gauge, tono: 'from-[#f04fa6] to-[#b1306f]' },
-        { etiqueta: 'Solicitudes abiertas', valor: datos.kpis.solicitudesAbiertas, nota: 'En petición o negociación', Icono: Inbox, tono: 'from-[#ffd166] to-[#d99b26]' },
+        { etiqueta: 'Solicitudes abiertas', valor: datos.kpis.solicitudesAbiertas, nota: 'En petición o negociación', Icono: Inbox, tono: 'from-[#c9b6ff] to-[#8f6fd8]' },
     ];
 
     const datosSala = datos.porSala.map((sala, indice) => ({
@@ -108,15 +108,15 @@ export default function Estadisticas() {
     const datosColaborador = datos.porColaborador.map((item) => ({
         etiqueta: item.nombre,
         valor: item.valor,
-        color: '#9ecbff',
+        color: '#c9b6ff',
         colorB: '#a477ff',
     }));
 
     const totalIngresos = datos.ordenes.total || 1;
     const segmentosIngreso = [
         { etiqueta: 'Cobrado', valor: datos.ordenes.cobrado, color: '#7be0b0' },
-        { etiqueta: 'Por cobrar', valor: datos.ordenes.porCobrar, color: '#ffd166' },
-        { etiqueta: 'En borrador', valor: datos.ordenes.borrador, color: '#9ecbff' },
+        { etiqueta: 'Por cobrar', valor: datos.ordenes.porCobrar, color: '#c9b6ff' },
+        { etiqueta: 'En borrador', valor: datos.ordenes.borrador, color: '#f2a4b1' },
     ];
 
     const metricasHero = [
@@ -242,24 +242,6 @@ export default function Estadisticas() {
                             </div>
                         </div>
                     </article>
-                </section>
-
-                <section data-tile className={TARJETA}>
-                    <div className="mb-5 flex flex-wrap items-end justify-between gap-3">
-                        <div>
-                            <p className="workspace-eyebrow flex items-center gap-2">
-                                <Flame className="h-3.5 w-3.5" aria-hidden="true" /> INTENSIDAD
-                            </p>
-                            <h2 className="mt-1 text-xl font-bold tracking-tight text-texto-soft">Cuándo suena el estudio</h2>
-                        </div>
-                        <span className="text-xs text-sutil">Sesiones por día y franja horaria</span>
-                    </div>
-                    <MapaCalor
-                        filas={datos.mapaCalor.filas}
-                        columnas={datos.mapaCalor.columnas}
-                        celdas={datos.mapaCalor.celdas}
-                        max={datos.mapaCalor.max}
-                    />
                 </section>
 
                 <section className="grid gap-5 lg:grid-cols-2">

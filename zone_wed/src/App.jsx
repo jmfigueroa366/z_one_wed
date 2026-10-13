@@ -16,7 +16,7 @@ import Catalogo from './pages/Catalogo.jsx';
 import Chatbot from './pages/Chatbot.jsx';
 import Configuracion from './pages/Configuracion.jsx';
 import Estadisticas from './pages/Estadisticas.jsx';
-import Permisos from './pages/Permisos.jsx';
+import CuandoSuena from './pages/CuandoSuena.jsx';
 import Productores from './pages/Productores.jsx';
 import Sesiones from './pages/Sesiones.jsx';
 import Solicitudes from './pages/Solicitudes.jsx';
@@ -43,7 +43,7 @@ export default function App() {
                         <Route path={RUTAS.CHATBOT} element={<Chatbot />} />
                         <Route path={RUTAS.CONFIGURACION} element={<Configuracion />} />
                         <Route path={RUTAS.ESTADISTICAS} element={<Estadisticas />} />
-                        <Route path={RUTAS.PERMISOS} element={<Permisos />} />
+                        <Route path={RUTAS.CUANDO_SUENA} element={<CuandoSuena />} />
                         <Route path={RUTAS.PRODUCTORES} element={<Productores />} />
                         <Route path={RUTAS.PROYECTOS} element={<MisProyectos />} />
                         <Route path={RUTAS.SESIONES} element={<Sesiones />} />

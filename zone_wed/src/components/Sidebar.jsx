@@ -12,7 +12,7 @@ import {
     SlidersHorizontal,
     LayoutGrid,
     BarChart3,
-    ShieldCheck,
+    Flame,
     Bot,
     Settings,
     LogOut,
@@ -37,7 +37,7 @@ const ICONOS = {
     SlidersHorizontal,
     LayoutGrid,
     BarChart3,
-    ShieldCheck,
+    Flame,
     Bot,
     Settings,
 };

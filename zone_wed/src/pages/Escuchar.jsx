@@ -284,7 +284,14 @@ export default function Escuchar() {
         if (!audio) return;
         if (reproduciendo) {
             const intento = audio.play();
-            if (intento && typeof intento.catch === 'function') intento.catch(() => {});
+            if (intento && typeof intento.catch === 'function') {
+                intento.catch(() => {
+                    if (audio.readyState >= 2) {
+                        const reintento = audio.play();
+                        if (reintento && typeof reintento.catch === 'function') reintento.catch(() => {});
+                    }
+                });
+            }
         } else {
             audio.pause();
         }
@@ -351,6 +358,17 @@ export default function Escuchar() {
         return () => animacion.pause();
     }, [indiceArtista]);
 
+    const despertarAudio = () => {
+        const audio = audioRef.current;
+        if (!audio) return;
+        const paquete = prepararEspectro(audio);
+        const contexto = paquete?.contexto;
+        if (contexto && contexto.state === 'suspended') {
+            const promesa = contexto.resume();
+            if (promesa && typeof promesa.catch === 'function') promesa.catch(() => {});
+        }
+    };
+
     const reintentar = () => {
         const audio = audioRef.current;
         if (audio && debeSonarRef.current && audio.paused) {
@@ -379,6 +397,7 @@ export default function Escuchar() {
     };
 
     const irSiguiente = () => {
+        despertarAudio();
         if (aleatorio) {
             const [na, nc] = elegirAleatoria();
             setIndiceArtista(na);
@@ -393,6 +412,7 @@ export default function Escuchar() {
     };
 
     const irAnterior = () => {
+        despertarAudio();
         if (aleatorio) {
             const [na, nc] = elegirAleatoria();
             setIndiceArtista(na);
@@ -449,6 +469,7 @@ export default function Escuchar() {
     };
 
     const seleccionarCancion = (indice) => {
+        despertarAudio();
         if (indice === indiceCancion) {
             setReproduciendo((actual) => !actual);
             return;
@@ -472,6 +493,7 @@ export default function Escuchar() {
             if (evento.code === 'Space') {
                 if (objetivo?.closest?.('button, a, [role="slider"]')) return;
                 evento.preventDefault();
+                despertarAudio();
                 setReproduciendo((actual) => !actual);
                 return;
             }
@@ -708,7 +730,10 @@ export default function Escuchar() {
                                         </button>
                                         <button
                                             type="button"
-                                            onClick={() => setReproduciendo((actual) => !actual)}
+                                            onClick={() => {
+                                                despertarAudio();
+                                                setReproduciendo((actual) => !actual);
+                                            }}
                                             aria-label={reproduciendo ? 'Pausar' : 'Reproducir'}
                                             title="Reproducir / Pausar (Espacio)"
                                             className={`grid h-16 w-16 place-items-center rounded-full bg-gradient-to-r from-[#9365f2] to-[#e34ba6] text-white transition hover:scale-105 ${
@@ -767,7 +792,8 @@ export default function Escuchar() {
 
                                 {error && (
                                     <p className="mt-3 rounded-xl border border-peligro/30 bg-peligro/10 px-3 py-2 text-xs font-semibold text-peligro-soft">
-                                        No se pudo reproducir esta canción.
+                                        No se pudo reproducir «{cancion.titulo}». Revisa que el archivo esté bien descargado en{' '}
+                                        <code className="break-all font-mono text-peligro-soft/80">{artista.carpeta}/{cancion.archivo}</code>.
                                     </p>
                                 )}
                             </div>
@@ -784,9 +810,10 @@ export default function Escuchar() {
                             }}
                             onCanPlay={reintentar}
                             onLoadedData={reintentar}
+                            onPlaying={() => setError('')}
                             onEnded={alTerminar}
                             onError={() => {
-                                setError('error');
+                                setError(cancion.archivo);
                                 setReproduciendo(false);
                             }}
                         />
