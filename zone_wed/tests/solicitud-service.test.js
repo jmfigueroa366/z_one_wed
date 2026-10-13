@@ -1,6 +1,6 @@
 import test, { after, beforeEach } from 'node:test';
 import assert from 'node:assert/strict';
-
+import { SesionService } from '../src/services/sesionService.js';
 import { SolicitudService } from '../src/services/solicitudService.js';
 
 const windowOriginal = globalThis.window;
@@ -45,4 +45,17 @@ test('rechaza transiciones no permitidas y devuelve null para solicitudes inexis
         /no admite ese cambio/
     );
     assert.equal(SolicitudService.actualizarEstado(9999, 'confirmada'), null);
+});
+
+test('al confirmar una solicitud se crea la sesión vinculada', () => {
+    const solicitud = SolicitudService.listar()[0];
+    SolicitudService.actualizarEstado(solicitud.id, 'en_negociacion');
+    SolicitudService.actualizarEstado(solicitud.id, 'confirmada');
+
+    const sesiones = SesionService.listar();
+    const creada = sesiones.find((sesion) => String(sesion.solicitud_id) === String(solicitud.id));
+    assert.ok(creada, 'Debería existir una sesión creada desde la solicitud');
+    assert.equal(creada.estado, 'confirmada');
+    assert.equal(creada.sala_id, solicitud.sala_id);
+    assert.equal(creada.colaborador_id, solicitud.colaborador_id);
 });

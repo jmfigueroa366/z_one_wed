@@ -3,6 +3,7 @@ import { crearSolicitud, Solicitud } from '../models/Solicitud.js';
 import { solicitudRepo } from '../repositories/solicitudRepo.js';
 import { colaboradorRepo } from '../repositories/colaboradorRepo.js';
 import { salaRepo } from '../repositories/salaRepo.js';
+import { sesionRepo } from '../repositories/sesionRepo.js';
 
 function franjaNoDisponible(franjaA, franjaB) {
     if (!franjaA || !franjaB) return false;
@@ -11,6 +12,25 @@ function franjaNoDisponible(franjaA, franjaB) {
 
     if (!inicioA || !finA || !inicioB || !finB) return false;
     return inicioA < finB && inicioB < finA;
+}
+
+function crearSesionDesdeSolicitud(solicitud) {
+    const yaExiste = sesionRepo.listar().some((sesion) => String(sesion.solicitud_id) === String(solicitud.id));
+    if (yaExiste) {
+        return null;
+    }
+    const [hora_inicio, hora_fin] = String(solicitud.franja ?? '').split('-').map((hora) => hora.trim());
+    const colaborador = colaboradorRepo.obtenerPorId(solicitud.colaborador_id);
+    return sesionRepo.crear({
+        titulo: `Sesión · ${colaborador?.nombre ?? 'Reserva'}`,
+        solicitud_id: solicitud.id,
+        sala_id: solicitud.sala_id,
+        colaborador_id: solicitud.colaborador_id,
+        fecha: solicitud.fecha,
+        hora_inicio: hora_inicio ?? null,
+        hora_fin: hora_fin ?? null,
+        estado: 'confirmada',
+    });
 }
 
 export const SolicitudService = {
@@ -61,7 +81,14 @@ export const SolicitudService = {
         if (!Solicitud.puedeTransicionar(solicitud, nuevoEstado)) {
             throw new Error('La solicitud ya no admite ese cambio de estado.');
         }
-        return solicitudRepo.actualizar(id, { estado: nuevoEstado });
+
+        const actualizada = solicitudRepo.actualizar(id, { estado: nuevoEstado });
+
+        if (nuevoEstado === 'confirmada') {
+            crearSesionDesdeSolicitud(actualizada);
+        }
+
+        return actualizada;
     },
 
     rechazar(id) {

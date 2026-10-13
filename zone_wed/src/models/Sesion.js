@@ -9,6 +9,7 @@ export function crearSesion(data = {}) {
     }
     return {
         id: data.id ?? null,
+        solicitud_id: data.solicitud_id ?? null,
         titulo: data.titulo ?? '',
         sala_id: data.sala_id ?? null,
         colaborador_id: data.colaborador_id ?? null,
