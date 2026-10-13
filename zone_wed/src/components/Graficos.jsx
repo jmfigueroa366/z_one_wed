@@ -8,8 +8,8 @@ const MENOS_MOVIMIENTO = () =>
 export const PALETA = ['#a477ff', '#f04fa6', '#7be0b0', '#c9b6ff', '#f2a4b1', '#8f6fd8'];
 
 function colorDe(estado, indice) {
-    if (['completada', 'en_proceso', 'confirmada', 'pagada'].includes(estado)) return '#7be0b0';
-    if (['pendiente', 'solicitud', 'en_negociacion', 'facturada'].includes(estado)) return '#c9b6ff';
+    if (['completada', 'confirmada', 'pagada'].includes(estado)) return '#7be0b0';
+    if (['solicitada', 'solicitud', 'en_negociacion', 'facturada'].includes(estado)) return '#c9b6ff';
     if (['cancelada', 'rechazada', 'expirada'].includes(estado)) return '#ff8a8a';
     return PALETA[indice % PALETA.length];
 }

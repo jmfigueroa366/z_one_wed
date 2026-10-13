@@ -15,33 +15,30 @@ const MENOS_MOVIMIENTO = () =>
     typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
 const ESTADOS = {
+    solicitada: 'Solicitada',
     confirmada: 'Confirmada',
-    pendiente: 'Pendiente',
-    en_proceso: 'En proceso',
     completada: 'Completada',
     cancelada: 'Cancelada',
 };
 
 const BADGES = {
+    solicitada: 'border-aviso/30 bg-aviso/10 text-aviso',
     confirmada: 'border-exito/30 bg-exito/10 text-exito',
-    en_proceso: 'border-exito/30 bg-exito/10 text-exito',
-    pendiente: 'border-aviso/30 bg-aviso/10 text-aviso',
     completada: 'border-[#5393da]/30 bg-[#5393da]/10 text-[#9ecbff]',
     cancelada: 'border-peligro/30 bg-peligro/10 text-peligro',
 };
 
 const PUNTO = {
+    solicitada: 'bg-aviso shadow-[0_0_14px_rgba(255,209,102,0.7)]',
     confirmada: 'bg-exito shadow-[0_0_14px_rgba(123,224,176,0.7)]',
-    en_proceso: 'bg-exito shadow-[0_0_14px_rgba(123,224,176,0.7)]',
-    pendiente: 'bg-aviso shadow-[0_0_14px_rgba(255,209,102,0.7)]',
     completada: 'bg-[#5393da] shadow-[0_0_14px_rgba(83,147,218,0.7)]',
     cancelada: 'bg-peligro shadow-[0_0_14px_rgba(255,138,138,0.7)]',
 };
 
 const FILTROS = [
     ['todas', 'Todas'],
+    ['solicitada', 'Solicitadas'],
     ['confirmada', 'Confirmadas'],
-    ['pendiente', 'Pendientes'],
     ['cancelada', 'Canceladas'],
 ];
 

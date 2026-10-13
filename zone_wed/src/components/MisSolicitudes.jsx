@@ -61,10 +61,8 @@ const MENOS_MOVIMIENTO = () =>
 const ACENTO_ESTADO = {
     confirmada: '#7be0b0',
     completada: '#7be0b0',
-    en_proceso: '#7be0b0',
     en_negociacion: '#a477ff',
     solicitud: '#ffd166',
-    pendiente: '#ffd166',
     rechazada: '#f2a4b1',
     cancelada: '#f2a4b1',
     expirada: '#f2a4b1',

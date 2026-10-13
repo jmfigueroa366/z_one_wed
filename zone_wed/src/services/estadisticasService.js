@@ -6,10 +6,9 @@ import { ordenRepo } from '../repositories/ordenRepo.js';
 import { colaboradorRepo } from '../repositories/colaboradorRepo.js';
 
 const ETIQUETAS_ESTADO = {
+    solicitada: 'Solicitadas',
     completada: 'Completadas',
     confirmada: 'Confirmadas',
-    en_proceso: 'En proceso',
-    pendiente: 'Pendientes',
     cancelada: 'Canceladas',
 };
 
@@ -70,7 +69,7 @@ export const EstadisticasService = {
 
         const porEstadoMapa = new Map();
         sesiones.forEach((sesion) => {
-            const clave = sesion.estado ?? 'pendiente';
+            const clave = sesion.estado ?? 'solicitada';
             porEstadoMapa.set(clave, (porEstadoMapa.get(clave) ?? 0) + 1);
         });
         const porEstado = [...porEstadoMapa.entries()]

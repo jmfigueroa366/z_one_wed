@@ -19,10 +19,10 @@ const PILL =
     'inline-flex items-center justify-center whitespace-nowrap rounded-full border border-transparent px-2.5 py-1.5 text-xs font-bold capitalize';
 
 export function clasePillEstado(estado) {
-    if (['confirmada', 'completada', 'en_proceso'].includes(estado)) {
+    if (['confirmada', 'completada'].includes(estado)) {
         return `${PILL} border-exito/25 bg-exito/10 text-exito-soft`;
     }
-    if (['solicitud', 'en_negociacion', 'pendiente'].includes(estado)) {
+    if (['solicitud', 'en_negociacion'].includes(estado)) {
         return `${PILL} border-aviso/25 bg-aviso/10 text-aviso-soft`;
     }
     if (['cancelada', 'rechazada', 'expirada'].includes(estado)) {

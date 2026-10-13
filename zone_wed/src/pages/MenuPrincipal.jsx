@@ -105,7 +105,7 @@ export default function MenuPrincipal() {
     const contenedorRef = useRef(null);
     const [heroRef, seguirSpotlight] = useSpotlight();
 
-    const sesionesActivas = sesiones.filter((sesion) => ['confirmada', 'en_proceso'].includes(sesion.estado)).length;
+    const sesionesActivas = sesiones.filter((sesion) => ['solicitada', 'confirmada'].includes(sesion.estado)).length;
     const totalCanciones = useMemo(
         () => cancionesArtistas.reduce((suma, item) => suma + item.canciones.length, 0),
         []
@@ -131,7 +131,7 @@ export default function MenuPrincipal() {
     const accesos = ACCESOS.filter((item) => rutasPermitidas.includes(item.ruta)).slice(0, 8);
 
     const metricas = [
-        { etiqueta: 'Sesiones activas', valor: sesionesActivas, nota: 'Confirmadas o en proceso', icono: Activity, destacada: true },
+        { etiqueta: 'Sesiones activas', valor: sesionesActivas, nota: 'Solicitadas o confirmadas', icono: Activity, destacada: true },
         { etiqueta: 'Sesiones registradas', valor: sesiones.length, nota: 'En la agenda del estudio', icono: CalendarDays },
         { etiqueta: 'Artistas', valor: artistasDestacados.length, nota: 'Perfiles destacados', icono: Mic2, relleno: true },
         { etiqueta: 'Canciones', valor: totalCanciones, nota: 'Listas para escuchar', icono: Music, relleno: true },

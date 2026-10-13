@@ -33,7 +33,7 @@ export default function FormularioSesion({ salas, colaboradores }) {
         duracion: '2',
         sala_id: '',
         colaborador_id: '',
-        estado: 'pendiente',
+        estado: 'solicitada',
     });
     const [mensaje, setMensaje] = useState('');
     const [error, setError] = useState('');
@@ -120,7 +120,7 @@ export default function FormularioSesion({ salas, colaboradores }) {
                     <label className="grid min-w-0 gap-2">
                         <span className={ETIQUETA}>Estado</span>
                         <select className={CAMPO} name="estado" onChange={cambiarCampo} value={formulario.estado}>
-                            <option value="pendiente">Pendiente</option>
+                            <option value="solicitada">Solicitada</option>
                             <option value="confirmada">Confirmada</option>
                             <option value="cancelada">Cancelada</option>
                         </select>

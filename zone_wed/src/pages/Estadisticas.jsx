@@ -16,6 +16,7 @@ const MENOS_MOVIMIENTO = () =>
     typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
 const etiquetasEstado = {
+    solicitada: 'Solicitada',
     completada: 'Completada',
     confirmada: 'Confirmada',
     cancelada: 'Cancelada',
@@ -23,7 +24,6 @@ const etiquetasEstado = {
     en_negociacion: 'En negociación',
     rechazada: 'Rechazada',
     expirada: 'Expirada',
-    pendiente: 'Pendiente',
 };
 
 const TONOS = {

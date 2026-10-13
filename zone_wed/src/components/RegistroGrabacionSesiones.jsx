@@ -154,7 +154,7 @@ export default function RegistroGrabacionSesiones({ productor, onCerrar }) {
                 fecha: fila.fecha,
                 hora_inicio: fila.hora_inicio,
                 hora_fin: fila.hora_fin,
-                estado: 'pendiente',
+                estado: 'solicitada',
                 cancion_id: cancion.id,
                 partes: [...fila.partes],
             });

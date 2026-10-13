@@ -23,9 +23,8 @@ const ETIQUETAS_ESTADO = {
 };
 
 const PUNTO = {
+    solicitada: 'bg-aviso',
     confirmada: 'bg-exito',
-    en_proceso: 'bg-exito',
-    pendiente: 'bg-aviso',
     completada: 'bg-[#5393da]',
     cancelada: 'bg-peligro',
 };
