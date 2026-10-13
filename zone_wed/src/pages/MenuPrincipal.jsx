@@ -1,306 +1,394 @@
 // CAPA: Presentación
+import { useEffect, useMemo, useRef } from 'react';
 import { Link } from 'react-router-dom';
+import anime from 'animejs';
+import {
+    Activity,
+    ArrowRight,
+    BarChart3,
+    BookOpen,
+    CalendarDays,
+    Inbox,
+    Mic,
+    Mic2,
+    MessageCircle,
+    Music,
+    Play,
+    Settings,
+    SlidersHorizontal,
+} from 'lucide-react';
 import { useAuth } from '../context/AuthContext.jsx';
-import { SesionService } from '../services/sesionService.js';
-import { Sesion } from '../models/Sesion.js';
+import { useSesiones } from '../hooks/useSesiones.js';
+import { useSpotlight } from '../hooks/useSpotlight.js';
+import { artistasDestacados } from '../data/artistasDestacados.js';
+import { productoresDestacados } from '../data/productoresDestacados.js';
+import { cancionesArtistas } from '../data/cancionesArtistas.js';
 import { RUTAS, rutasPermitidasPorRol } from '../config/rutas.js';
-import '../styles/principal.css';
+import '../styles/tailwind.css';
 
-const artistasDestacados = [
-    {
-        nombre: 'Shakira',
-        origen: 'Barranquilla, Colombia',
-        estilo: 'Pop latino · fusión',
-        historia: 'Cantautora colombiana nacida en Barranquilla, desarrolló una carrera internacional reconocida por combinar pop, rock y ritmos latinos. Sus canciones han llevado sonidos y expresiones de la música en español a públicos de todo el mundo.',
-        imagen: '/Imagenes/artistas/shakira.jpg',
-        textoAlternativo: 'Shakira en la gala de los Latin Grammy de 2023',
-        fotografia: 'Junta de Andalucía',
-        fuenteFotografia: 'https://commons.wikimedia.org/wiki/File:2023-11-16_Gala_de_los_Latin_Grammy,_03_(cropped)02.jpg',
-        licencia: 'CC BY-SA 2.0',
-        fuenteLicencia: 'https://creativecommons.org/licenses/by-sa/2.0/',
-    },
-    {
-        nombre: 'Luisra',
-        origen: 'Artista destacado',
-        estilo: 'Canción destacada · «Princesa»',
-        historia: 'La canción «Princesa», que compartiste como referencia, es el punto de partida para conocer la propuesta musical de Luisra en esta selección.',
-        iniciales: 'LR',
-        fotografia: null,
-    },
-    {
-        nombre: 'Carlos Vives',
-        origen: 'Santa Marta, Colombia',
-        estilo: 'Vallenato · pop latino',
-        historia: 'Cantante, compositor y actor samario, Carlos Vives ayudó a acercar el vallenato a nuevas audiencias al mezclar sus raíces caribeñas con pop y rock. Su trayectoria conecta la música tradicional colombiana con sonidos contemporáneos.',
-        imagen: '/Imagenes/artistas/carlos-vives.jpg',
-        textoAlternativo: 'Carlos Vives en el Foro Económico Mundial sobre América Latina de 2010',
-        fotografia: 'World Economic Forum / Edgar Alberto Domínguez Cataño',
-        fuenteFotografia: 'https://commons.wikimedia.org/wiki/File:Carlos_Vives_-_World_Economic_Forum_on_Latin_America_2010.jpg',
-        licencia: 'CC BY-SA 2.0',
-        fuenteLicencia: 'https://creativecommons.org/licenses/by-sa/2.0/',
-    },
-    {
-        nombre: 'Andrés Cepeda',
-        origen: 'Bogotá, Colombia',
-        estilo: 'Pop · balada · bolero',
-        historia: 'El cantante y compositor bogotano inició su camino musical como voz principal de Poligamia. Después desarrolló una carrera solista que explora el pop romántico, la balada y el bolero.',
-        imagen: '/Imagenes/artistas/andres-cepeda.jpg',
-        textoAlternativo: 'Retrato de Andrés Cepeda',
-        fotografia: 'SonyCOL',
-        fuenteFotografia: 'https://commons.wikimedia.org/wiki/File:AndresCepeda2018TVA.jpg',
-        licencia: 'CC BY-SA 4.0',
-        fuenteLicencia: 'https://creativecommons.org/licenses/by-sa/4.0/',
-    },
-    {
-        nombre: 'Jean Carlos Centeno',
-        origen: 'Cabimas, Venezuela · carrera en Colombia',
-        estilo: 'Cantante · compositor',
-        historia: 'Nacido en Venezuela y criado en Colombia, Jean Carlos Centeno se hizo conocido como cantante y compositor de vallenato. Su etapa con el Binomio de Oro de América y su carrera solista lo consolidaron como una de las voces destacadas del género.',
-        imagen: '/Imagenes/artistas/jean-carlos-centeno.jpg',
-        textoAlternativo: 'Jean Carlos Centeno durante un concierto vallenato',
-        fotografia: 'Lulema07',
-        fuenteFotografia: 'https://commons.wikimedia.org/wiki/File:Concierto_vallenato_JCC.jpg',
-        licencia: 'CC BY-SA 4.0',
-        fuenteLicencia: 'https://creativecommons.org/licenses/by-sa/4.0/',
-    },
-];
+const MENOS_MOVIMIENTO = () =>
+    typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-const productoresDestacados = [
-    {
-        nombre: 'Quincy Jones',
-        origen: 'Chicago, Estados Unidos',
-        estilo: 'Producción · arreglos · composición',
-        historia: 'Productor, compositor y arreglista cuya carrera abarcó más de siete décadas. Su trabajo con Michael Jackson en álbumes como Off the Wall, Thriller y Bad, además de su trayectoria en jazz, cine y televisión, lo convirtió en una figura clave de la música popular.',
-        imagen: '/Imagenes/productores/quincy-jones.jpg',
-        textoAlternativo: 'Quincy Jones sentado frente a un piano',
-        credito: 'Foto proporcionada por ti',
-    },
-    {
-        nombre: 'Sam Phillips',
-        origen: 'Florence, Alabama · Sun Studio, Memphis',
-        estilo: 'Rock and roll · Sun Records',
-        historia: 'Fundó Sun Records y Sun Studio en Memphis. Desde allí produjo las primeras grabaciones de Elvis Presley y trabajó con figuras como Johnny Cash, Jerry Lee Lewis, Carl Perkins y Howlin’ Wolf, dejando una huella decisiva en los inicios del rock and roll.',
-        imagen: '/Imagenes/productores/sam-phillips.jpg',
-        textoAlternativo: 'Sam Phillips con Elvis Presley y Bob Neal en 1955',
-        credito: 'The Cash Box Publishing Co., Inc.',
-        fuenteFoto: 'https://commons.wikimedia.org/wiki/File:Sam_Phillips_in_1955_(cropped).jpg',
-        licencia: 'Dominio público',
-    },
-    {
-        nombre: 'Phil Spector',
-        origen: 'Bronx, Nueva York',
-        estilo: 'Pop · arreglos orquestales',
-        historia: 'Productor y compositor estadounidense asociado con la técnica de producción conocida como «Wall of Sound». Sus densos arreglos y capas instrumentales marcaron grabaciones pop de los años sesenta y colaboraciones posteriores con distintos artistas.',
-        imagen: '/Imagenes/productores/phil-spector.jpg',
-        textoAlternativo: 'Retrato de Phil Spector en 1965',
-        credito: 'New York World-Telegram and Sun · Library of Congress',
-        fuenteFoto: 'https://commons.wikimedia.org/wiki/File:Phil_Spector_in_1965.jpg',
-        licencia: 'Dominio público',
-    },
-    {
-        nombre: 'George Martin',
-        origen: 'Londres, Inglaterra',
-        estilo: 'Producción · arreglos · experimentación',
-        historia: 'Productor, arreglista y músico inglés, es recordado por su estrecha colaboración con The Beatles. Sus conocimientos musicales y su apertura a nuevas técnicas de grabación ayudaron a dar forma al sonido de sus álbumes y a sus arreglos orquestales.',
-        imagen: '/Imagenes/productores/george-martin.jpg',
-        textoAlternativo: 'George Martin tras bambalinas del espectáculo The Beatles LOVE',
-        credito: 'Adamsharp',
-        fuenteFoto: 'https://commons.wikimedia.org/wiki/File:George_Martin_-_backstage_at_LOVE.jpg',
-        licencia: 'CC BY-SA 3.0',
-        fuenteLicencia: 'https://creativecommons.org/licenses/by-sa/3.0/',
-    },
+const TARJETA =
+    'group relative overflow-hidden rounded-3xl border border-border bg-surface/60 p-6 backdrop-blur transition duration-300 hover:-translate-y-1 hover:border-accent/40 hover:shadow-2xl hover:shadow-black/40';
+
+function capitalizar(texto) {
+    return texto.charAt(0).toUpperCase() + texto.slice(1);
+}
+
+function saludoDelDia() {
+    const hora = new Date().getHours();
+    if (hora < 12) return 'Buenos días';
+    if (hora < 19) return 'Buenas tardes';
+    return 'Buenas noches';
+}
+
+function fechaLarga() {
+    try {
+        return capitalizar(
+            new Date().toLocaleDateString('es-CO', { weekday: 'long', day: 'numeric', month: 'long' })
+        );
+    } catch {
+        return '';
+    }
+}
+
+function Contador({ valor, relleno = false }) {
+    const ref = useRef(null);
+
+    useEffect(() => {
+        const el = ref.current;
+        if (!el) return undefined;
+        const objetivo = Number(valor) || 0;
+
+        if (MENOS_MOVIMIENTO()) {
+            el.textContent = relleno ? String(objetivo).padStart(2, '0') : String(objetivo);
+            return undefined;
+        }
+
+        const estado = { actual: 0 };
+        const animacion = anime({
+            targets: estado,
+            actual: objetivo,
+            round: 1,
+            duration: 1300,
+            easing: 'easeOutExpo',
+            update() {
+                el.textContent = relleno ? String(estado.actual).padStart(2, '0') : String(estado.actual);
+            },
+        });
+
+        return () => animacion.pause();
+    }, [valor, relleno]);
+
+    return <span ref={ref}>0</span>;
+}
+
+const ACCESOS = [
+    { ruta: RUTAS.ESTUDIO, icono: Play, etiqueta: 'Escuchar artistas', descripcion: 'Reproductor del estudio' },
+    { ruta: RUTAS.AGENDA, icono: CalendarDays, etiqueta: 'Agenda', descripcion: 'Reservas y actividades' },
+    { ruta: RUTAS.SESIONES, icono: Mic, etiqueta: 'Sesiones', descripcion: 'Programa y registra' },
+    { ruta: RUTAS.SOLICITUDES, icono: Inbox, etiqueta: 'Solicitudes', descripcion: 'Peticiones del estudio' },
+    { ruta: RUTAS.PROYECTOS, icono: Music, etiqueta: 'Proyectos', descripcion: 'Canciones y avances' },
+    { ruta: RUTAS.ARTISTAS, icono: Mic2, etiqueta: 'Artistas', descripcion: 'Talento del estudio' },
+    { ruta: RUTAS.PRODUCTORES, icono: SlidersHorizontal, etiqueta: 'Productores', descripcion: 'Equipo de producción' },
+    { ruta: RUTAS.CATALOGO, icono: BookOpen, etiqueta: 'Catálogo', descripcion: 'Servicios y tarifas' },
+    { ruta: RUTAS.ESTADISTICAS, icono: BarChart3, etiqueta: 'Estadísticas', descripcion: 'Métricas del estudio' },
+    { ruta: RUTAS.CHATBOT, icono: MessageCircle, etiqueta: 'Chatbot', descripcion: 'Asistente virtual' },
+    { ruta: RUTAS.CONFIGURACION, icono: Settings, etiqueta: 'Configuración', descripcion: 'Ajustes de cuenta' },
 ];
 
 export default function MenuPrincipal() {
     const { usuario } = useAuth();
     const rutasPermitidas = rutasPermitidasPorRol(usuario?.rol);
-    const puedeGestionarSesiones = rutasPermitidas.includes(RUTAS.SESIONES);
-    const sesiones = SesionService.listar();
-    const sesionesActivas = sesiones.filter((sesion) => Sesion.estaActiva(sesion)).length; 
+    const [sesiones] = useSesiones();
+    const contenedorRef = useRef(null);
+    const [heroRef, seguirSpotlight] = useSpotlight();
+
+    const sesionesActivas = sesiones.filter((sesion) => ['confirmada', 'en_proceso'].includes(sesion.estado)).length;
+    const totalCanciones = useMemo(
+        () => cancionesArtistas.reduce((suma, item) => suma + item.canciones.length, 0),
+        []
+    );
+
+    useEffect(() => {
+        if (MENOS_MOVIMIENTO()) return undefined;
+        const contenedor = contenedorRef.current;
+        if (!contenedor) return undefined;
+
+        const animacion = anime({
+            targets: contenedor.querySelectorAll('[data-tile]'),
+            opacity: [0, 1],
+            translateY: [20, 0],
+            duration: 620,
+            delay: anime.stagger(70),
+            easing: 'easeOutCubic',
+        });
+
+        return () => animacion.pause();
+    }, []);
+
+    const accesos = ACCESOS.filter((item) => rutasPermitidas.includes(item.ruta)).slice(0, 8);
+
+    const metricas = [
+        { etiqueta: 'Sesiones activas', valor: sesionesActivas, nota: 'Confirmadas o en proceso', icono: Activity, destacada: true },
+        { etiqueta: 'Sesiones registradas', valor: sesiones.length, nota: 'En la agenda del estudio', icono: CalendarDays },
+        { etiqueta: 'Artistas', valor: artistasDestacados.length, nota: 'Perfiles destacados', icono: Mic2, relleno: true },
+        { etiqueta: 'Canciones', valor: totalCanciones, nota: 'Listas para escuchar', icono: Music, relleno: true },
+    ];
+
     return (
-        <main className="workspace-content dashboard-content">
-            <section className="dashboard-hero">
-                <p className="workspace-eyebrow">PANEL PRINCIPAL · GESTIÓN MUSICAL</p>
-                <h1>Hola, {usuario?.nombre ?? 'usuario'}.</h1>
-                <p>Bienvenido al centro operativo de Z-ONE. Organiza la producción y coordina las sesiones del estudio.</p>
-                {puedeGestionarSesiones && (
-                    <div className="dashboard-actions">
-                        <Link className="dashboard-action-primary" to={`${RUTAS.SESIONES}#crear`}>
-                            Crear sesión
-                        </Link>
-                        <Link className="dashboard-action-secondary" to={`${RUTAS.SESIONES}#registrar`}>
-                            Registrar sesión
-                        </Link>
-                    </div>
-                )}
-            </section>
+        <main className="workspace-content" data-page="principal">
+            <div ref={contenedorRef} className="grid gap-6">
+                <section
+                    className="grid gap-5 sm:grid-cols-2 lg:grid-cols-4 lg:grid-rows-2"
+                    aria-label="Resumen del estudio"
+                >
+                    <article
+                        ref={heroRef}
+                        onMouseMove={seguirSpotlight}
+                        data-tile
+                        className="group/hero relative flex flex-col overflow-hidden rounded-[2rem] border border-accent/25 p-7 sm:col-span-2 sm:p-9 lg:col-span-2 lg:row-span-2"
+                        style={{
+                            background:
+                                'radial-gradient(ellipse at 85% 10%, rgba(214, 70, 169, 0.28), transparent 45%), linear-gradient(120deg, rgba(111, 75, 187, 0.35), rgba(24, 19, 38, 0.96) 70%)',
+                        }}
+                    >
+                        <div aria-hidden="true" className="pointer-events-none absolute -right-16 -top-24 h-72 w-72 animate-aurora rounded-full bg-[#9365f2]/30 blur-3xl" />
+                        <div aria-hidden="true" className="pointer-events-none absolute -bottom-24 left-10 h-64 w-64 animate-aurora rounded-full bg-[#e34ba6]/25 blur-3xl [animation-delay:-6s]" />
+                        <div
+                            aria-hidden="true"
+                            className="pointer-events-none absolute inset-0 opacity-[0.14] [background-image:linear-gradient(rgba(255,255,255,0.06)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.06)_1px,transparent_1px)] [background-size:40px_40px] [mask-image:radial-gradient(ellipse_at_50%_50%,black,transparent_75%)]"
+                        />
+                        <div
+                            aria-hidden="true"
+                            className="pointer-events-none absolute inset-0 opacity-0 transition-opacity duration-500 group-hover/hero:opacity-100 [background:radial-gradient(360px_circle_at_var(--mx,50%)_var(--my,50%),rgba(240,79,166,0.25),transparent_62%)]"
+                        />
 
-            <section className="dashboard-summary" aria-label="Resumen del estudio">
-                <article className="dashboard-summary-card dashboard-summary-card-primary">
-                    <span className="dashboard-card-icon" aria-hidden="true">●</span>
-                    <p>Estado de la plataforma</p>
-                    <strong>Producción activa</strong>
-                    <span className="dashboard-card-note">Servicios del estudio disponibles</span>
-                </article>
-                <article className="dashboard-summary-card">
-                    <span className="dashboard-card-icon" aria-hidden="true">◷</span>
-                    <p>Sesiones activas</p>
-                    <strong>{sesionesActivas}</strong>
-                    <span className="dashboard-card-note">Solicitadas o confirmadas</span>
-                </article>
-                <article className="dashboard-summary-card">
-                    <span className="dashboard-card-icon" aria-hidden="true">✦</span>
-                    <p>Sesiones registradas</p>
-                    <strong>{sesiones.length}</strong>
-                    <span className="dashboard-card-note">En la agenda del estudio</span>
-                </article>
-            </section>
+                        {[
+                            { t: '12%', l: '62%', d: '0s', s: 5 },
+                            { t: '72%', l: '78%', d: '1.4s', s: 3 },
+                            { t: '34%', l: '90%', d: '2.6s', s: 4 },
+                            { t: '80%', l: '46%', d: '0.8s', s: 3 },
+                        ].map((p, indice) => (
+                            <span
+                                key={indice}
+                                aria-hidden="true"
+                                className="pointer-events-none absolute rounded-full bg-white/70 blur-[1px] [animation:flotar_7s_ease-in-out_infinite]"
+                                style={{ top: p.t, left: p.l, width: p.s, height: p.s, animationDelay: p.d }}
+                            />
+                        ))}
 
-            <section className="dashboard-information">
-                <div>
-                    <p className="workspace-eyebrow">INFORMACIÓN DE Z-ONE</p>
-                    <h2>Una gestión musical centralizada</h2>
-                    <p className="dashboard-information-copy">
-                        Z-ONE reúne la producción musical, el talento, las salas y la agenda para facilitar la coordinación del estudio.
-                    </p>
-                </div>
-                <div className="dashboard-information-grid">
-                    {rutasPermitidas.includes(RUTAS.SESIONES) && (
-                        <article>
-                            <h3>Producción</h3>
-                            <p>Organiza tus sesiones y consulta la actividad del estudio.</p>
-                            <Link to={RUTAS.SESIONES}>Ir a sesiones <span aria-hidden="true">→</span></Link>
-                        </article>
-                    )}
-                    {rutasPermitidas.includes(RUTAS.AGENDA) && (
-                        <article>
-                            <h3>Agenda</h3>
-                            <p>Consulta las reservas y actividades programadas.</p>
-                            <Link to={RUTAS.AGENDA}>Abrir agenda <span aria-hidden="true">→</span></Link>
-                        </article>
-                    )}
-                    {rutasPermitidas.includes(RUTAS.ARTISTAS) && (
-                        <article>
-                            <h3>Equipo creativo</h3>
-                            <p>Explora artistas y productores del estudio.</p>
-                            <Link to={RUTAS.ARTISTAS}>Ver artistas <span aria-hidden="true">→</span></Link>
-                        </article>
-                    )}
-                </div>
-            </section>
-
-            <section className="artist-showcase" aria-labelledby="artist-showcase-title">
-                <div className="artist-showcase-heading">
-                    <div>
-                        <p className="workspace-eyebrow">VOCES QUE INSPIRAN</p>
-                        <h2 id="artist-showcase-title">Artistas destacados</h2>
-                        <p className="artist-showcase-copy">
-                            Un recorrido por artistas colombianos y latinos que dejan huella en distintos sonidos.
-                        </p>
-                    </div>
-                    <span className="artist-showcase-count">05 PERFILES</span>
-                </div>
-                <div className="artist-showcase-grid">
-                    {artistasDestacados.map((artista, index) => (
-                        <article
-                            className="artist-feature-card"
-                            key={artista.nombre}
-                            style={{ '--artist-index': index }}
+                        <div
+                            aria-hidden="true"
+                            className="pointer-events-none absolute -right-6 top-1/2 hidden -translate-y-1/2 lg:block xl:-right-2"
                         >
-                            <div className="artist-feature-portrait">
-                                {artista.imagen ? (
-                                    <img
-                                        src={artista.imagen}
-                                        alt={artista.textoAlternativo}
-                                        loading="lazy"
-                                        decoding="async"
+                            <div
+                                className="relative grid h-60 w-60 place-items-center rounded-full border border-white/10 shadow-[0_25px_90px_rgba(0,0,0,0.55)] [animation:girar_22s_linear_infinite]"
+                                style={{ background: 'repeating-radial-gradient(circle,#29282d 0 2px,#36343a 3px 4px,#252429 5px 7px),#302f35' }}
+                            >
+                                <span className="absolute inset-[12%] rounded-full border border-white/[0.06]" />
+                                <span className="absolute inset-[26%] rounded-full border border-white/[0.05]" />
+                                <div className="grid h-24 w-24 place-items-center rounded-full border-[6px] border-[#27252b] bg-gradient-to-br from-[#db479b] to-[#8657c6] shadow-lg">
+                                    <span className="text-2xl font-black leading-none text-white">Z</span>
+                                </div>
+                            </div>
+                            <div className="mt-5 flex h-12 items-end justify-center gap-1.5" aria-hidden="true">
+                                {[40, 70, 100, 55, 85, 45, 95, 60, 75, 35].map((altura, indice) => (
+                                    <span
+                                        key={indice}
+                                        className="w-1.5 origin-bottom rounded-full bg-gradient-to-t from-[#e34ba6] to-[#9365f2] [animation:ecu_1.4s_ease-in-out_infinite]"
+                                        style={{ height: `${altura}%`, animationDelay: `${indice * 110}ms` }}
                                     />
-                                ) : (
-                                    <div className="artist-feature-placeholder" role="img" aria-label="Ilustración tipográfica para Luisra">
-                                        <span>{artista.iniciales}</span>
-                                        <p>PRINCESA</p>
-                                        <span className="artist-placeholder-note">Retrato por confirmar</span>
-                                    </div>
-                                )}
+                                ))}
                             </div>
-                            <div className="artist-feature-body">
-                                <p className="artist-feature-origin">{artista.origen}</p>
-                                <h3>{artista.nombre}</h3>
-                                <span className="artist-feature-style">{artista.estilo}</span>
-                                <p className="artist-feature-history">{artista.historia}</p>
-                                {artista.fotografia ? (
-                                    <p className="artist-photo-credit">
-                                        Foto:{' '}
-                                        <a href={artista.fuenteFotografia} target="_blank" rel="noopener noreferrer">
-                                            {artista.fotografia}
-                                        </a>
-                                        {' · '}
-                                        <a href={artista.fuenteLicencia} target="_blank" rel="noopener noreferrer">
-                                            {artista.licencia}
-                                        </a>
-                                    </p>
-                                ) : (
-                                    <p className="artist-photo-credit">Retrato público pendiente de identificación.</p>
-                                )}
-                            </div>
-                        </article>
-                    ))}
-                </div>
-            </section>
+                        </div>
 
-            <section className="artist-showcase producer-showcase" aria-labelledby="producer-showcase-title">
-                <div className="artist-showcase-heading">
-                    <div>
-                        <p className="workspace-eyebrow">ARQUITECTOS DEL SONIDO</p>
-                        <h2 id="producer-showcase-title">Productores destacados</h2>
-                        <p className="artist-showcase-copy">
-                            Cuatro productores cuya visión y trabajo en el estudio ayudaron a transformar la historia de la música.
-                        </p>
+                        <div className="relative flex h-full flex-col">
+                            <span className="inline-flex w-fit items-center gap-2 rounded-full border border-accent-soft/30 bg-black/20 px-3 py-1 text-[0.68rem] font-extrabold uppercase tracking-[0.14em] text-accent-soft">
+                                <span className="h-2 w-2 animate-pulse rounded-full bg-exito" />
+                                Estudio en línea
+                            </span>
+
+                            <p className="mt-6 text-[0.72rem] font-bold uppercase tracking-[0.18em] text-accent-soft">
+                                {fechaLarga()}
+                            </p>
+                            <h1 className="mt-2 max-w-md text-3xl font-extrabold tracking-tight text-texto-soft sm:text-4xl">
+                                {saludoDelDia()}, {usuario?.nombre ?? 'usuario'}.
+                            </h1>
+                            <p className="mt-2 max-w-md text-2xl font-black leading-tight tracking-[-0.03em] text-texto-soft sm:text-3xl">
+                                <span className="texto-degradado">Tu sonido, en su mejor versión.</span>
+                            </p>
+                            <p className="mt-3 max-w-lg text-sm leading-7 text-sutil">
+                                Coordina las sesiones, descubre a los artistas y controla la producción del estudio
+                                desde un solo lugar.
+                            </p>
+
+                            <div className="mt-7 flex flex-wrap gap-3">
+                                {rutasPermitidas.includes(RUTAS.SESIONES) && (
+                                    <Link
+                                        to={`${RUTAS.SESIONES}#crear`}
+                                        className="inline-flex min-h-[46px] items-center justify-center rounded-xl bg-gradient-to-r from-[#9365f2] to-[#e34ba6] px-5 text-sm font-bold text-white shadow-lg shadow-accent/30 transition hover:-translate-y-0.5 hover:brightness-110"
+                                    >
+                                        Crear sesión
+                                    </Link>
+                                )}
+                                <Link
+                                    to={RUTAS.ESTUDIO}
+                                    className="inline-flex min-h-[46px] items-center gap-2 rounded-xl border border-border bg-white/[0.05] px-5 text-sm font-bold text-texto transition hover:-translate-y-0.5 hover:border-accent/60"
+                                >
+                                    <Play className="h-4 w-4" aria-hidden="true" /> Escuchar artistas
+                                </Link>
+                            </div>
+
+                            <div className="mt-auto flex flex-wrap items-center gap-4 pt-9">
+                                <div className="flex -space-x-3">
+                                    {artistasDestacados.slice(0, 5).map((artista) => (
+                                        <img
+                                            key={artista.nombre}
+                                            src={artista.imagen}
+                                            alt=""
+                                            className="h-11 w-11 rounded-full border-2 border-surface object-cover"
+                                        />
+                                    ))}
+                                </div>
+                                <div className="min-w-0">
+                                    <p className="text-sm font-bold text-texto-soft">
+                                        {totalCanciones} canciones para explorar
+                                    </p>
+                                    <Link
+                                        to={RUTAS.ESTUDIO}
+                                        className="inline-flex items-center gap-1 text-xs font-bold text-accent-soft transition hover:text-magenta"
+                                    >
+                                        Abrir reproductor <ArrowRight className="h-3.5 w-3.5" aria-hidden="true" />
+                                    </Link>
+                                </div>
+                            </div>
+                        </div>
+                    </article>
+
+                    {metricas.map((metrica) => {
+                        const Icono = metrica.icono;
+                        return (
+                            <article key={metrica.etiqueta} data-tile className={`${TARJETA} tarjeta-brillo flex flex-col justify-between`}>
+                                <span
+                                    aria-hidden="true"
+                                    className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-accent/60 to-transparent"
+                                />
+                                <div className="flex items-start justify-between gap-3">
+                                    <span className="grid h-10 w-10 place-items-center rounded-xl bg-white/[0.05] text-accent-soft transition group-hover:bg-accent/15" aria-hidden="true">
+                                        <Icono className="h-5 w-5" />
+                                    </span>
+                                    {metrica.destacada && (
+                                        <span className="inline-flex items-center gap-1.5 rounded-full border border-exito/30 bg-exito/10 px-2.5 py-1 text-[0.6rem] font-extrabold uppercase tracking-[0.1em] text-exito">
+                                            <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-exito" />
+                                            En vivo
+                                        </span>
+                                    )}
+                                </div>
+                                <div className="mt-5">
+                                    <strong className="block text-4xl font-extrabold tracking-tight text-texto-soft">
+                                        <Contador valor={metrica.valor} relleno={metrica.relleno} />
+                                    </strong>
+                                    <p className="mt-1 text-sm font-semibold text-texto-soft">{metrica.etiqueta}</p>
+                                    <span className="mt-0.5 block text-xs text-sutil/80">{metrica.nota}</span>
+                                </div>
+                                {metrica.destacada && (
+                                    <span className="pointer-events-none absolute -right-10 -top-10 h-28 w-28 rounded-full bg-[#9365f2]/25 blur-2xl" />
+                                )}
+                            </article>
+                        );
+                    })}
+                </section>
+
+                <section data-tile className="rounded-[2rem] border border-border bg-surface/60 p-6 backdrop-blur sm:p-8">
+                    <div className="flex flex-wrap items-end justify-between gap-3">
+                        <div>
+                            <p className="workspace-eyebrow">ACCESOS DIRECTOS</p>
+                            <h2 className="mt-1 text-2xl font-bold tracking-tight text-texto-soft">Todo a un toque</h2>
+                        </div>
                     </div>
-                    <span className="artist-showcase-count">04 PRODUCTORES</span>
-                </div>
-                <div className="producer-showcase-grid">
-                    {productoresDestacados.map((productor, index) => (
-                        <article
-                            className="artist-feature-card producer-feature-card"
-                            key={productor.nombre}
-                            style={{ '--artist-index': index }}
-                        >
-                            <div className="artist-feature-portrait">
+                    <div className="mt-5 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+                        {accesos.map((acceso) => {
+                            const Icono = acceso.icono;
+                            return (
+                                <Link
+                                    key={acceso.ruta}
+                                    to={acceso.ruta}
+                                    className="group/acceso flex items-center gap-3 rounded-2xl border border-border bg-white/[0.02] p-3.5 transition hover:-translate-y-0.5 hover:border-accent/50 hover:bg-white/[0.05]"
+                                >
+                                    <span className="grid h-11 w-11 shrink-0 place-items-center rounded-xl bg-gradient-to-br from-[#5b418f]/50 to-surface-2 text-accent-soft transition group-hover/acceso:from-[#9365f2]/60 group-hover/acceso:to-[#e34ba6]/40 group-hover/acceso:text-white">
+                                        <Icono className="h-5 w-5" aria-hidden="true" />
+                                    </span>
+                                    <span className="min-w-0">
+                                        <span className="block truncate text-sm font-bold text-texto-soft">{acceso.etiqueta}</span>
+                                        <span className="block truncate text-xs text-sutil">{acceso.descripcion}</span>
+                                    </span>
+                                </Link>
+                            );
+                        })}
+                    </div>
+                </section>
+
+                <section data-tile className="overflow-hidden rounded-[2rem] border border-border bg-surface/60 py-6 backdrop-blur">
+                    <div className="flex flex-wrap items-end justify-between gap-3 px-6 sm:px-8">
+                        <div>
+                            <p className="workspace-eyebrow">VOCES QUE INSPIRAN</p>
+                            <h2 className="mt-1 text-2xl font-bold tracking-tight text-texto-soft">Artistas destacados</h2>
+                        </div>
+                        <Link to={RUTAS.ESTUDIO} className="text-sm font-bold text-accent-soft transition hover:text-magenta">
+                            Escuchar <span aria-hidden="true">→</span>
+                        </Link>
+                    </div>
+                    <div className="group relative mt-5 overflow-hidden [mask-image:linear-gradient(to_right,transparent,black_6%,black_94%,transparent)]">
+                        <div className="flex w-max animate-marquee gap-4 px-2 group-hover:[animation-play-state:paused]">
+                            {[...artistasDestacados, ...artistasDestacados].map((artista, indice) => (
+                                <div key={`${artista.nombre}-${indice}`} className="flex w-36 shrink-0 flex-col items-center gap-2 text-center">
+                                    <div className="rounded-full bg-gradient-to-br from-[#9365f2] to-[#e34ba6] p-[2px]">
+                                        <img
+                                            src={artista.imagen}
+                                            alt=""
+                                            loading="lazy"
+                                            className="h-24 w-24 rounded-full object-cover transition duration-300 hover:scale-105"
+                                        />
+                                    </div>
+                                    <p className="w-full truncate text-sm font-bold text-texto-soft">{artista.nombre}</p>
+                                    <p className="w-full truncate text-[0.7rem] text-sutil">{artista.origen}</p>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                </section>
+
+                <section data-tile className="rounded-[2rem] border border-border bg-surface/60 p-6 backdrop-blur sm:p-8">
+                    <div className="flex flex-wrap items-end justify-between gap-3">
+                        <div>
+                            <p className="workspace-eyebrow">ARQUITECTOS DEL SONIDO</p>
+                            <h2 className="mt-1 text-2xl font-bold tracking-tight text-texto-soft">Productores destacados</h2>
+                        </div>
+                        <span className="rounded-full border border-accent-soft/30 px-3 py-1.5 text-[0.68rem] font-extrabold tracking-[0.1em] text-accent-soft">
+                            {String(productoresDestacados.length).padStart(2, '0')} PRODUCTORES
+                        </span>
+                    </div>
+                    <div className="mt-5 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+                        {productoresDestacados.map((productor) => (
+                            <article key={productor.nombre} className="group relative overflow-hidden rounded-2xl border border-border">
                                 <img
                                     src={productor.imagen}
-                                    alt={productor.textoAlternativo}
+                                    alt={productor.textoAlternativo ?? productor.nombre}
                                     loading="lazy"
-                                    decoding="async"
+                                    className="h-52 w-full object-cover transition duration-500 group-hover:scale-110"
                                 />
-                            </div>
-                            <div className="artist-feature-body">
-                                <p className="artist-feature-origin">{productor.origen}</p>
-                                <h3>{productor.nombre}</h3>
-                                <span className="artist-feature-style">{productor.estilo}</span>
-                                <p className="artist-feature-history">{productor.historia}</p>
-                                <p className="artist-photo-credit">
-                                    Foto: {productor.fuenteFoto ? (
-                                        <a href={productor.fuenteFoto} target="_blank" rel="noopener noreferrer">
-                                            {productor.credito}
-                                        </a>
-                                    ) : productor.credito}
-                                    {productor.licencia && (
-                                        <>
-                                            {' · '}
-                                            {productor.fuenteLicencia ? (
-                                                <a href={productor.fuenteLicencia} target="_blank" rel="noopener noreferrer">
-                                                    {productor.licencia}
-                                                </a>
-                                            ) : productor.licencia}
-                                        </>
-                                    )}
-                                </p>
-                            </div>
-                        </article>
-                    ))}
-                </div>
-            </section>
+                                <div className="absolute inset-0 bg-gradient-to-t from-[#0b0812] via-[#0b0812]/30 to-transparent" />
+                                <div className="absolute inset-x-0 bottom-0 p-4">
+                                    <h3 className="text-base font-bold text-texto-soft">{productor.nombre}</h3>
+                                    <p className="mt-0.5 text-[0.72rem] text-sutil">{productor.origen}</p>
+                                </div>
+                            </article>
+                        ))}
+                    </div>
+                </section>
+            </div>
         </main>
     );
 }

@@ -1,65 +1,105 @@
 // CAPA: Presentación
-import { useEffect, useMemo, useState } from 'react';
-import { colaboradorRepo } from '../repositories/colaboradorRepo.js';
-import { salaRepo } from '../repositories/salaRepo.js';
-import { SesionService } from '../services/sesionService.js';
-import '../styles/sesiones.css';
+import { useEffect, useMemo, useRef, useState } from 'react';
+import anime from 'animejs';
+import { CheckCircle2, Mic, Music, Search, SlidersHorizontal } from 'lucide-react';
+import FormularioSesion from '../components/FormularioSesion.jsx';
+import { useColaboradores } from '../hooks/useColaboradores.js';
+import { useSalas } from '../hooks/useSalas.js';
+import { useSesiones } from '../hooks/useSesiones.js';
+import { CancionService } from '../services/cancionService.js';
+import { ProyectoService } from '../services/proyectoService.js';
+import { formatearFecha } from '../utils/helpers.js';
+import '../styles/tailwind.css';
 
-function fechaLocal(fecha = new Date()) {
-    const anio = fecha.getFullYear();
-    const mes = String(fecha.getMonth() + 1).padStart(2, '0');
-    const dia = String(fecha.getDate()).padStart(2, '0');
-    return `${anio}-${mes}-${dia}`;
-}
-
-function sumarHoras(hora, horas) {
-    const [horaInicio, minutos] = hora.split(':').map(Number);
-    const totalMinutos = horaInicio * 60 + minutos + Number(horas) * 60;
-    const horaFin = Math.floor(totalMinutos / 60) % 24;
-    const minutosFin = totalMinutos % 60;
-    return `${String(horaFin).padStart(2, '0')}:${String(minutosFin).padStart(2, '0')}`;
-}
-
-function formatearFecha(fecha) {
-    if (!fecha) return 'Sin fecha';
-    return new Intl.DateTimeFormat('es', {
-        day: 'numeric',
-        month: 'short',
-        year: 'numeric',
-    }).format(new Date(`${fecha}T00:00:00`));
-}
+const MENOS_MOVIMIENTO = () =>
+    typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
 const ESTADOS = {
-    solicitada: 'Solicitada',
     confirmada: 'Confirmada',
+    pendiente: 'Pendiente',
+    en_proceso: 'En proceso',
     completada: 'Completada',
     cancelada: 'Cancelada',
 };
 
-export default function Sesiones() {
-    const [sesiones, setSesiones] = useState(() => SesionService.listar());
-    const [salas] = useState(() => salaRepo.listar().filter((sala) => sala.activo !== false));
-    const [colaboradores] = useState(() =>
-        colaboradorRepo.listar().filter((colaborador) => colaborador.activo !== false)
-    );
-    const [filtro, setFiltro] = useState('todas');
-    const [mensaje, setMensaje] = useState('');
-    const [error, setError] = useState('');
-    const [formulario, setFormulario] = useState({
-        titulo: '',
-        tipo: 'Grabación',
-        fecha: fechaLocal(),
-        hora_inicio: '10:00',
-        duracion: '2',
-        sala_id: '',
-        colaborador_id: '',
-        estado: 'solicitada',
-    });
+const BADGES = {
+    confirmada: 'border-exito/30 bg-exito/10 text-exito',
+    en_proceso: 'border-exito/30 bg-exito/10 text-exito',
+    pendiente: 'border-aviso/30 bg-aviso/10 text-aviso',
+    completada: 'border-[#5393da]/30 bg-[#5393da]/10 text-[#9ecbff]',
+    cancelada: 'border-peligro/30 bg-peligro/10 text-peligro',
+};
 
-    const sesionesFiltradas = useMemo(
-        () => sesiones.filter((sesion) => filtro === 'todas' || sesion.estado === filtro),
-        [sesiones, filtro]
-    );
+const PUNTO = {
+    confirmada: 'bg-exito shadow-[0_0_14px_rgba(123,224,176,0.7)]',
+    en_proceso: 'bg-exito shadow-[0_0_14px_rgba(123,224,176,0.7)]',
+    pendiente: 'bg-aviso shadow-[0_0_14px_rgba(255,209,102,0.7)]',
+    completada: 'bg-[#5393da] shadow-[0_0_14px_rgba(83,147,218,0.7)]',
+    cancelada: 'bg-peligro shadow-[0_0_14px_rgba(255,138,138,0.7)]',
+};
+
+const FILTROS = [
+    ['todas', 'Todas'],
+    ['confirmada', 'Confirmadas'],
+    ['pendiente', 'Pendientes'],
+    ['cancelada', 'Canceladas'],
+];
+
+export default function Sesiones() {
+    const [sesiones] = useSesiones();
+    const [salas] = useSalas(true);
+    const [colaboradores] = useColaboradores(true);
+    const [filtro, setFiltro] = useState('todas');
+    const [busqueda, setBusqueda] = useState('');
+    const listaRef = useRef(null);
+
+    const canciones = useMemo(() => CancionService.listar(), []);
+    const proyectos = useMemo(() => ProyectoService.listar(), []);
+
+    const obtenerNombreSala = (id) =>
+        salas.find((sala) => String(sala.id) === String(id))?.nombre ?? 'Sala no disponible';
+    const obtenerNombreColaborador = (id) =>
+        colaboradores.find((colaborador) => String(colaborador.id) === String(id))?.nombre ?? 'Sin asignar';
+
+    const detalleCancion = (id) => {
+        const cancion = canciones.find((c) => String(c.id) === String(id));
+        if (!cancion) return null;
+        const proyecto = proyectos.find((p) => String(p.id) === String(cancion.proyecto_id));
+        const partes = Array.isArray(cancion.partes) && cancion.partes.length > 0 ? ` · ${cancion.partes.join(', ')}` : '';
+        return `${cancion.nombre}${proyecto ? ` · ${proyecto.nombre}` : ''}${partes}`;
+    };
+
+    const sesionesFiltradas = useMemo(() => {
+        const consulta = busqueda.trim().toLocaleLowerCase();
+        return sesiones
+            .filter((sesion) => filtro === 'todas' || sesion.estado === filtro)
+            .filter((sesion) => {
+                if (!consulta) return true;
+                const texto = [
+                    sesion.titulo,
+                    sesion.tipo,
+                    ESTADOS[sesion.estado] ?? sesion.estado,
+                    obtenerNombreSala(sesion.sala_id),
+                    obtenerNombreColaborador(sesion.colaborador_id),
+                    detalleCancion(sesion.cancion_id),
+                ]
+                    .filter(Boolean)
+                    .join(' ')
+                    .toLocaleLowerCase();
+                return texto.includes(consulta);
+            })
+            .sort((a, b) => `${a.fecha} ${a.hora_inicio ?? ''}`.localeCompare(`${b.fecha} ${b.hora_inicio ?? ''}`));
+    }, [sesiones, filtro, busqueda, salas, colaboradores, canciones, proyectos]);
+
+    const dias = useMemo(() => {
+        const mapa = new Map();
+        sesionesFiltradas.forEach((sesion) => {
+            const clave = sesion.fecha ?? 'sin-fecha';
+            if (!mapa.has(clave)) mapa.set(clave, []);
+            mapa.get(clave).push(sesion);
+        });
+        return [...mapa.entries()];
+    }, [sesionesFiltradas]);
 
     useEffect(() => {
         if (window.location.hash) {
@@ -68,258 +108,176 @@ export default function Sesiones() {
         }
     }, []);
 
-    const cambiarCampo = (event) => {
-        const { name, value } = event.target;
-        setFormulario((actual) => ({ ...actual, [name]: value }));
-    };
+    useEffect(() => {
+        if (MENOS_MOVIMIENTO()) return undefined;
+        const contenedor = listaRef.current;
+        if (!contenedor) return undefined;
+        const animacion = anime({
+            targets: contenedor.querySelectorAll('[data-sesion]'),
+            opacity: [0, 1],
+            translateX: [-14, 0],
+            duration: 420,
+            delay: anime.stagger(55),
+            easing: 'easeOutCubic',
+        });
+        return () => animacion.pause();
+    }, [dias]);
 
-    const guardarSesion = (event) => {
-        event.preventDefault();
-        setError('');
-        setMensaje('');
-
-        const sala = salas.find((item) => String(item.id) === formulario.sala_id);
-        const colaborador = colaboradores.find((item) => String(item.id) === formulario.colaborador_id);
-        const duracion = Number(formulario.duracion);
-
-        if (!sala || !colaborador || !Number.isFinite(duracion) || duracion <= 0 || duracion > 12) {
-            setError('Completa todos los campos y selecciona una duración entre 0 y 12 horas.');
-            return;
-        }
-
-        try {
-            const sesionCreada = SesionService.crear({
-                ...formulario,
-                titulo: formulario.titulo.trim() || `${formulario.tipo} · ${colaborador.nombre}`,
-                sala_id: sala.id,
-                colaborador_id: colaborador.id,
-                hora_fin: sumarHoras(formulario.hora_inicio, duracion),
-                duracion,
-            });
-            setSesiones((actuales) => [...actuales, sesionCreada]);
-            setMensaje('Sesión guardada correctamente.');
-            setFormulario((actual) => ({
-                ...actual,
-                titulo: '',
-                fecha: fechaLocal(),
-                hora_inicio: '10:00',
-                duracion: '2',
-            }));
-            window.history.replaceState(null, '', `${window.location.pathname}${window.location.search}#registrar`);
-            document.getElementById('registrar')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-        } catch (saveError) {
-            setError(saveError instanceof Error ? saveError.message : 'No se pudo guardar la sesión.');
-        }
-    };
-
-    const obtenerNombreSala = (id) =>
-        salas.find((sala) => String(sala.id) === String(id))?.nombre ?? 'Sala no disponible';
-    const obtenerNombreColaborador = (id) =>
-        colaboradores.find((colaborador) => String(colaborador.id) === String(id))?.nombre ?? 'Sin asignar';
+    const resumen = [
+        { etiqueta: 'Sesiones registradas', valor: sesiones.length, Icono: Mic, clase: 'from-[#5b418f]/50' },
+        { etiqueta: 'Confirmadas', valor: sesiones.filter((sesion) => sesion.estado === 'confirmada').length, Icono: CheckCircle2, clase: 'from-exito/30' },
+        { etiqueta: 'Cabinas disponibles', valor: salas.length, Icono: SlidersHorizontal, clase: 'from-[#5393da]/30' },
+    ];
 
     return (
-        <main className="workspace-content sessions-content">
-            <header className="sessions-heading">
+        <main className="workspace-content" data-page="sesiones">
+            <header className="page-heading relative border-l-4 border-[#669fe8] pl-4">
+                <div aria-hidden="true" className="pointer-events-none absolute -top-20 right-16 h-52 w-52 animate-aurora rounded-full bg-[#5393da]/15 blur-3xl" />
                 <p className="workspace-eyebrow">GESTIÓN · ESTUDIO</p>
                 <h1>Agenda de cabinas y sesiones</h1>
-                <p>Registra sesiones y consulta la programación del estudio para coordinar cabinas y horarios.</p>
+                <p>Registra sesiones y sigue la programación del estudio como una línea de tiempo viva.</p>
             </header>
 
-            <section className="sessions-overview" aria-label="Resumen de sesiones">
-                <article>
-                    <span>Sesiones registradas</span>
-                    <strong>{sesiones.length}</strong>
-                </article>
-                <article>
-                    <span>Confirmadas</span>
-                    <strong>{sesiones.filter((sesion) => sesion.estado === 'confirmada').length}</strong>
-                </article>
-                <article>
-                    <span>Cabinas disponibles</span>
-                    <strong>{salas.length}</strong>
-                </article>
+            <section className="mt-6 grid grid-cols-1 gap-3 sm:grid-cols-3" aria-label="Resumen de sesiones">
+                {resumen.map((item) => {
+                    const Icono = item.Icono;
+                    return (
+                        <article
+                            key={item.etiqueta}
+                            className={`tarjeta-brillo relative flex items-center justify-between gap-3 overflow-hidden rounded-2xl border border-border bg-gradient-to-br ${item.clase} to-surface/40 p-4 transition hover:-translate-y-0.5 hover:border-accent/50`}
+                        >
+                            <div>
+                                <span className="block text-xs text-sutil">{item.etiqueta}</span>
+                                <strong className="block text-3xl font-bold text-texto-soft">{item.valor}</strong>
+                            </div>
+                            <span className="grid h-11 w-11 shrink-0 place-items-center rounded-xl border border-white/10 bg-black/20 text-accent-soft" aria-hidden="true">
+                                <Icono className="h-5 w-5" />
+                            </span>
+                        </article>
+                    );
+                })}
             </section>
 
-            <section className="sessions-layout">
-                <section className="sessions-panel sessions-list-panel" id="registrar">
-                    <div className="sessions-panel-heading">
+            <div className="mt-6 grid items-start gap-4 lg:grid-cols-[minmax(0,1.55fr)_minmax(320px,0.9fr)]">
+                <section id="registrar" className="scroll-mt-5 rounded-[2rem] border border-border bg-surface/60 p-5 backdrop-blur sm:p-6">
+                    <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
                         <div>
                             <p className="workspace-eyebrow">PROGRAMACIÓN</p>
-                            <h2>Sesiones registradas</h2>
+                            <div className="flex items-center gap-2">
+                                <h2 className="text-xl font-bold tracking-tight text-texto-soft">Línea de sesiones</h2>
+                                <span className="rounded-full border border-accent/30 bg-accent/10 px-2.5 py-1 text-[0.62rem] font-bold tabular-nums text-accent-soft">
+                                    {sesionesFiltradas.length}
+                                </span>
+                            </div>
                         </div>
-                        <a className="sessions-inline-link" href="#crear">+ Nueva sesión</a>
+                        <a className="shrink-0 text-sm font-bold text-accent transition hover:text-magenta" href="#crear">
+                            + Nueva sesión
+                        </a>
                     </div>
 
-                    <div className="sessions-filters" aria-label="Filtrar sesiones">
-                        {[
-                            ['todas', 'Todas'],
-                            ['confirmada', 'Confirmadas'],
-                            ['solicitada', 'Solicitadas'],
-                            ['cancelada', 'Canceladas'],
-                        ].map(([value, label]) => (
-                            <button
-                                className={filtro === value ? 'sessions-filter is-active' : 'sessions-filter'}
-                                key={value}
-                                onClick={() => setFiltro(value)}
-                                type="button"
-                            >
-                                {label}
-                            </button>
-                        ))}
+                    <div className="mb-5 flex flex-col gap-3">
+                        <label className="relative block">
+                            <Search aria-hidden="true" className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-sutil" />
+                            <input
+                                type="search"
+                                value={busqueda}
+                                onChange={(event) => setBusqueda(event.target.value)}
+                                placeholder="Buscar por título, sala, artista o canción"
+                                aria-label="Buscar sesión"
+                                className="w-full rounded-xl border border-border bg-surface-2 py-2.5 pl-9 pr-3 text-sm text-texto outline-none transition placeholder:text-sutil/70 focus:border-accent focus:ring-2 focus:ring-accent/30"
+                            />
+                        </label>
+                        <div className="flex flex-wrap gap-2" aria-label="Filtrar sesiones">
+                            {FILTROS.map(([valor, etiqueta]) => {
+                                const activo = filtro === valor;
+                                return (
+                                    <button
+                                        key={valor}
+                                        type="button"
+                                        onClick={() => setFiltro(valor)}
+                                        aria-pressed={activo}
+                                        className={
+                                            activo
+                                                ? 'rounded-full border border-accent/70 bg-gradient-to-r from-[#9365f2]/40 to-[#e34ba6]/30 px-3.5 py-1.5 text-xs font-bold text-white transition'
+                                                : 'rounded-full border border-border bg-white/[0.04] px-3.5 py-1.5 text-xs font-medium text-sutil transition hover:border-accent/50 hover:text-texto'
+                                        }
+                                    >
+                                        {etiqueta}
+                                    </button>
+                                );
+                            })}
+                        </div>
                     </div>
 
                     {sesionesFiltradas.length > 0 ? (
-                        <div className="sessions-table-scroll">
-                            <table className="sessions-table">
-                                <thead>
-                                    <tr>
-                                        <th>Fecha y hora</th>
-                                        <th>Sesión</th>
-                                        <th>Cabina</th>
-                                        <th>Artista / productor</th>
-                                        <th>Estado</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {sesionesFiltradas.map((sesion) => (
-                                        <tr key={sesion.id}>
-                                            <td>
-                                                <strong>{formatearFecha(sesion.fecha)}</strong>
-                                                <span>{sesion.hora_inicio ?? '--:--'}–{sesion.hora_fin ?? '--:--'}</span>
-                                            </td>
-                                            <td>{sesion.titulo || sesion.tipo || 'Sesión de estudio'}</td>
-                                            <td>{obtenerNombreSala(sesion.sala_id)}</td>
-                                            <td>{obtenerNombreColaborador(sesion.colaborador_id)}</td>
-                                            <td>
-                                                <span className={`session-status status-${sesion.estado}`}>
-                                                    {ESTADOS[sesion.estado] ?? sesion.estado}
-                                                </span>
-                                            </td>
-                                        </tr>
-                                    ))}
-                                </tbody>
-                            </table>
+                        <div ref={listaRef} className="grid gap-6 pr-1 lg:max-h-[68vh] lg:overflow-y-auto lg:[scrollbar-width:thin]">
+                            {dias.map(([fecha, items]) => (
+                                <div key={fecha}>
+                                    <div className="mb-3 flex items-center gap-3">
+                                        <span className="rounded-full border border-border bg-white/[0.03] px-3 py-1 text-xs font-bold capitalize text-texto-soft">
+                                            {formatearFecha(fecha, { weekday: 'long', day: 'numeric', month: 'long' }) || 'Sin fecha'}
+                                        </span>
+                                        <span className="h-px flex-1 bg-border/60" />
+                                        <span className="text-xs text-sutil">{items.length} sesión{items.length === 1 ? '' : 'es'}</span>
+                                    </div>
+
+                                    <ol className="grid gap-3">
+                                        {items.map((sesion) => (
+                                            <li key={sesion.id} data-sesion className="grid grid-cols-[58px_auto_1fr] gap-3">
+                                                <div className="pt-4 text-right">
+                                                    <strong className="block text-sm font-bold tabular-nums text-texto-soft">{sesion.hora_inicio ?? '--:--'}</strong>
+                                                    <span className="block text-[0.68rem] text-sutil">{sesion.hora_fin ?? '--:--'}</span>
+                                                </div>
+                                                <div className="relative flex justify-center">
+                                                    <span aria-hidden="true" className="absolute inset-y-0 w-px bg-border/70" />
+                                                    <span
+                                                        aria-hidden="true"
+                                                        className={`relative mt-5 h-3 w-3 rounded-full ring-4 ring-surface ${PUNTO[sesion.estado] ?? 'bg-sutil'}`}
+                                                    />
+                                                </div>
+                                                <article className="tarjeta-brillo group rounded-2xl border border-border bg-white/[0.02] p-4 transition hover:border-accent/50 hover:bg-white/[0.04]">
+                                                    <div className="flex items-start justify-between gap-3">
+                                                        <h3 className="text-sm font-bold text-texto-soft">
+                                                            {sesion.titulo || sesion.tipo || 'Sesión de estudio'}
+                                                        </h3>
+                                                        <span className={`inline-flex shrink-0 rounded-full border px-2.5 py-1 text-xs font-bold ${BADGES[sesion.estado] ?? 'border-border bg-surface-3 text-sutil'}`}>
+                                                            {ESTADOS[sesion.estado] ?? sesion.estado}
+                                                        </span>
+                                                    </div>
+                                                    <div className="mt-3 flex flex-wrap gap-x-5 gap-y-1.5 text-xs text-sutil">
+                                                        <span className="inline-flex items-center gap-1.5">
+                                                            <SlidersHorizontal className="h-3.5 w-3.5" aria-hidden="true" /> {obtenerNombreSala(sesion.sala_id)}
+                                                        </span>
+                                                        <span className="inline-flex items-center gap-1.5">
+                                                            <Mic className="h-3.5 w-3.5" aria-hidden="true" /> {obtenerNombreColaborador(sesion.colaborador_id)}
+                                                        </span>
+                                                    </div>
+                                                    {detalleCancion(sesion.cancion_id) && (
+                                                        <p className="mt-2 flex items-center gap-1.5 rounded-lg border border-border/60 bg-black/20 px-2.5 py-1.5 text-xs text-sutil">
+                                                            <Music className="h-3.5 w-3.5 shrink-0" aria-hidden="true" /> {detalleCancion(sesion.cancion_id)}
+                                                        </p>
+                                                    )}
+                                                </article>
+                                            </li>
+                                        ))}
+                                    </ol>
+                                </div>
+                            ))}
                         </div>
                     ) : (
-                        <p className="sessions-empty">No hay sesiones en esta categoría.</p>
+                        <div className="flex flex-col items-center justify-center gap-1 rounded-2xl border border-dashed border-border bg-surface/40 py-12 text-center">
+                            <Music className="h-6 w-6 text-sutil/60" aria-hidden="true" />
+                            <p className="text-sm text-sutil">
+                                {busqueda.trim() || filtro !== 'todas'
+                                    ? 'No hay sesiones que coincidan con el filtro o la búsqueda.'
+                                    : 'Aún no hay sesiones registradas.'}
+                            </p>
+                        </div>
                     )}
                 </section>
 
-                <section className="sessions-panel sessions-form-panel" id="crear">
-                    <div className="sessions-panel-heading">
-                        <div>
-                            <p className="workspace-eyebrow">NUEVA RESERVA</p>
-                            <h2>Crear sesión</h2>
-                        </div>
-                        <span className="sessions-heading-icon" aria-hidden="true">◷</span>
-                    </div>
-                    <p className="sessions-form-intro">Completa los datos para registrar una sesión en la agenda del estudio.</p>
-
-                    <form className="sessions-form" onSubmit={guardarSesion}>
-                        <label>
-                            <span>Nombre de la sesión <small>(opcional)</small></span>
-                            <input
-                                name="titulo"
-                                onChange={cambiarCampo}
-                                placeholder="Ej. Grabación de nuevo sencillo"
-                                value={formulario.titulo}
-                            />
-                        </label>
-
-                        <div className="sessions-form-row">
-                            <label>
-                                <span>Tipo de sesión</span>
-                                <select name="tipo" onChange={cambiarCampo} value={formulario.tipo}>
-                                    <option>Grabación</option>
-                                    <option>Mezcla</option>
-                                    <option>Masterización</option>
-                                    <option>Ensayo</option>
-                                    <option>Producción</option>
-                                </select>
-                            </label>
-                            <label>
-                                <span>Estado</span>
-                                <select name="estado" onChange={cambiarCampo} value={formulario.estado}>
-                                    <option value="solicitada">Solicitada</option>
-                                    <option value="confirmada">Confirmada</option>
-                                    <option value="cancelada">Cancelada</option>
-                                </select>
-                            </label>
-                        </div>
-
-                        <div className="sessions-form-row">
-                            <label>
-                                <span>Fecha</span>
-                                <input
-                                    min={fechaLocal()}
-                                    name="fecha"
-                                    onChange={cambiarCampo}
-                                    required
-                                    type="date"
-                                    value={formulario.fecha}
-                                />
-                            </label>
-                            <label>
-                                <span>Hora de inicio</span>
-                                <input
-                                    name="hora_inicio"
-                                    onChange={cambiarCampo}
-                                    required
-                                    type="time"
-                                    value={formulario.hora_inicio}
-                                />
-                            </label>
-                        </div>
-
-                        <div className="sessions-form-row">
-                            <label>
-                                <span>Duración</span>
-                                <select name="duracion" onChange={cambiarCampo} value={formulario.duracion}>
-                                    <option value="1">1 hora</option>
-                                    <option value="1.5">1 hora y media</option>
-                                    <option value="2">2 horas</option>
-                                    <option value="3">3 horas</option>
-                                    <option value="4">4 horas</option>
-                                    <option value="6">6 horas</option>
-                                    <option value="8">8 horas</option>
-                                </select>
-                            </label>
-                            <label>
-                                <span>Cabina</span>
-                                <select name="sala_id" onChange={cambiarCampo} required value={formulario.sala_id}>
-                                    <option value="">Selecciona una cabina</option>
-                                    {salas.map((sala) => (
-                                        <option key={sala.id} value={sala.id}>{sala.nombre}</option>
-                                    ))}
-                                </select>
-                            </label>
-                        </div>
-
-                        <label>
-                            <span>Artista / productor</span>
-                            <select
-                                name="colaborador_id"
-                                onChange={cambiarCampo}
-                                required
-                                value={formulario.colaborador_id}
-                            >
-                                <option value="">Selecciona una persona</option>
-                                {colaboradores.map((colaborador) => (
-                                    <option key={colaborador.id} value={colaborador.id}>
-                                        {colaborador.nombre}
-                                    </option>
-                                ))}
-                            </select>
-                        </label>
-
-                        {mensaje && <p className="sessions-feedback sessions-feedback-success" role="status">{mensaje}</p>}
-                        {error && <p className="sessions-feedback sessions-feedback-error" role="alert">{error}</p>}
-
-                        <button className="sessions-submit" type="submit">Guardar sesión</button>
-                        <p className="sessions-storage-note">Los datos quedan guardados en este navegador.</p>
-                    </form>
-                </section>
-            </section>
+                <FormularioSesion salas={salas} colaboradores={colaboradores} />
+            </div>
         </main>
     );
 }

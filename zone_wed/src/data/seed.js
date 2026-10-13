@@ -1,6 +1,10 @@
 // CAPA: Infraestructura
 // Datos iniciales; la persistencia se orquesta desde la capa de aplicación.
 
+// Incrementa este valor cuando cambie SEED para que los navegadores
+// con datos antiguos se repueblen automáticamente.
+export const SEED_VERSION = '2026-10-08-3';
+
 function fechaLocalISO(fecha) {
     return (
         fecha.getFullYear() + '-' +
@@ -40,14 +44,15 @@ export const SEED = {
     ],
 
     solicitudes: [
-        { colaborador_id: 1, sala_id: 1, fecha: enDias(0), franja: '10:00-12:00', estado: 'solicitud' },
-        { colaborador_id: 2, sala_id: 3, fecha: enDias(1), franja: '15:00-18:00', estado: 'en_negociacion' },
-        { colaborador_id: 3, sala_id: 2, fecha: enDias(2), franja: '09:00-11:00', estado: 'confirmada' },
-        { colaborador_id: 4, sala_id: 1, fecha: enDias(-1), franja: '14:00-16:00', estado: 'rechazada' },
-        { colaborador_id: 5, sala_id: 2, fecha: enDias(3), franja: '18:00-20:00', estado: 'solicitud' },
-        { colaborador_id: 1, sala_id: 3, fecha: enDias(-4), franja: '11:00-13:00', estado: 'confirmada' },
-        { colaborador_id: 3, sala_id: 1, fecha: enDias(-6), franja: '10:00-12:00', estado: 'expirada' },
-        { colaborador_id: 2, sala_id: 2, fecha: enDias(5), franja: '16:00-19:00', estado: 'en_negociacion' },
+        { colaborador_id: 1, usuario_id: 2, sala_id: 1, fecha: enDias(0), franja: '10:00-12:00', tipo: 'grabacion', estado: 'solicitud' },
+        { colaborador_id: 2, sala_id: 3, fecha: enDias(1), franja: '15:00-18:00', tipo: 'mezcla', estado: 'en_negociacion' },
+        { colaborador_id: 3, sala_id: 2, fecha: enDias(2), franja: '09:00-11:00', tipo: 'grabacion', estado: 'confirmada' },
+        { colaborador_id: 4, sala_id: 1, fecha: enDias(-1), franja: '14:00-16:00', tipo: 'produccion', estado: 'rechazada' },
+        { colaborador_id: 5, sala_id: 2, fecha: enDias(3), franja: '18:00-20:00', tipo: 'masterizacion', estado: 'solicitud' },
+        { colaborador_id: 1, usuario_id: 2, sala_id: 3, fecha: enDias(-4), franja: '11:00-13:00', tipo: 'ensayo', estado: 'confirmada' },
+        { colaborador_id: 3, sala_id: 1, fecha: enDias(-6), franja: '10:00-12:00', tipo: 'grabacion', estado: 'expirada' },
+        { colaborador_id: 2, sala_id: 2, fecha: enDias(5), franja: '16:00-19:00', tipo: 'mezcla', estado: 'en_negociacion' },
+        { usuario_id: 3, solicitante_nombre: 'Cliente Demo', sala_id: 2, fecha: enDias(-3), franja: '14:00-16:00', tipo: 'grabacion', estado: 'confirmada', cancion_id: 1, proyecto_id: 1, partes: ['Vocales', 'Guitarra'] },
     ],
 
     sesiones: [
@@ -58,6 +63,19 @@ export const SEED = {
         { titulo: 'Producción Leo Norte', sala_id: 1, colaborador_id: 4, fecha: enDias(2), hora_inicio: '14:00', hora_fin: '16:00', estado: 'confirmada' },
         { titulo: 'Composición Alma Beats', sala_id: 3, colaborador_id: 5, fecha: enDias(3), hora_inicio: '18:00', hora_fin: '20:00', estado: 'confirmada' },
         { titulo: 'Grabación Lúa 2', sala_id: 1, colaborador_id: 1, fecha: enDias(-5), hora_inicio: '11:00', hora_fin: '13:00', estado: 'cancelada' },
+    ],
+
+    proyectos: [
+        { nombre: 'Mi primer álbum', usuario_id: 3 },
+        { nombre: 'Sencillos 2026', usuario_id: 3 },
+    ],
+
+    canciones: [
+        { proyecto_id: 1, nombre: 'Amanecer', duracion: 3, partes: ['Vocales', 'Guitarra', 'Batería', 'Coros'] },
+        { proyecto_id: 1, nombre: 'Ritmo del alma', duracion: 4, partes: ['Vocales', 'Bajo', 'Teclados'] },
+        { proyecto_id: 1, nombre: 'Sin título', duracion: 2 },
+        { proyecto_id: 2, nombre: 'Noche azul', duracion: 3, partes: ['Voz', 'Teclados'] },
+        { proyecto_id: 2, nombre: 'Contigo', duracion: 3 },
     ],
 
     ordenes_servicio: [

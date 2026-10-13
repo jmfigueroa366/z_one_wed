@@ -17,6 +17,8 @@ export function crearSesion(data = {}) {
         hora_inicio: data.hora_inicio ?? null,
         hora_fin: data.hora_fin ?? null,
         estado,
+        cancion_id: data.cancion_id ?? null,
+        partes: data.partes ?? [],
         ...data,
     };
 }
