@@ -3,7 +3,7 @@ import { Storage } from '../infrastructure/storage.js';
 import { SEED } from '../data/seed.js';
 import { crearOrden } from '../models/Orden.js';
 
-const CLAVE = 'ordenes';
+const CLAVE = 'ordenes_servicio';
 
 function obtenerListaInicial() {
     return SEED.ordenes_servicio.map((orden) => crearOrden(orden));
@@ -20,7 +20,8 @@ export const ordenRepo = {
     },
 
     obtenerPorId(id) {
-        return this.listar().find((orden) => String(orden.id ?? orden.sesion_id) === String(id)) ?? null;
+        if (id == null) return null;
+        return this.listar().find((orden) => String(orden.id) === String(id)) ?? null;
     },
 
     crear(data) {
@@ -33,6 +34,7 @@ export const ordenRepo = {
     },
 
     actualizar(id, data) {
+        if (id == null) return null;
         const ordenes = this.listar();
         const indice = ordenes.findIndex((orden) => String(orden.id) === String(id));
         if (indice === -1) {
@@ -43,10 +45,8 @@ export const ordenRepo = {
         return ordenes[indice];
     },
 
-    eliminar(id) {
-        const ordenes = this.listar().filter((orden) => String(orden.id) !== String(id));
-        Storage.guardarValor(CLAVE, ordenes);
-        return ordenes;
+    cancelar(id) {
+        return this.actualizar(id, { estado: 'cancelada' });
     },
 };
 

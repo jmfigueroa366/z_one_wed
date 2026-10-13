@@ -2,6 +2,7 @@
 import { Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext.jsx';
 import { SesionService } from '../services/sesionService.js';
+import { Sesion } from '../models/Sesion.js';
 import { RUTAS, rutasPermitidasPorRol } from '../config/rutas.js';
 import '../styles/principal.css';
 
@@ -115,9 +116,7 @@ export default function MenuPrincipal() {
     const rutasPermitidas = rutasPermitidasPorRol(usuario?.rol);
     const puedeGestionarSesiones = rutasPermitidas.includes(RUTAS.SESIONES);
     const sesiones = SesionService.listar();
-    const sesionesActivas = sesiones.filter((sesion) =>
-        ['confirmada', 'en_proceso'].includes(sesion.estado)
-    ).length;
+    const sesionesActivas = sesiones.filter((sesion) => Sesion.estaActiva(sesion)).length; 
     return (
         <main className="workspace-content dashboard-content">
             <section className="dashboard-hero">
@@ -147,7 +146,7 @@ export default function MenuPrincipal() {
                     <span className="dashboard-card-icon" aria-hidden="true">◷</span>
                     <p>Sesiones activas</p>
                     <strong>{sesionesActivas}</strong>
-                    <span className="dashboard-card-note">Confirmadas o en proceso</span>
+                    <span className="dashboard-card-note">Solicitadas o confirmadas</span>
                 </article>
                 <article className="dashboard-summary-card">
                     <span className="dashboard-card-icon" aria-hidden="true">✦</span>

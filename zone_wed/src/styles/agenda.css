@@ -179,14 +179,13 @@
     white-space: nowrap;
 }
 
-.status-confirmada,
-.status-en_proceso {
+.status-confirmada {
     color: #9ce0bc;
     background: rgba(70, 169, 116, 0.12);
     border-color: rgba(70, 169, 116, 0.24);
 }
 
-.status-pendiente,
+.status-solicitada,
 .status-solicitud,
 .status-en_negociacion {
     color: #f2d390;

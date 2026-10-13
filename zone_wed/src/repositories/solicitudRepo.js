@@ -24,7 +24,8 @@ export const solicitudRepo = {
     },
 
     obtenerPorId(id) {
-        return this.listar().find((solicitud) => String(solicitud.id ?? solicitud.colaborador_id) === String(id)) ?? null;
+        if (id == null) return null;
+        return this.listar().find((solicitud) => String(solicitud.id) === String(id)) ?? null;
     },
 
     crear(data) {
@@ -37,6 +38,7 @@ export const solicitudRepo = {
     },
 
     actualizar(id, data) {
+        if (id == null) return null;
         const solicitudes = this.listar();
         const indice = solicitudes.findIndex((solicitud) => String(solicitud.id) === String(id));
         if (indice === -1) {
@@ -47,10 +49,8 @@ export const solicitudRepo = {
         return solicitudes[indice];
     },
 
-    eliminar(id) {
-        const solicitudes = this.listar().filter((solicitud) => String(solicitud.id) !== String(id));
-        Storage.guardarValor(CLAVE, solicitudes);
-        return solicitudes;
+    rechazar(id) {
+        return this.actualizar(id, { estado: 'rechazada' });
     },
 };
 

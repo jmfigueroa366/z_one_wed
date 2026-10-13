@@ -20,7 +20,8 @@ export const sesionRepo = {
     },
 
     obtenerPorId(id) {
-        return this.listar().find((sesion) => String(sesion.id ?? sesion.titulo) === String(id)) ?? null;
+        if (id == null) return null;
+        return this.listar().find((sesion) => String(sesion.id) === String(id)) ?? null;
     },
 
     crear(data) {
@@ -33,6 +34,7 @@ export const sesionRepo = {
     },
 
     actualizar(id, data) {
+        if (id == null) return null;
         const sesiones = this.listar();
         const indice = sesiones.findIndex((sesion) => String(sesion.id) === String(id));
         if (indice === -1) {
@@ -43,10 +45,8 @@ export const sesionRepo = {
         return sesiones[indice];
     },
 
-    eliminar(id) {
-        const sesiones = this.listar().filter((sesion) => String(sesion.id) !== String(id));
-        Storage.guardarValor(CLAVE, sesiones);
-        return sesiones;
+    cancelar(id) {
+        return this.actualizar(id, { estado: 'cancelada' });
     },
 };
 

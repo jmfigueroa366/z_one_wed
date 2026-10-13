@@ -7,9 +7,8 @@ import { SesionService } from '../services/sesionService.js';
 import '../styles/agenda.css';
 
 const ETIQUETAS_ESTADO = {
+    solicitada: 'Solicitada',
     confirmada: 'Confirmada',
-    pendiente: 'Pendiente',
-    en_proceso: 'En proceso',
     completada: 'Completada',
     cancelada: 'Cancelada',
 };
@@ -105,9 +104,8 @@ export default function Agenda() {
                 <div className="operations-filters" aria-label="Filtrar por estado">
                     {[
                         ['todas', 'Todas'],
-                        ['pendiente', 'Pendientes'],
+                        ['solicitada', 'Solicitadas'],
                         ['confirmada', 'Confirmadas'],
-                        ['en_proceso', 'En proceso'],
                         ['completada', 'Completadas'],
                         ['cancelada', 'Canceladas'],
                     ].map(([estado, etiqueta]) => (

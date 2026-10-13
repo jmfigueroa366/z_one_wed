@@ -175,14 +175,13 @@
     font-weight: 700;
 }
 
-.status-confirmada,
-.status-en_proceso {
+.status-confirmada {
     color: #9ce0bc;
     background: rgba(70, 169, 116, 0.12);
     border-color: rgba(70, 169, 116, 0.24);
 }
 
-.status-pendiente {
+.status-solicitada {
     color: #f2d390;
     background: rgba(212, 159, 62, 0.12);
     border-color: rgba(212, 159, 62, 0.24);

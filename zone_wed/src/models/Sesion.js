@@ -1,6 +1,12 @@
 // CAPA: Dominio
+import { ESTADOS } from "../config/estados.js";
 
+const ESTADOS_SESION = ESTADOS.sesion;
 export function crearSesion(data = {}) {
+    const estado = data.estado ?? 'solicitada';
+    if (!ESTADOS_SESION.estados.includes(estado)) {
+        throw new Error(`Estado inválido para sesión: "${estado}".`);
+    }
     return {
         id: data.id ?? null,
         titulo: data.titulo ?? '',
@@ -9,7 +15,7 @@ export function crearSesion(data = {}) {
         fecha: data.fecha ?? null,
         hora_inicio: data.hora_inicio ?? null,
         hora_fin: data.hora_fin ?? null,
-        estado: data.estado ?? 'confirmada',
+        estado,
         ...data,
     };
 }
@@ -17,7 +23,11 @@ export function crearSesion(data = {}) {
 export const Sesion = {
     crear: crearSesion,
     estaActiva(sesion) {
-        return Boolean(sesion) && ['confirmada', 'en_proceso'].includes(sesion.estado);
+        return Boolean(sesion) && ['solicitada', 'confirmada'].includes(sesion.estado);
+    },
+    puedeTransicionar(sesion, nuevoEstado) {
+        return Boolean(sesion) &&
+            ESTADOS_SESION.transiciones[sesion.estado]?.includes(nuevoEstado) === true;
     },
 };
 

@@ -30,9 +30,8 @@ function formatearFecha(fecha) {
 }
 
 const ESTADOS = {
+    solicitada: 'Solicitada',
     confirmada: 'Confirmada',
-    pendiente: 'Pendiente',
-    en_proceso: 'En proceso',
     completada: 'Completada',
     cancelada: 'Cancelada',
 };
@@ -54,7 +53,7 @@ export default function Sesiones() {
         duracion: '2',
         sala_id: '',
         colaborador_id: '',
-        estado: 'pendiente',
+        estado: 'solicitada',
     });
 
     const sesionesFiltradas = useMemo(
@@ -155,7 +154,7 @@ export default function Sesiones() {
                         {[
                             ['todas', 'Todas'],
                             ['confirmada', 'Confirmadas'],
-                            ['pendiente', 'Pendientes'],
+                            ['solicitada', 'Solicitadas'],
                             ['cancelada', 'Canceladas'],
                         ].map(([value, label]) => (
                             <button
@@ -241,7 +240,7 @@ export default function Sesiones() {
                             <label>
                                 <span>Estado</span>
                                 <select name="estado" onChange={cambiarCampo} value={formulario.estado}>
-                                    <option value="pendiente">Pendiente</option>
+                                    <option value="solicitada">Solicitada</option>
                                     <option value="confirmada">Confirmada</option>
                                     <option value="cancelada">Cancelada</option>
                                 </select>
