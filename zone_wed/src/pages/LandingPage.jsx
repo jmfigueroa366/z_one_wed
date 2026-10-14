@@ -256,9 +256,9 @@ export default function LandingPage() {
                 />
                 <div className="mx-auto grid max-w-[1280px] items-stretch lg:grid-cols-[1.05fr_0.95fr]">
                     <div className="relative z-10 flex flex-col justify-center px-6 py-20 lg:py-28 lg:pr-14 lg:pl-10">
-                        <p data-hero-eyebrow style={oculto}>
+                        <div data-hero-eyebrow style={oculto}>
                             <Etiqueta>Estudio de grabación · Colombia</Etiqueta>
-                        </p>
+                        </div>
                         <h1 className="mt-6 max-w-[16ch] text-[clamp(2.6rem,6vw,4.6rem)] font-bold leading-[1.0] tracking-[-0.03em] text-texto-soft">
                             <Palabras texto="Tu próximo sonido empieza aquí." resaltar={2} style={FUENTE_TITULO} />
                         </h1>
