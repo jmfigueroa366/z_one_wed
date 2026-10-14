@@ -2,7 +2,7 @@
 import { useState } from 'react';
 import { Link, Navigate, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext.jsx';
-import '../styles/register.css';
+import AuthLayout, { authBoton, authCampo, authEtiqueta } from '../components/AuthLayout.jsx';
 
 export default function Register() {
     const navigate = useNavigate();
@@ -22,7 +22,7 @@ export default function Register() {
         : '/menu-principal';
 
     if (cargandoSesion) {
-        return <main className="estado-cargando">Cargando sesión...</main>;
+        return <main className="grid min-h-screen place-items-center bg-bg text-sutil">Cargando sesión...</main>;
     }
 
     if (usuario) {
@@ -52,82 +52,83 @@ export default function Register() {
     };
 
     return (
-        <main className="register-page">
-            <section className="register-card">
-                <div className="login-brand" aria-label="Z-One branding">
-                    <span className="brand-mark">Z</span>
-                    <span>ONE</span>
-                </div>
+        <AuthLayout
+            titulo="Crear cuenta"
+            subtitulo="Regístrate para reservar salas, gestionar sesiones y dar forma a tus proyectos."
+        >
+            <form onSubmit={manejarSubmit} className="grid gap-4">
+                <label className="block">
+                    <span className={authEtiqueta}>Nombre</span>
+                    <input
+                        type="text"
+                        name="nombre"
+                        value={formulario.nombre}
+                        onChange={manejarCambio}
+                        placeholder="Tu nombre"
+                        className={authCampo}
+                        required
+                    />
+                </label>
 
-                <h1>Crear cuenta</h1>
-                <p className="subtitle">Regístrate para reservar salas y gestionar sesiones.</p>
+                <label className="block">
+                    <span className={authEtiqueta}>Email</span>
+                    <input
+                        type="email"
+                        name="email"
+                        value={formulario.email}
+                        onChange={manejarCambio}
+                        placeholder="tucorreo@ejemplo.com"
+                        autoComplete="email"
+                        className={authCampo}
+                        required
+                    />
+                </label>
 
-                <form onSubmit={manejarSubmit} className="register-form">
-                    <label>
-                        <span>Nombre</span>
-                        <input
-                            type="text"
-                            name="nombre"
-                            value={formulario.nombre}
-                            onChange={manejarCambio}
-                            placeholder="Tu nombre"
-                            required
-                        />
-                    </label>
+                <label className="block">
+                    <span className={authEtiqueta}>Tipo de cuenta</span>
+                    <select name="rol" value={formulario.rol} onChange={manejarCambio} className={authCampo} required>
+                        <option value="cliente">Cliente</option>
+                        <option value="colaborador">Colaborador</option>
+                    </select>
+                </label>
 
-                    <label>
-                        <span>Email</span>
-                        <input
-                            type="email"
-                            name="email"
-                            value={formulario.email}
-                            onChange={manejarCambio}
-                            placeholder="tucorreo@ejemplo.com"
-                            autoComplete="email"
-                            required
-                        />
-                    </label>
+                <label className="block">
+                    <span className={authEtiqueta}>Contraseña</span>
+                    <input
+                        type="password"
+                        name="password"
+                        value={formulario.password}
+                        onChange={manejarCambio}
+                        placeholder="••••••••"
+                        autoComplete="new-password"
+                        className={authCampo}
+                        required
+                    />
+                </label>
 
-                    <label>
-                        <span>Tipo de cuenta</span>
-                        <select
-                            name="rol"
-                            value={formulario.rol}
-                            onChange={manejarCambio}
-                            required
-                        >
-                            <option value="cliente">Cliente</option>
-                            <option value="colaborador">Colaborador</option>
-                        </select>
-                    </label>
+                {error ? (
+                    <p className="rounded-xl border border-peligro/40 bg-peligro/10 px-4 py-2.5 text-sm text-peligro" role="alert">
+                        {error}
+                    </p>
+                ) : null}
 
-                    <label>
-                        <span>Contraseña</span>
-                        <input
-                            type="password"
-                            name="password"
-                            value={formulario.password}
-                            onChange={manejarCambio}
-                            placeholder="••••••••"
-                            autoComplete="new-password"
-                            required
-                        />
-                    </label>
+                <button type="submit" disabled={cargando} className={authBoton}>
+                    {cargando ? 'Creando...' : 'Crear cuenta'}
+                </button>
+            </form>
 
-                    {error ? <p className="error-message">{error}</p> : null}
-
-                    <button type="submit" disabled={cargando}>
-                        {cargando ? 'Creando...' : 'Registrar'}
-                    </button>
-                </form>
-
-                <p className="login-footer">
-                    ¿Ya tienes cuenta? <Link to="/login" state={location.state}>Inicia sesión</Link>
-                </p>
-                <Link className="auth-home-button" to="/">
-                    Volver al menú principal
+            <p className="mt-6 text-center text-sm text-sutil">
+                ¿Ya tienes cuenta?{' '}
+                <Link className="font-bold text-accent transition hover:text-accent-soft" to="/login" state={location.state}>
+                    Inicia sesión
                 </Link>
-            </section>
-        </main>
+            </p>
+            <Link
+                className="mt-3 flex min-h-[44px] items-center justify-center rounded-xl border border-border bg-surface/40 px-4 text-sm font-semibold text-texto transition hover:border-accent/60 hover:text-accent"
+                to="/"
+            >
+                Volver al inicio
+            </Link>
+        </AuthLayout>
     );
 }

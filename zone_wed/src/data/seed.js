@@ -1,6 +1,10 @@
 // CAPA: Infraestructura
 // Datos iniciales; la persistencia se orquesta desde la capa de aplicación.
 
+// Incrementa este valor cuando cambie SEED para que los navegadores
+// con datos antiguos se repueblen automáticamente.
+export const SEED_VERSION = '2026-10-13-1';
+
 function fechaLocalISO(fecha) {
     return (
         fecha.getFullYear() + '-' +
@@ -40,24 +44,98 @@ export const SEED = {
     ],
 
     solicitudes: [
-        { colaborador_id: 1, sala_id: 1, fecha: enDias(0), franja: '10:00-12:00', estado: 'solicitud' },
-        { colaborador_id: 2, sala_id: 3, fecha: enDias(1), franja: '15:00-18:00', estado: 'en_negociacion' },
-        { colaborador_id: 3, sala_id: 2, fecha: enDias(2), franja: '09:00-11:00', estado: 'confirmada' },
-        { colaborador_id: 4, sala_id: 1, fecha: enDias(-1), franja: '14:00-16:00', estado: 'rechazada' },
-        { colaborador_id: 5, sala_id: 2, fecha: enDias(3), franja: '18:00-20:00', estado: 'solicitud' },
-        { colaborador_id: 1, sala_id: 3, fecha: enDias(-4), franja: '11:00-13:00', estado: 'confirmada' },
-        { colaborador_id: 3, sala_id: 1, fecha: enDias(-6), franja: '10:00-12:00', estado: 'expirada' },
-        { colaborador_id: 2, sala_id: 2, fecha: enDias(5), franja: '16:00-19:00', estado: 'en_negociacion' },
+        {
+            usuario_id: 2, solicitante_nombre: 'Lúa Ferreira', sala_id: 1,
+            fecha: enDias(0), franja: '10:00-12:00', tipo: 'grabacion',
+            titulo: 'Grabación de voces', descripcion: '', fecha_solicitud: enDias(-2),
+            colaboradores: [{ colaborador_id: 1, rol: 'artista', estado: 'pendiente' }],
+            estado: 'solicitada',
+        },
+        {
+            usuario_id: 3, solicitante_nombre: 'Cliente Zeta', sala_id: 3,
+            fecha: enDias(1), franja: '15:00-18:00', tipo: 'produccion',
+            titulo: 'Producción de sencillo', descripcion: 'Necesito dirección musical', fecha_solicitud: enDias(-1),
+            colaboradores: [
+                { colaborador_id: 2, rol: 'productor', estado: 'aceptada' },
+                { colaborador_id: 5, rol: 'artista', estado: 'pendiente' },
+            ],
+            estado: 'solicitada',
+        },
+        {
+            usuario_id: 3, solicitante_nombre: 'Cliente Zeta', sala_id: 2,
+            fecha: enDias(2), franja: '09:00-11:00', tipo: 'grabacion',
+            titulo: 'Grabación Amanecer', cancion_id: 1, proyecto_id: 1, partes: ['Vocales', 'Guitarra'],
+            fecha_solicitud: enDias(-5),
+            colaboradores: [
+                { colaborador_id: 3, rol: 'artista', estado: 'aceptada' },
+                { colaborador_id: 4, rol: 'productor', estado: 'aceptada' },
+            ],
+            estado: 'confirmada',
+        },
+        {
+            usuario_id: 3, solicitante_nombre: 'Cliente Zeta', sala_id: 1,
+            fecha: enDias(-1), franja: '14:00-16:00', tipo: 'produccion',
+            titulo: 'Producción descartada', descripcion: '', fecha_solicitud: enDias(-4),
+            colaboradores: [
+                { colaborador_id: 4, rol: 'productor', estado: 'aceptada' },
+                { colaborador_id: 5, rol: 'artista', estado: 'rechazada' },
+            ],
+            estado: 'rechazada',
+        },
+        {
+            usuario_id: 2, solicitante_nombre: 'Lúa Ferreira', sala_id: 2,
+            fecha: enDias(3), franja: '18:00-20:00', tipo: 'masterizacion',
+            titulo: 'Masterización', descripcion: '', fecha_solicitud: enDias(0),
+            colaboradores: [{ colaborador_id: 5, rol: 'artista', estado: 'pendiente' }],
+            estado: 'solicitada',
+        },
+        {
+            usuario_id: 2, solicitante_nombre: 'Lúa Ferreira', sala_id: 3,
+            fecha: enDias(-4), franja: '11:00-13:00', tipo: 'ensayo',
+            titulo: 'Ensayo general', descripcion: '', fecha_solicitud: enDias(-8),
+            colaboradores: [{ colaborador_id: 1, rol: 'artista', estado: 'aceptada' }],
+            estado: 'confirmada',
+        },
+        {
+            usuario_id: 3, solicitante_nombre: 'Cliente Zeta', sala_id: 2,
+            fecha: enDias(4), franja: '10:00-12:00', tipo: 'mezcla',
+            titulo: 'Mezcla cancelada', descripcion: '', fecha_solicitud: enDias(-1),
+            colaboradores: [{ colaborador_id: 2, rol: 'productor', estado: 'pendiente' }],
+            estado: 'cancelada',
+        },
+        {
+            usuario_id: 3, solicitante_nombre: 'Cliente Zeta', sala_id: 2,
+            fecha: enDias(5), franja: '16:00-19:00', tipo: 'mezcla',
+            titulo: 'Mezcla Noche azul', cancion_id: 4, proyecto_id: 2, descripcion: '', fecha_solicitud: enDias(0),
+            colaboradores: [
+                { colaborador_id: 3, rol: 'artista', estado: 'pendiente' },
+                { colaborador_id: 4, rol: 'productor', estado: 'pendiente' },
+            ],
+            estado: 'solicitada',
+        },
     ],
 
     sesiones: [
         { titulo: 'Grabación Lúa', sala_id: 1, colaborador_id: 1, fecha: enDias(-3), hora_inicio: '10:00', hora_fin: '12:00', estado: 'completada' },
         { titulo: 'Mezcla Batey Norte', sala_id: 3, colaborador_id: 2, fecha: enDias(-2), hora_inicio: '15:00', hora_fin: '18:00', estado: 'completada' },
         { titulo: 'Masterización Ecos', sala_id: 2, colaborador_id: 6, fecha: enDias(-1), hora_inicio: '09:00', hora_fin: '10:30', estado: 'completada' },
-        { titulo: 'Sesión Nova Lima', sala_id: 2, colaborador_id: 3, fecha: enDias(1), hora_inicio: '09:00', hora_fin: '11:00', estado: 'confirmada' },
+        { titulo: 'Grabación Amanecer', solicitud_id: 3, sala_id: 2, colaborador_id: 3, fecha: enDias(2), hora_inicio: '09:00', hora_fin: '11:00', estado: 'confirmada', cancion_id: 1, partes: ['Vocales', 'Guitarra'] },
         { titulo: 'Producción Leo Norte', sala_id: 1, colaborador_id: 4, fecha: enDias(2), hora_inicio: '14:00', hora_fin: '16:00', estado: 'confirmada' },
         { titulo: 'Composición Alma Beats', sala_id: 3, colaborador_id: 5, fecha: enDias(3), hora_inicio: '18:00', hora_fin: '20:00', estado: 'confirmada' },
-        { titulo: 'Grabación Lúa 2', sala_id: 1, colaborador_id: 1, fecha: enDias(-5), hora_inicio: '11:00', hora_fin: '13:00', estado: 'cancelada' },
+        { titulo: 'Ensayo general', solicitud_id: 6, sala_id: 3, colaborador_id: 1, fecha: enDias(-4), hora_inicio: '11:00', hora_fin: '13:00', estado: 'completada' },
+    ],
+
+    proyectos: [
+        { nombre: 'Mi primer álbum', usuario_id: 3 },
+        { nombre: 'Sencillos 2026', usuario_id: 3 },
+    ],
+
+    canciones: [
+        { proyecto_id: 1, nombre: 'Amanecer', duracion: 3, partes: ['Vocales', 'Guitarra', 'Batería', 'Coros'] },
+        { proyecto_id: 1, nombre: 'Ritmo del alma', duracion: 4, partes: ['Vocales', 'Bajo', 'Teclados'] },
+        { proyecto_id: 1, nombre: 'Sin título', duracion: 2 },
+        { proyecto_id: 2, nombre: 'Noche azul', duracion: 3, partes: ['Voz', 'Teclados'] },
+        { proyecto_id: 2, nombre: 'Contigo', duracion: 3 },
     ],
 
     ordenes_servicio: [

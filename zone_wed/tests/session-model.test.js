@@ -14,14 +14,31 @@ test('crearSesion aplica valores por defecto de una sesión', () => {
   assert.equal(sesion.fecha, null);
   assert.equal(sesion.hora_inicio, null);
   assert.equal(sesion.hora_fin, null);
-  assert.equal(sesion.estado, 'confirmada');
+  assert.equal(sesion.estado, 'solicitada');
 });
 
-test('Sesion.estaActiva reconoce sesiones confirmadas o en proceso', () => {
+test('Sesion.estaActiva reconoce sesiones activas (solicitada o confirmada)', () => {
+  assert.equal(Sesion.estaActiva(crearSesion({ estado: 'solicitada' })), true);
   assert.equal(Sesion.estaActiva(crearSesion({ estado: 'confirmada' })), true);
-  assert.equal(Sesion.estaActiva(crearSesion({ estado: 'en_proceso' })), true);
+  assert.equal(Sesion.estaActiva(crearSesion({ estado: 'completada' })), false);
   assert.equal(Sesion.estaActiva(crearSesion({ estado: 'cancelada' })), false);
   assert.equal(Sesion.estaActiva(null), false);
+});
+
+test('Sesion.puedeTransicionar reconoce transiciones válidas de estado', () => {
+  const solicitada = crearSesion({ estado: 'solicitada' });
+  assert.equal(Sesion.puedeTransicionar(solicitada, 'confirmada'), true);
+  assert.equal(Sesion.puedeTransicionar(solicitada, 'cancelada'), true);
+  assert.equal(Sesion.puedeTransicionar(solicitada, 'completada'), false);
+
+  const confirmada = crearSesion({ estado: 'confirmada' });
+  assert.equal(Sesion.puedeTransicionar(confirmada, 'completada'), true);
+  assert.equal(Sesion.puedeTransicionar(confirmada, 'solicitada'), false);
+
+});
+
+test('crearSesion rechaza estados inválidos', () => {
+  assert.throws(() => crearSesion({ estado: 'en_proceso' }), /Estado inválido/);
 });
 
 test('validarRegistro rechaza nombre, email y password vacíos', () => {

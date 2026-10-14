@@ -7,7 +7,7 @@ export function formatearMoneda(valor, locale = 'es-CO', moneda = 'COP') {
     }).format(Number(valor) || 0);
 }
 
-export function formatearFecha(fecha, locale = 'es-CO') {
+export function formatearFecha(fecha, { locale = 'es-CO', ...formato } = {}) {
     if (!fecha) {
         return '';
     }
@@ -21,6 +21,7 @@ export function formatearFecha(fecha, locale = 'es-CO') {
         day: '2-digit',
         month: 'short',
         year: 'numeric',
+        ...formato,
     }).format(fechaValida);
 }
 

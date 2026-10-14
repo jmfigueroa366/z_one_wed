@@ -20,7 +20,8 @@ export const salaRepo = {
     },
 
     obtenerPorId(id) {
-        return this.listar().find((sala) => String(sala.id ?? sala.nombre) === String(id)) ?? null;
+        if (id == null) return null;
+        return this.listar().find((sala) => String(sala.id) === String(id)) ?? null;
     },
 
     crear(data) {

@@ -1,0 +1,308 @@
+/* CAPA: Presentación
+   Estilos utilitarios con Tailwind v4 para pantallas nuevas.
+   Se importan SOLO en las secciones nuevas; sin preflight para
+   no alterar el diseño CSS existente. */
+
+@layer theme, base, components, utilities;
+@import "tailwindcss/theme.css" layer(theme);
+@import "tailwindcss/utilities.css" layer(utilities);
+
+@layer base {
+    *,
+    *::before,
+    *::after {
+        box-sizing: border-box;
+    }
+
+    html,
+    body,
+    #root {
+        margin: 0;
+        min-height: 100%;
+        min-width: 100%;
+        font-family: var(--font-sans);
+        background: var(--color-bg);
+        color: var(--color-texto);
+    }
+
+    body {
+        min-height: 100vh;
+    }
+
+    button,
+    input,
+    select,
+    textarea {
+        font: inherit;
+        color: inherit;
+    }
+
+    button {
+        background: transparent;
+        border: 0;
+        cursor: pointer;
+    }
+
+    a {
+        color: inherit;
+        text-decoration: none;
+    }
+
+    ul,
+    ol {
+        margin: 0;
+        padding: 0;
+        list-style: none;
+    }
+
+    :focus-visible {
+        outline: 2px solid var(--color-accent);
+        outline-offset: 2px;
+    }
+}
+
+@theme {
+    --font-sans: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+
+    --color-bg: #100d1b;
+    --color-bg-2: #140f23;
+    --color-surface: #171527;
+    --color-surface-2: #211e38;
+    --color-surface-3: #2b2747;
+    --color-border: #2d2a45;
+    --color-accent: #a477ff;
+    --color-accent-soft: #c094ff;
+    --color-magenta: #f04fa6;
+    --color-texto: #f2effb;
+    --color-texto-soft: #f7f4ff;
+    --color-sutil: #a69ebd;
+    --color-exito: #7be0b0;
+    --color-exito-soft: #9ce0bc;
+    --color-peligro: #ff8a8a;
+    --color-peligro-soft: #f2a4b1;
+    --color-aviso: #ffd166;
+    --color-aviso-soft: #f2d390;
+    --color-info: #9ecbff;
+
+    --animate-aurora: aurora 18s ease-in-out infinite;
+    --animate-float: float 7s ease-in-out infinite;
+    --animate-marquee: marquee 38s linear infinite;
+    --animate-shimmer: shimmer 2.8s linear infinite;
+    --animate-glow: glow 3.4s ease-in-out infinite;
+    --animate-rise: rise 0.6s cubic-bezier(0.2, 0.75, 0.25, 1) both;
+
+    @keyframes aurora {
+        0%,
+        100% {
+            transform: translate3d(0, 0, 0) scale(1);
+        }
+        50% {
+            transform: translate3d(5%, -7%, 0) scale(1.18);
+        }
+    }
+
+    @keyframes float {
+        0%,
+        100% {
+            transform: translateY(0);
+        }
+        50% {
+            transform: translateY(-10px);
+        }
+    }
+
+    @keyframes marquee {
+        from {
+            transform: translateX(0);
+        }
+        to {
+            transform: translateX(-50%);
+        }
+    }
+
+    @keyframes shimmer {
+        from {
+            background-position: 200% 0;
+        }
+        to {
+            background-position: -200% 0;
+        }
+    }
+
+    @keyframes glow {
+        0%,
+        100% {
+            opacity: 0.5;
+        }
+        50% {
+            opacity: 1;
+        }
+    }
+
+    @keyframes rise {
+        from {
+            opacity: 0;
+            transform: translateY(16px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+}
+
+@keyframes ecu {
+    0%,
+    100% {
+        transform: scaleY(0.35);
+    }
+    50% {
+        transform: scaleY(1);
+    }
+}
+
+@keyframes girar {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+@keyframes kenburns {
+    from {
+        transform: scale(1.08) translate3d(0, 0, 0);
+    }
+    to {
+        transform: scale(1.16) translate3d(-1.5%, -2%, 0);
+    }
+}
+
+@keyframes pulse {
+    0%,
+    100% {
+        opacity: 0.5;
+    }
+    50% {
+        opacity: 0.9;
+    }
+}
+
+[data-vinilo] [data-giro] {
+    animation: girar 7.2s linear infinite;
+    will-change: transform;
+}
+
+[data-vinilo] [data-vuelta] {
+    animation: girar 7.2s linear infinite reverse;
+    will-change: transform;
+}
+
+[data-giro],
+[data-vuelta] {
+    transition: animation-duration 0.4s ease;
+}
+
+[data-vinilo]:hover [data-giro],
+[data-vinilo]:hover [data-vuelta] {
+    animation-duration: 4.2s;
+}
+
+[data-vinilo][data-detenido] [data-giro],
+[data-vinilo][data-detenido] [data-vuelta] {
+    animation-play-state: paused;
+}
+
+@keyframes degradado {
+    0%,
+    100% {
+        background-position: 0% 50%;
+    }
+    50% {
+        background-position: 100% 50%;
+    }
+}
+
+@keyframes flotar {
+    0%,
+    100% {
+        transform: translate3d(0, 0, 0);
+        opacity: 0.35;
+    }
+    50% {
+        transform: translate3d(0, -26px, 0);
+        opacity: 0.9;
+    }
+}
+
+@keyframes latir {
+    0%,
+    100% {
+        transform: scale(0.92);
+        opacity: 0.55;
+    }
+    50% {
+        transform: scale(1.08);
+        opacity: 1;
+    }
+}
+
+@layer components {
+    .workspace-content {
+        @apply mx-auto w-full max-w-[1200px] p-6 sm:p-8 lg:p-12;
+    }
+
+    .workspace-eyebrow {
+        @apply mb-[5px] block text-[0.7rem] font-extrabold uppercase tracking-[0.12em] text-accent;
+    }
+
+    .page-heading {
+        @apply mb-7;
+    }
+
+    .page-heading h1 {
+        @apply mt-0 mb-2 text-[clamp(1.8rem,4vw,2.6rem)] font-bold leading-tight tracking-[-0.04em] text-texto;
+    }
+
+    .page-heading > p:last-child {
+        @apply m-0 leading-relaxed text-sutil;
+    }
+}
+
+.texto-degradado {
+    background-image: linear-gradient(100deg, #d9bdff, #f04fa6, #a477ff, #d9bdff);
+    background-size: 220% auto;
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    animation: degradado 7s ease-in-out infinite;
+}
+
+.tarjeta-brillo {
+    position: relative;
+    overflow: hidden;
+}
+
+.tarjeta-brillo::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    background: linear-gradient(115deg, transparent 32%, rgba(255, 255, 255, 0.16) 50%, transparent 68%);
+    transform: translateX(-120%);
+    transition: transform 0.75s ease;
+    pointer-events: none;
+}
+
+.tarjeta-brillo:hover::after {
+    transform: translateX(120%);
+}
+
+@media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+        animation-duration: 0.001ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.001ms !important;
+        scroll-behavior: auto !important;
+    }
+}

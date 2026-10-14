@@ -28,7 +28,8 @@ export const colaboradorRepo = {
     },
 
     obtenerPorId(id) {
-        return this.listar().find((colaborador) => String(colaborador.id ?? colaborador.usuario_id) === String(id)) ?? null;
+        if (id == null) return null;
+        return this.listar().find((colaborador) => String(colaborador.id) === String(id)) ?? null;
     },
 
     crear(data) {
