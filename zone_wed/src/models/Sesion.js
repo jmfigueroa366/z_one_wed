@@ -11,6 +11,7 @@ export function crearSesion(data = {}) {
         id: data.id ?? null,
         solicitud_id: data.solicitud_id ?? null,
         titulo: data.titulo ?? '',
+        tipo: data.tipo ?? null,
         sala_id: data.sala_id ?? null,
         colaborador_id: data.colaborador_id ?? null,
         fecha: data.fecha ?? null,
@@ -18,6 +19,7 @@ export function crearSesion(data = {}) {
         hora_fin: data.hora_fin ?? null,
         estado,
         cancion_id: data.cancion_id ?? null,
+        proyecto_id: data.proyecto_id ?? null,
         partes: data.partes ?? [],
         ...data,
     };

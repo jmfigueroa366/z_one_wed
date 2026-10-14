@@ -17,6 +17,8 @@ export const RUTAS = Object.freeze({
     PROYECTOS: '/proyectos',
     SESIONES: '/sesiones',
     SOLICITUDES: '/solicitudes',
+    PAGOS: '/pagos',
+    PRECIOS: '/precios',
 });
 
 export const rutasPorRol = Object.freeze({
@@ -33,6 +35,8 @@ export const rutasPorRol = Object.freeze({
         RUTAS.ESTADISTICAS,
         RUTAS.CUANDO_SUENA,
         RUTAS.CHATBOT,
+        RUTAS.PAGOS,
+        RUTAS.PRECIOS,
         RUTAS.CONFIGURACION,
     ],
     [ROLES.COLABORADOR]: [
@@ -52,6 +56,7 @@ export const rutasPorRol = Object.freeze({
         RUTAS.AGENDA,
         RUTAS.SOLICITUDES,
         RUTAS.PROYECTOS,
+        RUTAS.PAGOS,
         RUTAS.CATALOGO,
         RUTAS.CHATBOT,
         RUTAS.CONFIGURACION,
@@ -73,6 +78,7 @@ export const NAVEGACION = Object.freeze([
             { ruta: RUTAS.SOLICITUDES, etiqueta: 'Solicitudes', icono: 'Inbox', badge: 'pendientes' },
             { ruta: RUTAS.SESIONES, etiqueta: 'Sesiones', icono: 'Radio' },
             { ruta: RUTAS.PROYECTOS, etiqueta: 'Mis proyectos', icono: 'FolderKanban' },
+            { ruta: RUTAS.PAGOS, etiqueta: 'Pagos', icono: 'Receipt' },
         ],
     },
     {
@@ -88,6 +94,7 @@ export const NAVEGACION = Object.freeze([
         items: [
             { ruta: RUTAS.ESTADISTICAS, etiqueta: 'Estadísticas', icono: 'BarChart3' },
             { ruta: RUTAS.CUANDO_SUENA, etiqueta: 'Cuándo suena', icono: 'Flame' },
+            { ruta: RUTAS.PRECIOS, etiqueta: 'Precios', icono: 'Coins' },
         ],
     },
     {

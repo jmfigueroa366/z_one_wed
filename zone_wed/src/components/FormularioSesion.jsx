@@ -1,6 +1,7 @@
 // CAPA: Presentación
 import { useState } from 'react';
 import { SesionService } from '../services/sesionService.js';
+import { etiquetaTipo } from '../utils/solicitudes.js';
 import '../styles/tailwind.css';
 
 function fechaLocal(fecha = new Date()) {
@@ -27,7 +28,7 @@ const FILA = 'grid gap-3 sm:grid-cols-2';
 export default function FormularioSesion({ salas, colaboradores }) {
     const [formulario, setFormulario] = useState({
         titulo: '',
-        tipo: 'Grabación',
+        tipo: 'grabacion',
         fecha: fechaLocal(),
         hora_inicio: '10:00',
         duracion: '2',
@@ -60,7 +61,7 @@ export default function FormularioSesion({ salas, colaboradores }) {
         try {
             SesionService.crear({
                 ...formulario,
-                titulo: formulario.titulo.trim() || `${formulario.tipo} · ${colaborador.nombre}`,
+                titulo: formulario.titulo.trim() || `${etiquetaTipo(formulario.tipo)} · ${colaborador.nombre}`,
                 sala_id: sala.id,
                 colaborador_id: colaborador.id,
                 hora_fin: sumarHoras(formulario.hora_inicio, duracion),
@@ -110,11 +111,11 @@ export default function FormularioSesion({ salas, colaboradores }) {
                     <label className="grid min-w-0 gap-2">
                         <span className={ETIQUETA}>Tipo de sesión</span>
                         <select className={CAMPO} name="tipo" onChange={cambiarCampo} value={formulario.tipo}>
-                            <option>Grabación</option>
-                            <option>Mezcla</option>
-                            <option>Masterización</option>
-                            <option>Ensayo</option>
-                            <option>Producción</option>
+                            <option value="grabacion">Grabación</option>
+                            <option value="mezcla">Mezcla</option>
+                            <option value="masterizacion">Masterización</option>
+                            <option value="ensayo">Ensayo</option>
+                            <option value="produccion">Producción</option>
                         </select>
                     </label>
                     <label className="grid min-w-0 gap-2">

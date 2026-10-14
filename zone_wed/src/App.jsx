@@ -20,6 +20,8 @@ import CuandoSuena from './pages/CuandoSuena.jsx';
 import Productores from './pages/Productores.jsx';
 import Sesiones from './pages/Sesiones.jsx';
 import Solicitudes from './pages/Solicitudes.jsx';
+import Pagos from './pages/Pagos.jsx';
+import Precios from './pages/Precios.jsx';
 
 export default function App() {
     return (
@@ -48,6 +50,8 @@ export default function App() {
                         <Route path={RUTAS.PROYECTOS} element={<MisProyectos />} />
                         <Route path={RUTAS.SESIONES} element={<Sesiones />} />
                         <Route path={RUTAS.SOLICITUDES} element={<Solicitudes />} />
+                        <Route path={RUTAS.PAGOS} element={<Pagos />} />
+                        <Route path={RUTAS.PRECIOS} element={<Precios />} />
                     </Route>
 
                     <Route path="*" element={<Navigate to="/" replace />} />

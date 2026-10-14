@@ -8,6 +8,7 @@ import {
     Inbox,
     Radio,
     FolderKanban,
+    Receipt,
     Mic2,
     SlidersHorizontal,
     LayoutGrid,
@@ -15,6 +16,7 @@ import {
     Flame,
     Bot,
     Settings,
+    Coins,
     LogOut,
     PanelLeftClose,
     PanelLeftOpen,
@@ -34,6 +36,7 @@ const ICONOS = {
     Inbox,
     Radio,
     FolderKanban,
+    Receipt,
     Mic2,
     SlidersHorizontal,
     LayoutGrid,
@@ -41,6 +44,7 @@ const ICONOS = {
     Flame,
     Bot,
     Settings,
+    Coins,
 };
 
 const ETIQUETA_POR_ROL = {

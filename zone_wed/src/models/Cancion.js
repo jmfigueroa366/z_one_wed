@@ -7,6 +7,7 @@ export function crearCancion(data = {}) {
         nombre: data.nombre ?? '',
         duracion: data.duracion ?? null,
         partes: data.partes ?? [],
+        requiere_ensayo: data.requiere_ensayo ?? false,
         ...data,
     };
 }

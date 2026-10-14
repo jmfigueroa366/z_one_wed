@@ -19,10 +19,13 @@ export const ESTADOS = {
         },
     },
     orden: {
-        estados: ['borrador', 'facturada', 'pagada', 'cancelada'],
+        estados: ['borrador', 'facturada', 'parcial', 'pagada', 'cancelada'],
         transiciones: {
             borrador: ['facturada', 'cancelada'],
-            facturada: ['pagada', 'cancelada'],
+            facturada: ['parcial', 'pagada', 'cancelada'],
+            parcial: ['pagada'],
+            pagada: [],
+            cancelada: [],
         },
     },
 };

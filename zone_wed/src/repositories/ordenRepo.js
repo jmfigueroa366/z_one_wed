@@ -5,8 +5,23 @@ import { crearOrden } from '../models/Orden.js';
 
 const CLAVE = 'ordenes_servicio';
 
+function prefijo(anio) {
+    return `ZW-${anio}-`;
+}
+
+export function siguienteNumero(ordenes = [], anio = new Date().getFullYear()) {
+    const marca = prefijo(anio);
+    const maximo = ordenes.reduce((max, orden) => {
+        const numero = String(orden?.numero ?? '');
+        if (!numero.startsWith(marca)) return max;
+        const consecutivo = Number.parseInt(numero.slice(marca.length), 10);
+        return Number.isFinite(consecutivo) ? Math.max(max, consecutivo) : max;
+    }, 0);
+    return `${marca}${String(maximo + 1).padStart(4, '0')}`;
+}
+
 function obtenerListaInicial() {
-    return SEED.ordenes_servicio.map((orden) => crearOrden(orden));
+    return SEED.ordenes_servicio.map((orden, indice) => crearOrden({ ...orden, id: indice + 1 }));
 }
 
 export const ordenRepo = {
@@ -16,7 +31,7 @@ export const ordenRepo = {
             Storage.guardarValor(CLAVE, obtenerListaInicial());
             return obtenerListaInicial();
         }
-        return ordenes.map((orden) => crearOrden(orden));
+        return ordenes.map((orden, indice) => crearOrden({ ...orden, id: orden.id ?? indice + 1 }));
     },
 
     obtenerPorId(id) {
@@ -24,10 +39,19 @@ export const ordenRepo = {
         return this.listar().find((orden) => String(orden.id) === String(id)) ?? null;
     },
 
+    listarPorUsuario(usuarioId) {
+        return this.listar().filter((orden) => String(orden.usuario_id) === String(usuarioId));
+    },
+
+    listarPorProyecto(proyectoId) {
+        return this.listar().filter((orden) => String(orden.proyecto_id) === String(proyectoId));
+    },
+
     crear(data) {
         const ordenes = this.listar();
         const siguienteId = ordenes.reduce((max, orden) => Math.max(max, Number(orden.id) || 0), 0) + 1;
-        const orden = crearOrden({ ...data, id: siguienteId });
+        const numero = data.numero ?? siguienteNumero(ordenes);
+        const orden = crearOrden({ ...data, id: siguienteId, numero });
         ordenes.push(orden);
         Storage.guardarValor(CLAVE, ordenes);
         return orden;

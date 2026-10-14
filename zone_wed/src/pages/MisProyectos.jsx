@@ -6,6 +6,7 @@ import { Folder, FolderOpen, Music, Sparkles, X } from 'lucide-react';
 import { Contador, Ecualizador, FondoHero } from '../components/Animados.jsx';
 import { useAuth } from '../context/AuthContext.jsx';
 import { RUTAS } from '../config/rutas.js';
+import { TIPOS_PROYECTO, ETIQUETAS_PROYECTO } from '../config/facturacion.js';
 import { useProyectos } from '../hooks/useProyectos.js';
 import { useCanciones } from '../hooks/useCanciones.js';
 import { useSpotlight } from '../hooks/useSpotlight.js';
@@ -95,8 +96,10 @@ export default function MisProyectos() {
     const [heroRef, seguirSpotlight] = useSpotlight();
 
     const [nombreProyecto, setNombreProyecto] = useState('');
+    const [tipoProyecto, setTipoProyecto] = useState(TIPOS_PROYECTO.SENCILLO);
     const [nombreCancion, setNombreCancion] = useState('');
     const [duracionCancion, setDuracionCancion] = useState('');
+    const [requiereEnsayo, setRequiereEnsayo] = useState(false);
     const [mensaje, setMensaje] = useState('');
     const [error, setError] = useState('');
 
@@ -143,7 +146,7 @@ export default function MisProyectos() {
             setError('Escribe un nombre para la carpeta.');
             return;
         }
-        const proyecto = ProyectoService.crear({ nombre, usuario_id: usuario?.id });
+        const proyecto = ProyectoService.crear({ nombre, tipo: tipoProyecto, usuario_id: usuario?.id });
         setNombreProyecto('');
         setProyectoActivoId(proyecto.id);
         setMensaje(`Carpeta "${proyecto.nombre}" creada.`);
@@ -171,9 +174,11 @@ export default function MisProyectos() {
             proyecto_id: proyectoActivo.id,
             nombre,
             duracion: duracion !== null && Number.isFinite(duracion) && duracion > 0 ? duracion : null,
+            requiere_ensayo: requiereEnsayo,
         });
         setNombreCancion('');
         setDuracionCancion('');
+        setRequiereEnsayo(false);
         setMensaje(`Canción "${nombre}" agregada a ${proyectoActivo.nombre}.`);
     };
 
@@ -253,13 +258,23 @@ export default function MisProyectos() {
                     <form className="mb-5" onSubmit={crearProyecto} aria-label="Crear carpeta de proyecto">
                         <label className="flex flex-col">
                             <span className={ETIQUETA}>Nueva carpeta</span>
-                            <div className="flex gap-2">
+                            <div className="grid gap-2 sm:grid-cols-[1fr_auto_auto]">
                                 <input
                                     className={CAMPO}
                                     placeholder="Nombre de la carpeta"
                                     value={nombreProyecto}
                                     onChange={(evento) => setNombreProyecto(evento.target.value)}
                                 />
+                                <select
+                                    className={CAMPO}
+                                    aria-label="Tipo de proyecto"
+                                    value={tipoProyecto}
+                                    onChange={(evento) => setTipoProyecto(evento.target.value)}
+                                >
+                                    {Object.values(TIPOS_PROYECTO).map((tipo) => (
+                                        <option key={tipo} value={tipo}>{ETIQUETAS_PROYECTO[tipo]}</option>
+                                    ))}
+                                </select>
                                 <button className={`${BOTON_PRIMARIO} shrink-0`} type="submit">Crear</button>
                             </div>
                         </label>
@@ -303,7 +318,7 @@ export default function MisProyectos() {
                                                 <div className="min-w-0">
                                                     <p className="truncate font-semibold text-texto-soft">{proyecto.nombre}</p>
                                                     <p className="text-xs text-sutil">
-                                                        {conteoCanciones.get(String(proyecto.id)) ?? 0} canciones · {formatearFecha(proyecto.creado_en, { day: 'numeric', month: 'short' })}
+                                                        {ETIQUETAS_PROYECTO[proyecto.tipo] ?? 'Sencillo'} · {conteoCanciones.get(String(proyecto.id)) ?? 0} canciones · {formatearFecha(proyecto.creado_en, { day: 'numeric', month: 'short' })}
                                                     </p>
                                                 </div>
                                             </div>
@@ -350,7 +365,7 @@ export default function MisProyectos() {
                                 </button>
                             </div>
 
-                            <form className="mb-6 grid gap-3 rounded-2xl border border-border bg-white/[0.02] p-4 sm:grid-cols-[1fr_130px_auto]" onSubmit={agregarCancion} aria-label="Agregar canción">
+                            <form className="mb-6 grid gap-3 rounded-2xl border border-border bg-white/[0.02] p-4 sm:grid-cols-[1fr_130px_auto_auto]" onSubmit={agregarCancion} aria-label="Agregar canción">
                                 <label className="flex flex-col">
                                     <span className={ETIQUETA}>Nombre de la canción</span>
                                     <input
@@ -371,6 +386,15 @@ export default function MisProyectos() {
                                         value={duracionCancion}
                                         onChange={(evento) => setDuracionCancion(evento.target.value)}
                                     />
+                                </label>
+                                <label className="flex items-end gap-2 pb-2 text-xs text-sutil">
+                                    <input
+                                        type="checkbox"
+                                        className="h-4 w-4 accent-[#9365f2]"
+                                        checked={requiereEnsayo}
+                                        onChange={(evento) => setRequiereEnsayo(evento.target.checked)}
+                                    />
+                                    Requiere ensayo
                                 </label>
                                 <div className="flex items-end">
                                     <button className={BOTON_PRIMARIO} type="submit">Agregar</button>
@@ -395,6 +419,7 @@ export default function MisProyectos() {
                                                             <p className="text-xs text-sutil">
                                                                 {duracionTexto(cancion)}
                                                                 {cantPartes > 0 && <span className="text-accent-soft"> · {cantPartes} parte{cantPartes === 1 ? '' : 's'}</span>}
+                                                                {cancion.requiere_ensayo && <span className="text-aviso-soft"> · requiere ensayo</span>}
                                                             </p>
                                                         </div>
                                                     </div>

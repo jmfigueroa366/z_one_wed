@@ -43,6 +43,7 @@ function crearSesionDesdeSolicitud(solicitud) {
     return sesionRepo.crear({
         titulo: solicitud.titulo || 'Sesión de estudio',
         solicitud_id: solicitud.id,
+        tipo: solicitud.tipo ?? null,
         sala_id: solicitud.sala_id,
         colaborador_id: principal,
         fecha: solicitud.fecha,
@@ -50,6 +51,7 @@ function crearSesionDesdeSolicitud(solicitud) {
         hora_fin: hora_fin ?? null,
         estado: 'confirmada',
         cancion_id: solicitud.cancion_id ?? null,
+        proyecto_id: solicitud.proyecto_id ?? null,
         partes: solicitud.partes ?? [],
     });
 }
