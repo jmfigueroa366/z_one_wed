@@ -1,11 +1,16 @@
 // CAPA: Dominio
 
 export const ETIQUETAS_ESTADO = {
-    solicitud: 'Nueva',
-    en_negociacion: 'En negociación',
+    solicitada: 'Solicitada',
     confirmada: 'Confirmada',
     rechazada: 'Rechazada',
-    expirada: 'Expirada',
+    cancelada: 'Cancelada',
+};
+
+export const ETIQUETAS_INVITACION = {
+    pendiente: 'Pendiente',
+    aceptada: 'Aceptó',
+    rechazada: 'Rechazó',
 };
 
 export const ETIQUETAS_TIPO = {
@@ -16,12 +21,33 @@ export const ETIQUETAS_TIPO = {
     produccion: 'Producción',
 };
 
+export const ETIQUETAS_ROL = {
+    artista: 'Artista',
+    productor: 'Productor',
+    ingeniero: 'Ingeniero',
+};
+
 export function etiquetaEstado(estado) {
     return ETIQUETAS_ESTADO[estado] ?? estado;
 }
 
+export function etiquetaInvitacion(estado) {
+    return ETIQUETAS_INVITACION[estado] ?? estado;
+}
+
 export function etiquetaTipo(tipo) {
     return ETIQUETAS_TIPO[tipo] ?? (tipo ?? 'Grabación');
+}
+
+export function etiquetaRol(rol) {
+    return ETIQUETAS_ROL[rol] ?? (rol ?? 'Colaborador');
+}
+
+export function rolDeColaborador(colaborador) {
+    const especialidad = String(colaborador?.especialidad ?? '').toLowerCase();
+    if (especialidad.includes('producc')) return 'productor';
+    if (especialidad.includes('ingenier')) return 'ingeniero';
+    return 'artista';
 }
 
 export function duracionFranja(franja) {
@@ -63,7 +89,7 @@ export function franjasOcupadas({ fecha, salaId, solicitudes = [], sesiones = []
         .filter((solicitud) =>
             String(solicitud.sala_id) === String(salaId)
             && solicitud.fecha === fecha
-            && ['solicitud', 'en_negociacion', 'confirmada'].includes(solicitud.estado))
+            && ['solicitada', 'confirmada'].includes(solicitud.estado))
         .map((solicitud) => solicitud.franja)
         .filter(Boolean);
 

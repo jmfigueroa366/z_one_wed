@@ -72,15 +72,25 @@ export default function Sidebar({ colapsado, onAlternar, movilAbierto, onCerrarM
     const rutasPermitidas = rutasPermitidasPorRol(usuario?.rol);
 
     const pendientes = useMemo(() => {
-        if (!usuario) return 0;
-        const enGestion = (solicitud) => ['solicitud', 'en_negociacion'].includes(solicitud.estado);
-        if (usuario.rol === ROLES.ADMINISTRADOR) {
-            return solicitudes.filter(enGestion).length;
-        }
+    if (!usuario) return 0;
+    if (usuario.rol === ROLES.ADMINISTRADOR) {
+        return solicitudes.filter((solicitud) => solicitud.estado === 'solicitada').length;
+    }
+    if (usuario.rol === ROLES.CLIENTE) {
         return solicitudes.filter(
-            (solicitud) => String(solicitud.usuario_id) === String(usuario.id) && enGestion(solicitud)
+            (solicitud) => String(solicitud.usuario_id) === String(usuario.id) && solicitud.estado === 'solicitada'
         ).length;
-    }, [usuario, solicitudes]);
+    }
+    // colaborador: invitaciones pendientes
+    const colaborador = colaboradores.find((item) => String(item.usuario_id) === String(usuario.id));
+    if (!colaborador) return 0;
+    return solicitudes.filter((solicitud) =>
+        solicitud.estado === 'solicitada'
+        && (solicitud.colaboradores ?? []).some((invitacion) =>
+            String(invitacion.colaborador_id) === String(colaborador.id)
+            && invitacion.estado === 'pendiente')
+    ).length;
+}, [usuario, solicitudes, colaboradores]);
 
     const secciones = useMemo(
         () => NAVEGACION.map((seccion) => ({

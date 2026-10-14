@@ -48,10 +48,6 @@ export const solicitudRepo = {
         Storage.guardarValor(CLAVE, solicitudes);
         return solicitudes[indice];
     },
-
-    rechazar(id) {
-        return this.actualizar(id, { estado: 'rechazada' });
-    },
 };
 
 export default solicitudRepo;

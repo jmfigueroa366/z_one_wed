@@ -56,7 +56,7 @@ export const EstadisticasService = {
             totalSesiones: sesiones.length,
             totalSolicitudes: solicitudes.length,
             sesionesCompletadas: sesiones.filter((sesion) => sesion.estado === 'completada').length,
-            solicitudesAbiertas: solicitudes.filter((solicitud) => ['solicitud', 'en_negociacion'].includes(solicitud.estado)).length,
+            solicitudesAbiertas: solicitudes.filter((solicitud) => solicitud.estado === 'solicitada').length,
         };
     },
 
@@ -170,7 +170,7 @@ export const EstadisticasService = {
 
         const completadas = sesiones.filter((sesion) => sesion.estado === 'completada').length;
         const confirmadas = sesiones.filter((sesion) => sesion.estado === 'confirmada').length;
-        const solicitudesAbiertas = solicitudes.filter((solicitud) => ['solicitud', 'en_negociacion'].includes(solicitud.estado)).length;
+        const solicitudesAbiertas = solicitudes.filter((solicitud) => solicitud.estado === 'solicitada').length;
 
         const intensidad = Math.min(100, sesiones.length * 12);
         const comercial = Math.min(100, solicitudes.length * 9);

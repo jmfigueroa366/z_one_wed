@@ -1,10 +1,15 @@
 export const ESTADOS = {
     solicitud: {
-        estados: ['solicitud', 'en_negociacion', 'confirmada', 'rechazada', 'expirada'],
+        estados: ['solicitada', 'confirmada', 'rechazada', 'cancelada'],
         transiciones: {
-            solicitud: ['en_negociacion', 'confirmada', 'rechazada'],
-            en_negociacion: ['confirmada', 'rechazada'],
-        }
+            solicitada: ['confirmada', 'rechazada', 'cancelada'],
+        },
+    },
+    invitacion: {
+        estados: ['pendiente', 'aceptada', 'rechazada'],
+        transiciones: {
+            pendiente: ['aceptada', 'rechazada'],
+        },
     },
     sesion: {
         estados: ['solicitada', 'confirmada', 'completada', 'cancelada'],

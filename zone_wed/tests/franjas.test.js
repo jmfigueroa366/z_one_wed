@@ -31,7 +31,7 @@ test('franjasOcupadas combina solicitudes y sesiones activas de sala y fecha', (
     const solicitudes = [
         { sala_id: 1, fecha: '2026-10-10', franja: '10:00-12:00', estado: 'confirmada' },
         { sala_id: 1, fecha: '2026-10-10', franja: '13:00-14:00', estado: 'rechazada' },
-        { sala_id: 1, fecha: '2026-10-10', franja: '11:00-12:00', estado: 'solicitud' },
+        { sala_id: 1, fecha: '2026-10-10', franja: '11:00-12:00', estado: 'solicitada' },
         { sala_id: 2, fecha: '2026-10-10', franja: '10:00-12:00', estado: 'confirmada' },
         { sala_id: 1, fecha: '2026-10-11', franja: '10:00-12:00', estado: 'confirmada' },
     ];

@@ -47,58 +47,56 @@ export default function Notificaciones() {
     }, [abierta]);
 
     const items = useMemo(() => {
-        if (!usuario) return [];
+    if (!usuario) return [];
 
-        const colaborador = colaboradores.find((item) => String(item.usuario_id) === String(usuario.id));
-        const nombreSolicitante = (solicitud) =>
-            solicitud.solicitante_nombre
-            ?? colaboradores.find((item) => String(item.id) === String(solicitud.colaborador_id))?.nombre
-            ?? 'Cliente';
+    const colaborador = colaboradores.find((item) => String(item.usuario_id) === String(usuario.id));
 
-        if (esAdministrador(usuario)) {
-            const porGestionar = solicitudes
-                .filter((solicitud) => ['solicitud', 'en_negociacion'].includes(solicitud.estado))
-                .sort((a, b) => String(a.fecha ?? '').localeCompare(String(b.fecha ?? '')));
-            return porGestionar.slice(0, 5).map((solicitud) => ({
-                id: `solicitud-${solicitud.id}`,
-                titulo: `${nombreSolicitante(solicitud)} · ${etiquetaTipo(solicitud.tipo)}`,
-                detalle: `${formatearFecha(solicitud.fecha, { weekday: 'short', day: 'numeric' }) || solicitud.fecha} · ${solicitud.franja || 'sin horario'} · ${etiquetaEstado(solicitud.estado)}`,
-                ruta: RUTAS.SOLICITUDES,
-            }));
-        }
-
-        const propias = solicitudes
-            .filter((solicitud) =>
-                String(solicitud.usuario_id) === String(usuario.id)
-                || (colaborador && String(solicitud.colaborador_id) === String(colaborador.id)))
-            .sort((a, b) => String(b.fecha ?? '').localeCompare(String(a.fecha ?? '')));
-
-        const notificaciones = propias.slice(0, 5).map((solicitud) => ({
+    if (esAdministrador(usuario)) {
+        const porGestionar = solicitudes
+            .filter((solicitud) => solicitud.estado === 'solicitada')
+            .sort((a, b) => String(a.fecha ?? '').localeCompare(String(b.fecha ?? '')));
+        return porGestionar.slice(0, 5).map((solicitud) => ({
             id: `solicitud-${solicitud.id}`,
-            titulo: etiquetaTipo(solicitud.tipo),
-            detalle: `${etiquetaEstado(solicitud.estado)} · ${formatearFecha(solicitud.fecha, { weekday: 'short', day: 'numeric' }) || solicitud.fecha} · ${solicitud.franja || 'sin horario'}`,
+            titulo: `${solicitud.solicitante_nombre ?? 'Cliente'} · ${etiquetaTipo(solicitud.tipo)}`,
+            detalle: `${formatearFecha(solicitud.fecha, { weekday: 'short', day: 'numeric' }) || solicitud.fecha} · ${solicitud.franja || 'sin horario'} · ${etiquetaEstado(solicitud.estado)}`,
             ruta: RUTAS.SOLICITUDES,
         }));
+    }
 
-        if (esColaborador(usuario)) {
-            const proximas = sesiones
-                .filter((sesion) =>
-                    String(sesion.colaborador_id) === String(colaborador?.id)
-                    && String(sesion.fecha ?? '') >= hoyISO()
-                    && sesion.estado !== 'cancelada')
-                .sort((a, b) => String(a.fecha ?? '').localeCompare(String(b.fecha ?? '')))
-                .slice(0, 3)
-                .map((sesion) => ({
-                    id: `sesion-${sesion.id}`,
-                    titulo: sesion.titulo,
-                    detalle: `${formatearFecha(sesion.fecha, { weekday: 'short', day: 'numeric' }) || sesion.fecha} · ${sesion.hora_inicio}-${sesion.hora_fin} · ${salas.find((sala) => String(sala.id) === String(sesion.sala_id))?.nombre ?? 'Sala'}`,
-                    ruta: RUTAS.AGENDA,
-                }));
-            notificaciones.push(...proximas);
-        }
+    const propias = solicitudes
+        .filter((solicitud) =>
+            String(solicitud.usuario_id) === String(usuario.id)
+            || (colaborador && (solicitud.colaboradores ?? []).some(
+                (invitacion) => String(invitacion.colaborador_id) === String(colaborador.id)
+            )))
+        .sort((a, b) => String(b.fecha ?? '').localeCompare(String(a.fecha ?? '')));
 
-        return notificaciones;
-    }, [usuario, solicitudes, sesiones, salas, colaboradores]);
+    const notificaciones = propias.slice(0, 5).map((solicitud) => ({
+        id: `solicitud-${solicitud.id}`,
+        titulo: etiquetaTipo(solicitud.tipo),
+        detalle: `${etiquetaEstado(solicitud.estado)} · ${formatearFecha(solicitud.fecha, { weekday: 'short', day: 'numeric' }) || solicitud.fecha} · ${solicitud.franja || 'sin horario'}`,
+        ruta: RUTAS.SOLICITUDES,
+    }));
+
+    if (esColaborador(usuario)) {
+        const proximas = sesiones
+            .filter((sesion) =>
+                String(sesion.colaborador_id) === String(colaborador?.id)
+                && String(sesion.fecha ?? '') >= hoyISO()
+                && sesion.estado !== 'cancelada')
+            .sort((a, b) => String(a.fecha ?? '').localeCompare(String(b.fecha ?? '')))
+            .slice(0, 3)
+            .map((sesion) => ({
+                id: `sesion-${sesion.id}`,
+                titulo: sesion.titulo,
+                detalle: `${formatearFecha(sesion.fecha, { weekday: 'short', day: 'numeric' }) || sesion.fecha} · ${sesion.hora_inicio}-${sesion.hora_fin} · ${salas.find((sala) => String(sala.id) === String(sesion.sala_id))?.nombre ?? 'Sala'}`,
+                ruta: RUTAS.AGENDA,
+            }));
+        notificaciones.push(...proximas);
+    }
+
+    return notificaciones;
+}, [usuario, solicitudes, sesiones, salas, colaboradores]);
 
     const rolTitulo = {
         [ROLES.ADMINISTRADOR]: 'Solicitudes por gestionar',

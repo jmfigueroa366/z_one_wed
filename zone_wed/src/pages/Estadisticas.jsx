@@ -8,6 +8,7 @@ import { useSolicitudes } from '../hooks/useSolicitudes.js';
 import { useSpotlight } from '../hooks/useSpotlight.js';
 import { EstadisticasService } from '../services/estadisticasService.js';
 import { formatearMoneda } from '../utils/helpers.js';
+import { etiquetaTipo } from '../utils/solicitudes.js';
 import { clasePillEstado } from '../styles/clases.js';
 import { Donut, BarrasHorizontales, ColumnasDias, Anillo } from '../components/Graficos.jsx';
 import '../styles/tailwind.css';
@@ -20,10 +21,7 @@ const etiquetasEstado = {
     completada: 'Completada',
     confirmada: 'Confirmada',
     cancelada: 'Cancelada',
-    solicitud: 'Solicitud',
-    en_negociacion: 'En negociación',
     rechazada: 'Rechazada',
-    expirada: 'Expirada',
 };
 
 const TONOS = {
@@ -95,7 +93,7 @@ export default function Estadisticas() {
         { etiqueta: 'Sesiones totales', valor: datos.kpis.totalSesiones, nota: `${datos.kpis.confirmadas} confirmadas`, Icono: Activity, tono: 'from-[#9365f2] to-[#6f4bbb]' },
         { etiqueta: 'Sesiones completadas', valor: datos.kpis.completadas, nota: 'Cierre exitoso', Icono: CheckCircle2, tono: 'from-[#7be0b0] to-[#3fae82]' },
         { etiqueta: 'Ocupación semanal', valor: datos.kpis.ocupacion, sufijo: '%', nota: 'Sobre capacidad operativa', Icono: Gauge, tono: 'from-[#f04fa6] to-[#b1306f]' },
-        { etiqueta: 'Solicitudes abiertas', valor: datos.kpis.solicitudesAbiertas, nota: 'En petición o negociación', Icono: Inbox, tono: 'from-[#c9b6ff] to-[#8f6fd8]' },
+        { etiqueta: 'Solicitudes abiertas', valor: datos.kpis.solicitudesAbiertas, nota: 'Esperando respuestas', Icono: Inbox, tono: 'from-[#c9b6ff] to-[#8f6fd8]' },
     ];
 
     const datosSala = datos.porSala.map((sala, indice) => ({
@@ -371,11 +369,11 @@ export default function Estadisticas() {
                             <ul className="grid gap-3.5">
                                 {ultimasSolicitudes.map((solicitud) => (
                                     <li
-                                        key={solicitud.id ?? `${solicitud.colaborador_id}-${solicitud.fecha}`}
+                                        key={solicitud.id ?? `${solicitud.titulo}-${solicitud.fecha}`}
                                         className="flex items-center justify-between gap-3 border-b border-border/50 pb-3.5 last:border-0 last:pb-0"
                                     >
                                         <div className="min-w-0">
-                                            <strong className="block truncate text-texto-soft">Colaborador #{solicitud.colaborador_id}</strong>
+                                            <strong className="block truncate text-texto-soft">{solicitud.titulo || etiquetaTipo(solicitud.tipo)}</strong>
                                             <small className="text-sutil">{solicitud.fecha} · {solicitud.franja}</small>
                                         </div>
                                         <span className={clasePillEstado(solicitud.estado)}>

@@ -19,13 +19,13 @@ const PILL =
     'inline-flex items-center justify-center whitespace-nowrap rounded-full border border-transparent px-2.5 py-1.5 text-xs font-bold capitalize';
 
 export function clasePillEstado(estado) {
-    if (['confirmada', 'completada'].includes(estado)) {
+    if (['confirmada', 'completada', 'aceptada'].includes(estado)) {
         return `${PILL} border-exito/25 bg-exito/10 text-exito-soft`;
     }
-    if (['solicitud', 'en_negociacion'].includes(estado)) {
+    if (['solicitada', 'pendiente'].includes(estado)) {
         return `${PILL} border-aviso/25 bg-aviso/10 text-aviso-soft`;
     }
-    if (['cancelada', 'rechazada', 'expirada'].includes(estado)) {
+    if (['cancelada', 'rechazada'].includes(estado)) {
         return `${PILL} border-peligro/25 bg-peligro/10 text-peligro-soft`;
     }
     return `${PILL} bg-surface-3 text-sutil`;

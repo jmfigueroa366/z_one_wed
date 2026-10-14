@@ -1,55 +1,44 @@
 // CAPA: Presentación
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef } from 'react';
 import anime from 'animejs';
 import { useAuth } from '../context/AuthContext.jsx';
 import { esAdministrador } from '../config/roles.js';
 import { useColaboradores } from '../hooks/useColaboradores.js';
 import { useSalas } from '../hooks/useSalas.js';
 import { useSolicitudes } from '../hooks/useSolicitudes.js';
-import { SolicitudService } from '../services/solicitudService.js';
 import { CancionService } from '../services/cancionService.js';
-import { etiquetaEstado, etiquetaTipo, estimadoSala } from '../utils/solicitudes.js';
+import { etiquetaEstado, etiquetaInvitacion, etiquetaTipo, estimadoSala } from '../utils/solicitudes.js';
 import { formatearFecha, formatearMoneda } from '../utils/helpers.js';
 import MisSolicitudes from '../components/MisSolicitudes.jsx';
-import { BOTON_PELIGRO, BOTON_PRIMARIO, clasePillEstado } from '../styles/clases.js';
+import { clasePillEstado } from '../styles/clases.js';
 import '../styles/tailwind.css';
 
 const MENOS_MOVIMIENTO = () =>
     typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-const BOTON_NEGOCIAR =
-    'inline-flex min-h-[40px] items-center justify-center rounded-xl border border-aviso/40 bg-aviso/10 px-4 text-sm font-semibold text-aviso-soft transition hover:bg-aviso/20';
-
 const COLUMNAS = [
-    { clave: 'solicitud', titulo: 'Por gestionar', punto: 'bg-aviso', borde: 'border-aviso/40', fondo: 'from-aviso/[0.07]' },
-    { clave: 'en_negociacion', titulo: 'En negociación', punto: 'bg-info', borde: 'border-[#9ecbff]/40', fondo: 'from-[#9ecbff]/[0.07]' },
+    { clave: 'solicitada', titulo: 'Esperando respuestas', punto: 'bg-aviso', borde: 'border-aviso/40', fondo: 'from-aviso/[0.07]' },
     { clave: 'confirmada', titulo: 'Confirmadas', punto: 'bg-exito', borde: 'border-exito/40', fondo: 'from-exito/[0.07]' },
-    { clave: 'cerradas', titulo: 'Cerradas', punto: 'bg-peligro', borde: 'border-peligro/40', fondo: 'from-peligro/[0.07]' },
+    { clave: 'rechazada', titulo: 'Rechazadas', punto: 'bg-peligro', borde: 'border-peligro/40', fondo: 'from-peligro/[0.07]' },
+    { clave: 'cancelada', titulo: 'Canceladas', punto: 'bg-sutil', borde: 'border-border', fondo: 'from-white/[0.03]' },
 ];
-
-function columnaDe(estado) {
-    if (estado === 'solicitud') return 'solicitud';
-    if (estado === 'en_negociacion') return 'en_negociacion';
-    if (estado === 'confirmada') return 'confirmada';
-    return 'cerradas';
-}
 
 function BandejaSolicitudes() {
     const [solicitudes] = useSolicitudes();
     const [colaboradores] = useColaboradores();
     const [salas] = useSalas();
-    const [mensaje, setMensaje] = useState('');
-    const [error, setError] = useState('');
-    const [actualizando, setActualizando] = useState(null);
     const boardRef = useRef(null);
 
     const canciones = useMemo(() => CancionService.listar(), [solicitudes]);
 
     const grupos = useMemo(() => {
-        const base = { solicitud: [], en_negociacion: [], confirmada: [], cerradas: [] };
+        const base = { solicitada: [], confirmada: [], rechazada: [], cancelada: [] };
         [...solicitudes]
-            .sort((a, b) => String(a.fecha ?? '').localeCompare(String(b.fecha ?? '')))
-            .forEach((solicitud) => base[columnaDe(solicitud.estado)].push(solicitud));
+            .sort((a, b) => String(b.fecha_solicitud ?? b.fecha ?? '').localeCompare(String(a.fecha_solicitud ?? a.fecha ?? '')))
+            .forEach((solicitud) => {
+                const clave = base[solicitud.estado] ? solicitud.estado : 'cancelada';
+                base[clave].push(solicitud);
+            });
         return base;
     }, [solicitudes]);
 
@@ -68,33 +57,16 @@ function BandejaSolicitudes() {
         return () => animacion.pause();
     }, [solicitudes]);
 
-    const obtenerColaborador = (id) =>
-        colaboradores.find((colaborador) => String(colaborador.id) === String(id))?.nombre ?? 'Sin colaborador asignado';
+    const nombreSolicitante = (solicitud) => solicitud.solicitante_nombre ?? 'Cliente';
+    const nombreColaborador = (id) =>
+        colaboradores.find((colaborador) => String(colaborador.id) === String(id))?.nombre ?? `Colaborador #${id}`;
     const obtenerSala = (id) => salas.find((sala) => String(sala.id) === String(id))?.nombre ?? 'Sala no disponible';
-    const nombreSolicitante = (solicitud) => solicitud.solicitante_nombre ?? obtenerColaborador(solicitud.colaborador_id);
     const nombreCancionDe = (solicitud) => {
         if (!solicitud.cancion_id) return null;
         return canciones.find((cancion) => String(cancion.id) === String(solicitud.cancion_id))?.nombre ?? 'Canción no encontrada';
     };
 
-    const cambiarEstado = (id, estado) => {
-        setError('');
-        setMensaje('');
-        setActualizando(id);
-        try {
-            const solicitudActualizada = SolicitudService.actualizarEstado(id, estado);
-            if (!solicitudActualizada) {
-                throw new Error('No se encontró la solicitud. Actualiza la página e inténtalo de nuevo.');
-            }
-            setMensaje(`Solicitud actualizada: ${etiquetaEstado(estado)}.`);
-        } catch (errorActualizacion) {
-            setError(errorActualizacion instanceof Error ? errorActualizacion.message : 'No se pudo actualizar la solicitud.');
-        } finally {
-            setActualizando(null);
-        }
-    };
-
-    const porGestionar = grupos.solicitud.length + grupos.en_negociacion.length;
+    const porResponder = grupos.solicitada.length;
 
     return (
         <main className="workspace-content" data-page="solicitudes">
@@ -102,7 +74,7 @@ function BandejaSolicitudes() {
                 <div aria-hidden="true" className="pointer-events-none absolute -top-20 right-24 h-52 w-52 animate-aurora rounded-full bg-[#e34ba6]/15 blur-3xl" />
                 <p className="workspace-eyebrow">RESERVAS DEL ESTUDIO</p>
                 <h1>Solicitudes</h1>
-                <p>Revisa las solicitudes de cabinas y muévelas por el flujo de negociación, confirmación o rechazo.</p>
+                <p>Sigue el pulso de cada solicitud. El estado se confirma solo cuando todos los artistas y productores invitados aceptan.</p>
             </header>
 
             <section className="mt-6 grid gap-3 sm:grid-cols-3" aria-label="Resumen de solicitudes">
@@ -111,21 +83,14 @@ function BandejaSolicitudes() {
                     <strong className="mt-1 block text-3xl font-black text-texto-soft">{solicitudes.length}</strong>
                 </article>
                 <article className="relative overflow-hidden rounded-2xl border border-border bg-gradient-to-br from-aviso/20 to-surface/40 p-4">
-                    <span className="text-sm text-sutil">Por gestionar</span>
-                    <strong className="mt-1 block text-3xl font-black text-aviso-soft">{porGestionar}</strong>
+                    <span className="text-sm text-sutil">Esperando respuestas</span>
+                    <strong className="mt-1 block text-3xl font-black text-aviso-soft">{porResponder}</strong>
                 </article>
                 <article className="relative overflow-hidden rounded-2xl border border-border bg-gradient-to-br from-exito/20 to-surface/40 p-4">
                     <span className="text-sm text-sutil">Confirmadas</span>
                     <strong className="mt-1 block text-3xl font-black text-exito-soft">{grupos.confirmada.length}</strong>
                 </article>
             </section>
-
-            {mensaje && (
-                <p className="mt-4 rounded-xl border border-exito/30 bg-exito/10 px-4 py-3 text-sm text-exito-soft" role="status">{mensaje}</p>
-            )}
-            {error && (
-                <p className="mt-4 rounded-xl border border-peligro/30 bg-peligro/10 px-4 py-3 text-sm text-peligro-soft" role="alert">{error}</p>
-            )}
 
             <div ref={boardRef} className="mt-6 grid gap-4 lg:grid-cols-4">
                 {COLUMNAS.map((columna) => {
@@ -149,8 +114,8 @@ function BandejaSolicitudes() {
                                     items.map((solicitud) => {
                                         const sala = salas.find((item) => String(item.id) === String(solicitud.sala_id));
                                         const estimado = estimadoSala(sala, solicitud.franja);
-                                        const gestionable = columna.clave === 'solicitud' || columna.clave === 'en_negociacion';
                                         const detalles = [
+                                            ['Solicitante', nombreSolicitante(solicitud)],
                                             ['Sala', obtenerSala(solicitud.sala_id)],
                                             ['Tipo', etiquetaTipo(solicitud.tipo)],
                                             ['Horario', solicitud.franja || 'Por coordinar'],
@@ -170,7 +135,7 @@ function BandejaSolicitudes() {
                                                         <p className="text-[0.66rem] font-bold uppercase tracking-wider text-sutil">
                                                             {formatearFecha(solicitud.fecha, { weekday: 'short', day: 'numeric' }) || 'Fecha pendiente'}
                                                         </p>
-                                                        <h3 className="mt-0.5 truncate text-sm font-bold text-texto-soft">{nombreSolicitante(solicitud)}</h3>
+                                                        <h3 className="mt-0.5 truncate text-sm font-bold text-texto-soft">{solicitud.titulo || etiquetaTipo(solicitud.tipo)}</h3>
                                                     </div>
                                                     <span className={clasePillEstado(solicitud.estado)}>{etiquetaEstado(solicitud.estado)}</span>
                                                 </div>
@@ -184,35 +149,14 @@ function BandejaSolicitudes() {
                                                     ))}
                                                 </dl>
 
-                                                {gestionable && (
-                                                    <div className="mt-4 flex flex-wrap gap-2" aria-label={`Acciones para solicitud de ${nombreSolicitante(solicitud)}`}>
-                                                        <button
-                                                            className={`${BOTON_PRIMARIO} min-h-[36px] flex-1`}
-                                                            disabled={actualizando === solicitud.id}
-                                                            onClick={() => cambiarEstado(solicitud.id, 'confirmada')}
-                                                            type="button"
-                                                        >
-                                                            Confirmar
-                                                        </button>
-                                                        <button
-                                                            className={BOTON_PELIGRO}
-                                                            disabled={actualizando === solicitud.id}
-                                                            onClick={() => cambiarEstado(solicitud.id, 'rechazada')}
-                                                            type="button"
-                                                        >
-                                                            Rechazar
-                                                        </button>
-                                                        {columna.clave === 'solicitud' && (
-                                                            <button
-                                                                className={`${BOTON_NEGOCIAR} min-h-[36px] w-full`}
-                                                                disabled={actualizando === solicitud.id}
-                                                                onClick={() => cambiarEstado(solicitud.id, 'en_negociacion')}
-                                                                type="button"
-                                                            >
-                                                                Enviar a negociación
-                                                            </button>
-                                                        )}
-                                                    </div>
+                                                {(solicitud.colaboradores ?? []).length > 0 && (
+                                                    <ul className="mt-3 flex flex-wrap gap-1.5" aria-label={`Colaboradores de ${solicitud.titulo || etiquetaTipo(solicitud.tipo)}`}>
+                                                        {(solicitud.colaboradores ?? []).map((invitacion) => (
+                                                            <li key={`${solicitud.id}-${invitacion.colaborador_id}`} className={clasePillEstado(invitacion.estado)}>
+                                                                {nombreColaborador(invitacion.colaborador_id)} · {etiquetaInvitacion(invitacion.estado)}
+                                                            </li>
+                                                        ))}
+                                                    </ul>
                                                 )}
                                             </article>
                                         );

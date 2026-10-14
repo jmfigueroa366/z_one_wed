@@ -42,6 +42,13 @@ function nombreColaborador(id, colaboradores) {
     return colaboradores.find((colaborador) => String(colaborador.id) === String(id))?.nombre ?? 'Sin asignar';
 }
 
+function nombresDeSolicitud(solicitud, colaboradores) {
+    const nombres = (solicitud.colaboradores ?? [])
+        .map((invitacion) => colaboradores.find((colaborador) => String(colaborador.id) === String(invitacion.colaborador_id))?.nombre)
+        .filter(Boolean);
+    return nombres.length ? nombres.join(', ') : 'Sin asignar';
+}
+
 export default function Agenda() {
     const [sesiones] = useSesiones();
     const [solicitudes] = useSolicitudes();
@@ -58,21 +65,31 @@ export default function Agenda() {
         [solicitudes]
     );
 
+    const solicitudIdsConSesion = useMemo(() => {
+        const ids = sesiones
+            .map((sesion) => sesion.solicitud_id)
+            .filter((id) => id !== null && id !== undefined)
+            .map((id) => String(id));
+        return new Set(ids);
+    }, [sesiones]);
+
     const eventosAgenda = useMemo(() => [
         ...sesiones.map((sesion) => ({ ...sesion, eventoId: `sesion-${sesion.id}`, tipo: 'Sesión' })),
-        ...reservasConfirmadas.map((solicitud) => {
-            const horario = String(solicitud.franja ?? '').match(/(\d{1,2}:\d{2})\s*-\s*(\d{1,2}:\d{2})/);
-            return {
-                ...solicitud,
-                eventoId: `solicitud-${solicitud.id}`,
-                titulo: `Reserva confirmada · ${nombreColaborador(solicitud.colaborador_id, colaboradores)}`,
-                hora_inicio: horario?.[1] ?? '',
-                hora_fin: horario?.[2] ?? '',
-                estado: 'confirmada',
-                tipo: 'Reserva aprobada',
-            };
-        }),
-    ], [sesiones, reservasConfirmadas, colaboradores]);
+        ...reservasConfirmadas
+            .filter((solicitud) => !solicitudIdsConSesion.has(String(solicitud.id)))
+            .map((solicitud) => {
+                const horario = String(solicitud.franja ?? '').match(/(\d{1,2}:\d{2})\s*-\s*(\d{1,2}:\d{2})/);
+                return {
+                    ...solicitud,
+                    eventoId: `solicitud-${solicitud.id}`,
+                    titulo: solicitud.titulo || `Reserva confirmada · ${nombresDeSolicitud(solicitud, colaboradores)}`,
+                    hora_inicio: horario?.[1] ?? '',
+                    hora_fin: horario?.[2] ?? '',
+                    estado: 'confirmada',
+                    tipo: 'Reserva aprobada',
+                };
+            }),
+    ], [sesiones, reservasConfirmadas, solicitudIdsConSesion, colaboradores]);
 
     const sesionesFiltradas = useMemo(() => [...eventosAgenda]
         .filter((sesion) => filtroEstado === 'todas' || sesion.estado === filtroEstado)
@@ -114,6 +131,11 @@ export default function Agenda() {
 
     const obtenerSala = (id) =>
         salas.find((sala) => String(sala.id) === String(id))?.nombre ?? 'Sala no disponible';
+
+    const equipoDe = (evento) =>
+        Array.isArray(evento.colaboradores)
+            ? nombresDeSolicitud(evento, colaboradores)
+            : nombreColaborador(evento.colaborador_id, colaboradores);
 
     const resumen = [
         { etiqueta: 'Actividades en agenda', valor: eventosAgenda.length, tono: 'from-[#5b418f]/50', texto: 'text-texto-soft' },
@@ -157,7 +179,7 @@ export default function Agenda() {
                                 <div className="mt-2 flex flex-wrap items-center gap-x-5 gap-y-1 text-sm text-sutil">
                                     <span className="inline-flex items-center gap-1.5"><Clock className="h-3.5 w-3.5" aria-hidden="true" /> {proximo.hora_inicio || '--:--'}{proximo.hora_fin ? ` – ${proximo.hora_fin}` : ''}</span>
                                     <span className="inline-flex items-center gap-1.5"><SlidersHorizontal className="h-3.5 w-3.5" aria-hidden="true" /> {obtenerSala(proximo.sala_id)}</span>
-                                    <span className="inline-flex items-center gap-1.5"><Mic className="h-3.5 w-3.5" aria-hidden="true" /> {nombreColaborador(proximo.colaborador_id, colaboradores)}</span>
+                                    <span className="inline-flex items-center gap-1.5"><Mic className="h-3.5 w-3.5" aria-hidden="true" /> {equipoDe(proximo)}</span>
                                 </div>
                             </div>
                         </div>
@@ -266,7 +288,7 @@ export default function Agenda() {
                                                 <h3 className="mt-0.5 text-sm font-semibold leading-5 text-texto">{evento.titulo || 'Sesión sin título'}</h3>
                                                 <div className="mt-2 flex flex-wrap gap-x-3 gap-y-1 text-[0.7rem] text-sutil">
                                                     <span className="inline-flex items-center gap-1"><SlidersHorizontal className="h-3 w-3" aria-hidden="true" /> {obtenerSala(evento.sala_id)}</span>
-                                                    <span className="inline-flex items-center gap-1"><Mic className="h-3 w-3" aria-hidden="true" /> {nombreColaborador(evento.colaborador_id, colaboradores)}</span>
+                                                    <span className="inline-flex items-center gap-1"><Mic className="h-3 w-3" aria-hidden="true" /> {equipoDe(evento)}</span>
                                                 </div>
                                                 <span className={`${clasePillEstado(evento.estado)} mt-3`}>{ETIQUETAS_ESTADO[evento.estado] ?? evento.estado}</span>
                                             </article>

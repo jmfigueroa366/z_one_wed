@@ -17,7 +17,7 @@ test('crearSesion aplica valores por defecto de una sesión', () => {
   assert.equal(sesion.estado, 'solicitada');
 });
 
-test('Sesion.estaActiva reconoce sesiones confirmadas o en proceso', () => {
+test('Sesion.estaActiva reconoce sesiones activas (solicitada o confirmada)', () => {
   assert.equal(Sesion.estaActiva(crearSesion({ estado: 'solicitada' })), true);
   assert.equal(Sesion.estaActiva(crearSesion({ estado: 'confirmada' })), true);
   assert.equal(Sesion.estaActiva(crearSesion({ estado: 'completada' })), false);
