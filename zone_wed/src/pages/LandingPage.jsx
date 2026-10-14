@@ -9,6 +9,8 @@ import { salaRepo } from '../repositories/salaRepo.js';
 import VinylDisc from '../components/VinylDisc.jsx';
 import { formatearMoneda } from '../utils/helpers.js';
 import { useSpotlight } from '../hooks/useSpotlight.js';
+import { useAuth } from '../context/AuthContext.jsx';
+import { esAdministrador, esColaborador } from '../config/roles.js';
 import '../styles/tailwind.css';
 
 const MENOS_MOVIMIENTO = () =>
@@ -34,15 +36,16 @@ const SERVICIOS = [
 
 const PASOS = [
     { n: '01', t: 'Elige el espacio', d: 'Revisa las cabinas y salas disponibles y selecciona la que necesitas.' },
-    { n: '02', t: 'Programa tu sesión', d: 'Define fecha, hora y tipo de trabajo en pocos pasos.' },
+    { n: '02', t: 'Envía tu solicitud', d: 'Define fecha, hora y tipo de trabajo en pocos pasos.' },
     { n: '03', t: 'Haz que suceda', d: 'Sigue tus reservas y el avance de tu proyecto desde un solo lugar.' },
 ];
 
 const FAQ = [
-    { p: '¿Qué tipos de sesión puedo registrar?', r: 'Grabación, mezcla, masterización, ensayo o producción musical. Eliges el tipo al crear la sesión.' },
-    { p: '¿Qué necesito para crear una reserva?', r: 'Una fecha, hora de inicio, duración, la cabina y el artista o productor. El nombre de la sesión es opcional.' },
+    { p: '¿Qué tipos de servicio puedo solicitar?', r: 'Grabación, mezcla, masterización, ensayo o producción musical. Eliges el tipo al crear tu solicitud.' },
+    { p: '¿Qué necesito para crear una solicitud?', r: 'Una fecha, hora de inicio y fin, la cabina y al menos un artista o productor. El nombre y la canción son opcionales.' },
     { p: '¿Necesito iniciar sesión?', r: 'Sí. Al elegir «Reservar una sesión» te llevamos al acceso y luego continúas con el formulario.' },
-    { p: '¿Puedo cambiar mi reserva después?', r: 'Tu reserva queda guardada con el estado que selecciones y puedes consultarla o ajustarla cuando quieras desde el área de sesiones.' },
+    { p: '¿Cómo se confirma mi reserva?', r: 'Envías una solicitud y los artistas o productores invitados la responden. La sesión se crea automáticamente solo cuando todos aceptan.' },
+    { p: '¿Puedo cambiar o cancelar mi solicitud?', r: 'Mientras siga en estado «Solicitada» puedes cancelarla desde tu área de solicitudes. Cuando se confirma, aparece en tu agenda.' },
 ];
 
 const modificadorReveal = (indice) => ({ 'data-revelar-delay': String(indice * 90) });
@@ -111,6 +114,9 @@ export default function LandingPage() {
     const [compacto, setCompacto] = useState(false);
     const [reproduciendo, setReproduciendo] = useState(true);
     const [spotRef, seguirSpotlight] = useSpotlight();
+    const { usuario } = useAuth();
+    const esStaff = esAdministrador(usuario) || esColaborador(usuario);
+    const destinoReserva = esStaff ? `${RUTAS.SESIONES}#crear` : `${RUTAS.SOLICITUDES}#nueva-reserva`;
     const salas = salaRepo.listar().filter((sala) => sala.activo !== false);
     const animar = !MENOS_MOVIMIENTO();
     const oculto = animar ? { opacity: 0 } : undefined;
@@ -260,7 +266,7 @@ export default function LandingPage() {
                             Un espacio para grabar, producir, mezclar y llevar tus ideas musicales desde la primera nota hasta el resultado final.
                         </p>
                         <div data-hero-actions style={oculto} className="mt-9 flex flex-wrap gap-3">
-                            <Link className={BOTON_PRIMARIO} to={`${RUTAS.SESIONES}#crear`}>
+                            <Link className={BOTON_PRIMARIO} to={destinoReserva}>
                                 <span className="relative z-10">Reservar una sesión</span>
                                 <span aria-hidden="true" className="absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-white/30 to-transparent transition-transform duration-700 group-hover:translate-x-full" />
                             </Link>
@@ -417,7 +423,7 @@ export default function LandingPage() {
                                     </div>
                                     <strong style={FUENTE_TITULO} className="text-base font-bold text-texto-soft transition-colors duration-300 group-hover:text-magenta">{formatearMoneda(sala.precio_hora)}</strong>
                                 </div>
-                                <Link className="mt-4 flex items-center justify-between border-t border-border px-5 py-3.5 text-sm font-semibold text-texto-soft transition duration-300 group-hover:bg-magenta/5 group-hover:text-magenta" to={`${RUTAS.SESIONES}#crear`}>
+                                <Link className="mt-4 flex items-center justify-between border-t border-border px-5 py-3.5 text-sm font-semibold text-texto-soft transition duration-300 group-hover:bg-magenta/5 group-hover:text-magenta" to={destinoReserva}>
                                     Reservar
                                     <span aria-hidden="true" className="grid h-6 w-6 place-items-center rounded-full border border-border transition duration-300 group-hover:translate-x-1 group-hover:border-magenta/50">→</span>
                                 </Link>
@@ -472,7 +478,7 @@ export default function LandingPage() {
                         <Etiqueta>¿Listo para empezar?</Etiqueta>
                         <h2 style={FUENTE_TITULO} className="mt-4 max-w-[24ch] text-[clamp(2rem,4vw,3rem)] font-bold leading-tight tracking-[-0.03em] text-texto-soft">Hagamos que tu música suceda.</h2>
                     </div>
-                    <Link className={`${BOTON_PRIMARIO} shrink-0`} to={`${RUTAS.SESIONES}#crear`}>
+                    <Link className={`${BOTON_PRIMARIO} shrink-0`} to={destinoReserva}>
                         <span className="relative z-10">Reservar una sesión</span>
                         <span aria-hidden="true" className="absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-white/30 to-transparent transition-transform duration-700 group-hover:translate-x-full" />
                     </Link>
