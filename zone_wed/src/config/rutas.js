@@ -51,7 +51,6 @@ export const rutasPorRol = Object.freeze({
         RUTAS.ESTUDIO,
         RUTAS.AGENDA,
         RUTAS.SOLICITUDES,
-        RUTAS.SESIONES,
         RUTAS.PROYECTOS,
         RUTAS.CATALOGO,
         RUTAS.CHATBOT,
