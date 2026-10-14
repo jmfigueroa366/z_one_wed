@@ -24,6 +24,7 @@ import { NAVEGACION, RUTAS, rutasPermitidasPorRol } from '../config/rutas.js';
 import { ROLES } from '../config/roles.js';
 import { useAuth } from '../context/AuthContext.jsx';
 import { useSolicitudes } from '../hooks/useSolicitudes.js';
+import { useColaboradores } from '../hooks/useColaboradores.js';
 import '../styles/tailwind.css';
 
 const ICONOS = {
@@ -68,28 +69,29 @@ export default function Sidebar({ colapsado, onAlternar, movilAbierto, onCerrarM
     const { usuario, cerrarSesion } = useAuth();
     const navigate = useNavigate();
     const [solicitudes] = useSolicitudes();
+    const [colaboradores] = useColaboradores();
     const rutasPermitidas = rutasPermitidasPorRol(usuario?.rol);
 
     const pendientes = useMemo(() => {
-    if (!usuario) return 0;
-    if (usuario.rol === ROLES.ADMINISTRADOR) {
-        return solicitudes.filter((solicitud) => solicitud.estado === 'solicitada').length;
-    }
-    if (usuario.rol === ROLES.CLIENTE) {
-        return solicitudes.filter(
-            (solicitud) => String(solicitud.usuario_id) === String(usuario.id) && solicitud.estado === 'solicitada'
+        if (!usuario) return 0;
+        if (usuario.rol === ROLES.ADMINISTRADOR) {
+            return solicitudes.filter((solicitud) => solicitud.estado === 'solicitada').length;
+        }
+        if (usuario.rol === ROLES.CLIENTE) {
+            return solicitudes.filter(
+                (solicitud) => String(solicitud.usuario_id) === String(usuario.id) && solicitud.estado === 'solicitada'
+            ).length;
+        }
+        // colaborador: invitaciones pendientes
+        const colaborador = colaboradores.find((item) => String(item.usuario_id) === String(usuario.id));
+        if (!colaborador) return 0;
+        return solicitudes.filter((solicitud) =>
+            solicitud.estado === 'solicitada'
+            && (solicitud.colaboradores ?? []).some((invitacion) =>
+                String(invitacion.colaborador_id) === String(colaborador.id)
+                && invitacion.estado === 'pendiente')
         ).length;
-    }
-    // colaborador: invitaciones pendientes
-    const colaborador = colaboradores.find((item) => String(item.usuario_id) === String(usuario.id));
-    if (!colaborador) return 0;
-    return solicitudes.filter((solicitud) =>
-        solicitud.estado === 'solicitada'
-        && (solicitud.colaboradores ?? []).some((invitacion) =>
-            String(invitacion.colaborador_id) === String(colaborador.id)
-            && invitacion.estado === 'pendiente')
-    ).length;
-}, [usuario, solicitudes, colaboradores]);
+    }, [usuario, solicitudes, colaboradores]);
 
     const secciones = useMemo(
         () => NAVEGACION.map((seccion) => ({
