@@ -812,7 +812,9 @@ export default function Escuchar() {
                             onLoadedData={reintentar}
                             onPlaying={() => setError('')}
                             onEnded={alTerminar}
-                            onError={() => {
+                            onError={(evento) => {
+                                const codigo = evento.currentTarget.error?.code;
+                                if (codigo === 1) return;
                                 setError(cancion.archivo);
                                 setReproduciendo(false);
                             }}
