@@ -4,6 +4,8 @@ import { Link } from 'react-router-dom';
 import anime from 'animejs';
 import { Disc3, Mic, SlidersHorizontal, Wand2 } from 'lucide-react';
 import { useSalas } from '../hooks/useSalas.js';
+import { useAuth } from '../context/AuthContext.jsx';
+import { esCliente } from '../config/roles.js';
 import { RUTAS } from '../config/rutas.js';
 import { formatearMoneda } from '../utils/helpers.js';
 import '../styles/tailwind.css';
@@ -35,6 +37,8 @@ const ARTE_SALA = [
 
 export default function Catalogo() {
     const [salas] = useSalas();
+    const { usuario } = useAuth();
+    const destinoReserva = esCliente(usuario) ? `${RUTAS.SOLICITUDES}#nueva-reserva` : `${RUTAS.SESIONES}#crear`;
     const contenedorRef = useRef(null);
     const salasActivas = salas.filter((sala) => sala.activo !== false);
     const precios = salasActivas.map((sala) => Number(sala.precio_hora) || 0).filter((valor) => valor > 0);
@@ -161,7 +165,7 @@ export default function Catalogo() {
                                             </div>
                                             <Link
                                                 className="inline-flex items-center gap-2 text-sm font-bold text-accent-soft transition group-hover:gap-3 hover:text-magenta"
-                                                to={`${RUTAS.SESIONES}#crear`}
+                                                to={destinoReserva}
                                             >
                                                 Programar una sesión <span aria-hidden="true">→</span>
                                             </Link>
