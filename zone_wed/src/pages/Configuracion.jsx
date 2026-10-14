@@ -14,7 +14,6 @@ const MENOS_MOVIMIENTO = () =>
 const ETIQUETA_ROL = {
     [ROLES.ADMINISTRADOR]: 'Administrador',
     [ROLES.COLABORADOR]: 'Colaborador',
-    [ROLES.COORDINADOR]: 'Coordinador',
     [ROLES.CLIENTE]: 'Cliente',
 };
 

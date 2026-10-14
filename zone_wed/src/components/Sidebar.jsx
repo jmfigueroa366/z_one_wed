@@ -50,7 +50,6 @@ const ETIQUETA_POR_ROL = {
 const NOMBRE_ROL = {
     [ROLES.ADMINISTRADOR]: 'Administrador',
     [ROLES.COLABORADOR]: 'Colaborador',
-    [ROLES.COORDINADOR]: 'Coordinador',
     [ROLES.CLIENTE]: 'Cliente',
 };
 
