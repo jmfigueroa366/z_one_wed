@@ -38,6 +38,23 @@ test('crea proyectos para un usuario y solo lista los suyos', () => {
     assert.ok(delUsuario.every((item) => item.nombre !== 'Otro'));
 });
 
+test('asigna un proyecto a un cliente concreto y lo expone en listarPorUsuario', () => {
+    const proyecto = ProyectoService.crear({ nombre: 'Encargo Zeta', usuario_id: 3 });
+
+    assert.equal(String(proyecto.usuario_id), '3');
+    assert.ok(ProyectoService.listarPorUsuario(3).some((item) => item.id === proyecto.id));
+    assert.ok(!ProyectoService.listarPorUsuario(2).some((item) => item.id === proyecto.id));
+    assert.equal(ProyectoService.propietarioDe(proyecto)?.nombre, 'Cliente Zeta');
+});
+
+test('listarPorUsuario sin id devuelve todos los proyectos y crear exige dueño', () => {
+    const creados = ProyectoService.listar().length;
+    ProyectoService.crear({ nombre: 'Global', usuario_id: 2 });
+
+    assert.equal(ProyectoService.listarPorUsuario(null).length, creados + 1);
+    assert.throws(() => ProyectoService.crear({ nombre: 'Huérfano' }), /Asigna el proyecto a un cliente/);
+});
+
 test('eliminar un proyecto borra también sus canciones', () => {
     const proyecto = ProyectoService.crear({ nombre: 'Demo', usuario_id: 10 });
     const cancion = CancionService.crear({ proyecto_id: proyecto.id, nombre: 'Tema 1', duracion: 3 });

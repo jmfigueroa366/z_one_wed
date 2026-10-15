@@ -1,11 +1,16 @@
 // CAPA: Dominio
+import { ESTADOS_SOLICITUD_ACTIVOS } from '../config/estados.js';
 
 export const ETIQUETAS_ESTADO = {
     solicitada: 'Solicitada',
+    por_autorizar: 'Por autorizar',
+    por_pagar: 'Por pagar',
     confirmada: 'Confirmada',
     rechazada: 'Rechazada',
     cancelada: 'Cancelada',
 };
+
+export { ESTADOS_SOLICITUD_ACTIVOS };
 
 export const ETIQUETAS_INVITACION = {
     pendiente: 'Pendiente',
@@ -89,7 +94,7 @@ export function franjasOcupadas({ fecha, salaId, solicitudes = [], sesiones = []
         .filter((solicitud) =>
             String(solicitud.sala_id) === String(salaId)
             && solicitud.fecha === fecha
-            && ['solicitada', 'confirmada'].includes(solicitud.estado))
+            && ESTADOS_SOLICITUD_ACTIVOS.includes(solicitud.estado))
         .map((solicitud) => solicitud.franja)
         .filter(Boolean);
 

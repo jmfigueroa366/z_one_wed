@@ -1,6 +1,7 @@
 // CAPA: Aplicación
 import { proyectoRepo } from '../repositories/proyectoRepo.js';
 import { cancionRepo } from '../repositories/cancionRepo.js';
+import { usuarioRepo } from '../repositories/usuarioRepo.js';
 import { crearProyecto } from '../models/Proyecto.js';
 
 export const ProyectoService = {
@@ -9,6 +10,7 @@ export const ProyectoService = {
     },
 
     listarPorUsuario(usuarioId) {
+        if (usuarioId == null) return proyectoRepo.listar();
         return proyectoRepo.listarPorUsuario(usuarioId);
     },
 
@@ -16,8 +18,17 @@ export const ProyectoService = {
         return proyectoRepo.obtenerPorId(id);
     },
 
+    propietarioDe(proyecto) {
+        if (!proyecto?.usuario_id) return null;
+        return usuarioRepo.obtenerPorId(proyecto.usuario_id);
+    },
+
     crear(data) {
-        return proyectoRepo.crear(crearProyecto(data));
+        const usuarioId = data?.usuario_id ?? null;
+        if (usuarioId == null) {
+            throw new Error('Asigna el proyecto a un cliente.');
+        }
+        return proyectoRepo.crear(crearProyecto({ ...data, usuario_id: usuarioId }));
     },
 
     actualizar(id, data) {

@@ -1,7 +1,7 @@
 // CAPA: Presentación
 import { useEffect, useMemo, useRef, useState } from 'react';
 import anime from 'animejs';
-import { Clock, Mic, SlidersHorizontal } from 'lucide-react';
+import { Clock, Mic, SlidersHorizontal, Users } from 'lucide-react';
 import { FondoHero } from '../components/Animados.jsx';
 import { useColaboradores } from '../hooks/useColaboradores.js';
 import { useSalas } from '../hooks/useSalas.js';
@@ -9,6 +9,7 @@ import { useSesiones } from '../hooks/useSesiones.js';
 import { useSolicitudes } from '../hooks/useSolicitudes.js';
 import { useSpotlight } from '../hooks/useSpotlight.js';
 import { formatearFecha } from '../utils/helpers.js';
+import { aMinutos } from '../utils/solicitudes.js';
 import { clasePillEstado } from '../styles/clases.js';
 import '../styles/tailwind.css';
 
@@ -40,6 +41,29 @@ function fechaHoy() {
 
 function nombreColaborador(id, colaboradores) {
     return colaboradores.find((colaborador) => String(colaborador.id) === String(id))?.nombre ?? 'Sin asignar';
+}
+
+function minutosDeEvento(evento) {
+    const inicio = aMinutos(evento.hora_inicio);
+    const fin = aMinutos(evento.hora_fin);
+    if (!Number.isFinite(inicio) || !Number.isFinite(fin)) return 0;
+    return Math.max(0, fin - inicio);
+}
+
+function iniciales(nombre) {
+    return String(nombre ?? '')
+        .trim()
+        .split(/\s+/)
+        .slice(0, 2)
+        .map((parte) => parte[0] ?? '')
+        .join('')
+        .toLocaleUpperCase();
+}
+
+function involucraA(evento, colaboradorId) {
+    if (String(evento.colaborador_id) === String(colaboradorId)) return true;
+    return Array.isArray(evento.colaboradores)
+        && evento.colaboradores.some((invitacion) => String(invitacion.colaborador_id) === String(colaboradorId));
 }
 
 function nombresDeSolicitud(solicitud, colaboradores) {
@@ -137,6 +161,23 @@ export default function Agenda() {
             ? nombresDeSolicitud(evento, colaboradores)
             : nombreColaborador(evento.colaborador_id, colaboradores);
 
+    const ocupacion = useMemo(() => {
+        const filas = colaboradores
+            .filter((colaborador) => colaborador.activo !== false)
+            .map((colaborador) => {
+                const eventos = eventosAgenda.filter(
+                    (evento) => evento.estado !== 'cancelada' && involucraA(evento, colaborador.id)
+                );
+                const horas = eventos.reduce((suma, evento) => suma + minutosDeEvento(evento), 0) / 60;
+                return { colaborador, sesiones: eventos.length, horas: Math.round(horas * 10) / 10 };
+            })
+            .sort((a, b) => b.horas - a.horas || a.colaborador.nombre.localeCompare(b.colaborador.nombre));
+        const maxHoras = Math.max(1, ...filas.map((fila) => fila.horas));
+        const totalHoras = filas.reduce((suma, fila) => suma + fila.horas, 0);
+        const libres = filas.filter((fila) => fila.horas === 0).length;
+        return { filas, maxHoras, totalHoras: Math.round(totalHoras * 10) / 10, libres };
+    }, [colaboradores, eventosAgenda]);
+
     const resumen = [
         { etiqueta: 'Actividades en agenda', valor: eventosAgenda.length, tono: 'from-[#5b418f]/50', texto: 'text-texto-soft' },
         { etiqueta: 'Confirmadas', valor: eventosAgenda.filter((sesion) => sesion.estado === 'confirmada').length, tono: 'from-exito/25', texto: 'text-exito-soft' },
@@ -198,6 +239,74 @@ export default function Agenda() {
                         <strong className={`text-3xl font-black ${item.texto}`}>{item.valor}</strong>
                     </article>
                 ))}
+            </section>
+
+            <section className="mt-6 rounded-[2rem] border border-border bg-surface/60 p-5 backdrop-blur sm:p-6" aria-labelledby="agenda-staff-title">
+                <div className="flex flex-wrap items-end justify-between gap-4">
+                    <div>
+                        <p className="workspace-eyebrow">OCUPACIÓN DEL PERSONAL</p>
+                        <h2 id="agenda-staff-title" className="mt-1 flex items-center gap-2 text-xl font-bold tracking-tight text-texto-soft">
+                            <Users className="h-5 w-5 text-accent-soft" aria-hidden="true" /> Carga del equipo
+                        </h2>
+                    </div>
+                    <div className="flex flex-wrap gap-3">
+                        <span className="rounded-full border border-accent/40 bg-accent/10 px-3 py-1.5 text-xs font-bold text-accent-soft">
+                            {ocupacion.totalHoras} h agendadas
+                        </span>
+                        <span className="rounded-full border border-exito/40 bg-exito/10 px-3 py-1.5 text-xs font-bold text-exito-soft">
+                            {ocupacion.libres} libres
+                        </span>
+                    </div>
+                </div>
+
+                {ocupacion.filas.length ? (
+                    <div className="mt-5 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+                        {ocupacion.filas.map(({ colaborador, sesiones, horas }) => {
+                            const pct = Math.round((horas / ocupacion.maxHoras) * 100);
+                            const libre = horas === 0;
+                            const cargado = pct >= 70;
+                            const acento = libre ? '#6b6480' : cargado ? '#f04fa6' : '#a477ff';
+                            return (
+                                <article
+                                    key={colaborador.id}
+                                    className="tarjeta-brillo relative overflow-hidden rounded-2xl border border-border bg-white/[0.02] p-4 transition hover:-translate-y-0.5 hover:border-accent/50"
+                                >
+                                    <div className="flex items-center gap-3">
+                                        <span
+                                            className="grid h-11 w-11 shrink-0 place-items-center rounded-xl text-sm font-black text-white"
+                                            style={{ background: `linear-gradient(135deg, ${acento}, #5b418f)` }}
+                                            aria-hidden="true"
+                                        >
+                                            {iniciales(colaborador.nombre)}
+                                        </span>
+                                        <div className="min-w-0 flex-1">
+                                            <p className="truncate font-semibold text-texto-soft">{colaborador.nombre}</p>
+                                            <p className="truncate text-xs text-sutil">{colaborador.especialidad ?? 'Equipo del estudio'}</p>
+                                        </div>
+                                        <span
+                                            className="shrink-0 rounded-full border px-2 py-0.5 text-[0.62rem] font-bold"
+                                            style={{ borderColor: `${acento}66`, background: `${acento}1f`, color: '#f2effb' }}
+                                        >
+                                            {libre ? 'Libre' : cargado ? 'Alta' : 'Media'}
+                                        </span>
+                                    </div>
+                                    <div className="mt-3 h-1.5 overflow-hidden rounded-full bg-white/[0.06]">
+                                        <span
+                                            className="block h-full rounded-full transition-all duration-700"
+                                            style={{ width: `${Math.max(pct, libre ? 4 : 10)}%`, background: `linear-gradient(90deg, ${acento}, #e34ba6)` }}
+                                        />
+                                    </div>
+                                    <div className="mt-2 flex items-center justify-between text-xs text-sutil">
+                                        <span>{sesiones} {sesiones === 1 ? 'actividad' : 'actividades'}</span>
+                                        <span className="font-bold" style={{ color: libre ? undefined : acento }}>{horas} h</span>
+                                    </div>
+                                </article>
+                            );
+                        })}
+                    </div>
+                ) : (
+                    <p className="mt-5 text-sutil">Aún no hay personal registrado en el estudio.</p>
+                )}
             </section>
 
             <section className="mt-6 rounded-[2rem] border border-border bg-surface/60 p-5 backdrop-blur sm:p-6" aria-labelledby="agenda-list-title">

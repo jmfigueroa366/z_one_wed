@@ -25,6 +25,12 @@ export function clasePillEstado(estado) {
     if (['solicitada', 'pendiente'].includes(estado)) {
         return `${PILL} border-aviso/25 bg-aviso/10 text-aviso-soft`;
     }
+    if (estado === 'por_autorizar') {
+        return `${PILL} border-accent/30 bg-accent/10 text-accent-soft`;
+    }
+    if (estado === 'por_pagar') {
+        return `${PILL} border-magenta/30 bg-magenta/10 text-magenta`;
+    }
     if (['cancelada', 'rechazada'].includes(estado)) {
         return `${PILL} border-peligro/25 bg-peligro/10 text-peligro-soft`;
     }

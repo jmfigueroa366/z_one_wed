@@ -161,6 +161,40 @@
     }
 }
 
+@keyframes deriva {
+    0%,
+    100% {
+        transform: translate3d(0, 0, 0) scale(1);
+    }
+    33% {
+        transform: translate3d(6%, -5%, 0) scale(1.14);
+    }
+    66% {
+        transform: translate3d(-5%, 4%, 0) scale(1.05);
+    }
+}
+
+@keyframes latido-luz {
+    0%,
+    100% {
+        opacity: 0.5;
+        transform: scale(1);
+    }
+    50% {
+        opacity: 1;
+        transform: scale(1.06);
+    }
+}
+
+@keyframes halo {
+    0% {
+        transform: rotate(0deg);
+    }
+    100% {
+        transform: rotate(360deg);
+    }
+}
+
 @keyframes girar {
     to {
         transform: rotate(360deg);
@@ -294,6 +328,38 @@
 
 .tarjeta-brillo:hover::after {
     transform: translateX(120%);
+}
+
+@media print {
+    body * {
+        visibility: hidden !important;
+    }
+
+    .factura-imprimible,
+    .factura-imprimible * {
+        visibility: visible !important;
+    }
+
+    .factura-imprimible {
+        position: absolute !important;
+        inset: 0 auto auto 0 !important;
+        width: 100% !important;
+        margin: 0 !important;
+        padding: 0 !important;
+    }
+
+    .factura-papel {
+        box-shadow: none !important;
+        border-radius: 0 !important;
+    }
+
+    .no-print {
+        display: none !important;
+    }
+
+    @page {
+        margin: 12mm;
+    }
 }
 
 @media (prefers-reduced-motion: reduce) {

@@ -1,11 +1,12 @@
 // CAPA: Presentación
 import { useEffect, useMemo, useRef, useState } from 'react';
 import anime from 'animejs';
-import { BadgeCheck, CheckCircle2, Clock, Coins, Receipt, Sparkles, Wallet, X } from 'lucide-react';
+import { BadgeCheck, CheckCircle2, Clock, Coins, FileText, Receipt, Sparkles, Wallet, X } from 'lucide-react';
 import { useAuth } from '../context/AuthContext.jsx';
 import { useOrdenes } from '../hooks/useOrdenes.js';
 import { useSpotlight } from '../hooks/useSpotlight.js';
 import { Contador, FondoHero } from '../components/Animados.jsx';
+import FacturaImprimible from '../components/FacturaImprimible.jsx';
 import { OrdenService } from '../services/ordenService.js';
 import { ProyectoService } from '../services/proyectoService.js';
 import { CancionService } from '../services/cancionService.js';
@@ -197,6 +198,8 @@ export default function Pagos() {
     const [proyectoEmision, setProyectoEmision] = useState('');
     const [cancionEmision, setCancionEmision] = useState('');
 
+    const [facturaAbierta, setFacturaAbierta] = useState(null);
+
     const proyectos = useMemo(() => ProyectoService.listar(), [ordenes]);
     const canciones = useMemo(() => CancionService.listar(), [ordenes]);
     const usuarios = useMemo(() => (esAdmin ? usuarioRepo.listar() : []), [esAdmin]);
@@ -204,6 +207,8 @@ export default function Pagos() {
 
     const nombreCliente = (id) => usuarios.find((u) => String(u.id) === String(id))?.nombre ?? `Cliente #${id}`;
     const proyectoDe = (id) => proyectos.find((p) => String(p.id) === String(id))?.nombre ?? '';
+    const clienteDe = (id) => usuarioRepo.obtenerPorId(id) ?? usuario;
+    const cancionDe = (id) => canciones.find((c) => String(c.id) === String(id))?.nombre ?? '';
 
     const cancionesDelProyecto = useMemo(
         () => canciones.filter((c) => String(c.proyecto_id) === String(proyectoEmision)),
@@ -539,6 +544,9 @@ export default function Pagos() {
                                         </div>
 
                                         <div className="relative mt-5 flex flex-wrap items-center justify-end gap-2 border-t border-border/40 pt-4">
+                                            <button className={BOTON_SECUNDARIO} type="button" onClick={() => setFacturaAbierta(orden)}>
+                                                <FileText className="mr-2 h-4 w-4" aria-hidden="true" /> Ver factura
+                                            </button>
                                             {puedePagar && pagoAbierto !== orden.id && (
                                                 <button className={BOTON_PRIMARIO} type="button" onClick={() => abrirPago(orden)}>
                                                     <Wallet className="mr-2 h-4 w-4" aria-hidden="true" /> {esAdmin ? 'Registrar pago' : 'Pagar'}
@@ -609,6 +617,16 @@ export default function Pagos() {
                     )}
                 </section>
             </div>
+
+            {facturaAbierta && (
+                <FacturaImprimible
+                    orden={facturaAbierta}
+                    cliente={clienteDe(facturaAbierta.usuario_id)}
+                    proyecto={proyectoDe(facturaAbierta.proyecto_id)}
+                    cancion={cancionDe(facturaAbierta.cancion_id)}
+                    onCerrar={() => setFacturaAbierta(null)}
+                />
+            )}
         </main>
     );
 }

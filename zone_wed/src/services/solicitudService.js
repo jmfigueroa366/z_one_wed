@@ -5,8 +5,11 @@ import { colaboradorRepo } from '../repositories/colaboradorRepo.js';
 import { salaRepo } from '../repositories/salaRepo.js';
 import { sesionRepo } from '../repositories/sesionRepo.js';
 import { usuarioRepo } from '../repositories/usuarioRepo.js';
+import { ordenRepo } from '../repositories/ordenRepo.js';
 import { seSolapan } from '../utils/solicitudes.js';
+import { ESTADOS_SOLICITUD_ACTIVOS } from '../config/estados.js';
 import { ROLES } from '../config/roles.js';
+import { TIPOS_ORDEN } from '../config/facturacion.js';
 import { OrdenService } from './ordenService.js';
 
 function franjaDe(sesion) {
@@ -14,9 +17,14 @@ function franjaDe(sesion) {
     return `${sesion.hora_inicio}-${sesion.hora_fin}`;
 }
 
+function franjaAHoras(franja) {
+    const [inicio, fin] = String(franja ?? '').split('-').map((hora) => hora.trim());
+    return { hora_inicio: inicio || null, hora_fin: fin || null };
+}
+
 function hayConflicto({ salaId, fecha, franja }) {
     const chocaConSolicitud = solicitudRepo.listar().some((solicitud) =>
-        solicitud.estado === 'solicitada' &&
+        ESTADOS_SOLICITUD_ACTIVOS.includes(solicitud.estado) &&
         String(solicitud.sala_id) === String(salaId) &&
         solicitud.fecha === fecha &&
         seSolapan(solicitud.franja, franja)
@@ -43,7 +51,7 @@ function crearSesionDesdeSolicitud(solicitud) {
     const aceptados = Solicitud.colaboradoresDe(solicitud).filter((invitacion) => invitacion.estado === 'aceptada');
     const principal = aceptados[0]?.colaborador_id ?? null;
 
-    const sesion = sesionRepo.crear({
+    return sesionRepo.crear({
         titulo: solicitud.titulo || 'Sesión de estudio',
         solicitud_id: solicitud.id,
         tipo: solicitud.tipo ?? null,
@@ -57,17 +65,43 @@ function crearSesionDesdeSolicitud(solicitud) {
         proyecto_id: solicitud.proyecto_id ?? null,
         partes: solicitud.partes ?? [],
     });
-    emitirAnticipoDeReserva(solicitud, sesion);
-    return sesion;
 }
 
-// Al confirmarse la reserva se emite la factura del anticipo para el cliente.
-function emitirAnticipoDeReserva(solicitud, sesion) {
-    const solicitante = usuarioRepo.obtenerPorId(solicitud.usuario_id);
-    if (solicitante?.rol !== ROLES.CLIENTE) {
+// Al autorizar, se emite la factura del anticipo que el cliente debe pagar
+// para que la reserva siga avanzando.
+function emitirAnticipoDeSolicitud(solicitud, solicitante) {
+    const yaFacturada = ordenRepo.listar().some((orden) =>
+        String(orden.solicitud_id) === String(solicitud.id) &&
+        ['facturada', 'parcial', 'pagada'].includes(orden.estado)
+    );
+    if (yaFacturada) {
         return null;
     }
-    return OrdenService.emitirReserva(sesion, { usuario_id: solicitante.id });
+
+    const { hora_inicio, hora_fin } = franjaAHoras(solicitud.franja);
+    return OrdenService.emitirReserva(
+        {
+            tipo: solicitud.tipo,
+            hora_inicio,
+            hora_fin,
+            franja: solicitud.franja,
+            titulo: solicitud.titulo || 'Reserva de sesión',
+            fecha: solicitud.fecha,
+            proyecto_id: solicitud.proyecto_id ?? null,
+            cancion_id: solicitud.cancion_id ?? null,
+        },
+        { usuario_id: solicitante.id, solicitud_id: solicitud.id }
+    );
+}
+
+// El cliente no puede abrir otra solicitud mientras tenga una reserva sin pagar.
+function pagoReservaPendiente(usuarioId) {
+    if (usuarioId == null) return null;
+    return ordenRepo.listar().find((orden) =>
+        String(orden.usuario_id) === String(usuarioId) &&
+        orden.tipo === TIPOS_ORDEN.RESERVA &&
+        ['facturada', 'parcial'].includes(orden.estado)
+    ) ?? null;
 }
 
 export const SolicitudService = {
@@ -83,6 +117,11 @@ export const SolicitudService = {
         const sala = salaRepo.obtenerPorId(data.sala_id);
         if (!sala) {
             throw new Error('La sala no existe.');
+        }
+
+        const pendiente = pagoReservaPendiente(data.usuario_id);
+        if (pendiente) {
+            throw new Error('Tienes un anticipo de reserva sin pagar. Paga tu factura antes de crear otra solicitud.');
         }
 
         const invitados = Array.isArray(data.colaboradores) ? data.colaboradores : [];
@@ -147,14 +186,68 @@ export const SolicitudService = {
 
         if (Solicitud.todosRespondieron(actualizada)) {
             if (Solicitud.todosAceptaron(actualizada)) {
-                actualizada = solicitudRepo.actualizar(solicitud.id, { estado: 'confirmada' });
-                crearSesionDesdeSolicitud(actualizada);
+                // El equipo aceptó: queda en manos del administrador autorizar.
+                actualizada = solicitudRepo.actualizar(solicitud.id, { estado: 'por_autorizar' });
             } else {
                 actualizada = solicitudRepo.actualizar(solicitud.id, { estado: 'rechazada' });
             }
         }
 
         return actualizada;
+    },
+
+    // El administrador autoriza la solicitud para que el cliente pueda pagar.
+    autorizar(solicitudId, { rol } = {}) {
+        if (rol !== ROLES.ADMINISTRADOR) {
+            throw new Error('Solo un administrador puede autorizar la solicitud.');
+        }
+
+        const solicitud = solicitudRepo.obtenerPorId(solicitudId);
+        if (!solicitud) {
+            throw new Error('La solicitud no existe.');
+        }
+        if (solicitud.estado !== 'por_autorizar') {
+            throw new Error('La solicitud todavía no está lista para autorizar.');
+        }
+
+        const solicitante = usuarioRepo.obtenerPorId(solicitud.usuario_id);
+
+        // Si quien solicita no es cliente no hay pago: se confirma directamente.
+        if (solicitante?.rol !== ROLES.CLIENTE) {
+            const confirmada = solicitudRepo.actualizar(solicitud.id, { estado: 'confirmada' });
+            crearSesionDesdeSolicitud(confirmada);
+            return confirmada;
+        }
+
+        const autorizada = solicitudRepo.actualizar(solicitud.id, { estado: 'por_pagar' });
+        emitirAnticipoDeSolicitud(autorizada, solicitante);
+        return autorizada;
+    },
+
+    rechazar(solicitudId, { rol } = {}) {
+        if (rol !== ROLES.ADMINISTRADOR) {
+            throw new Error('Solo un administrador puede rechazar la solicitud.');
+        }
+
+        const solicitud = solicitudRepo.obtenerPorId(solicitudId);
+        if (!solicitud) {
+            throw new Error('La solicitud no existe.');
+        }
+        if (!Solicitud.puedeTransicionar(solicitud, 'rechazada')) {
+            throw new Error('La solicitud no se puede rechazar en su estado actual.');
+        }
+        return solicitudRepo.actualizar(solicitud.id, { estado: 'rechazada' });
+    },
+
+    // La dispara la facturación cuando el cliente paga el anticipo de la reserva.
+    confirmarPorPago(solicitudId) {
+        const solicitud = solicitudRepo.obtenerPorId(solicitudId);
+        if (!solicitud || solicitud.estado !== 'por_pagar') {
+            return solicitud;
+        }
+        const confirmada = solicitudRepo.actualizar(solicitud.id, { estado: 'confirmada' });
+        crearSesionDesdeSolicitud(confirmada);
+        return confirmada;
     },
 
     cancelar(id) {
@@ -165,6 +258,19 @@ export const SolicitudService = {
         if (!Solicitud.puedeTransicionar(solicitud, 'cancelada')) {
             throw new Error('La solicitud ya no se puede cancelar.');
         }
+
+        // Cancela el anticipo pendiente para no dejar facturas colgando.
+        const pendiente = ordenRepo.listar().find((orden) =>
+            String(orden.solicitud_id) === String(solicitud.id) &&
+            ['facturada', 'parcial'].includes(orden.estado)
+        );
+        if (pendiente) {
+            ordenRepo.actualizar(pendiente.id, {
+                estado: 'cancelada',
+                fecha_cancelacion: new Date().toISOString().slice(0, 10),
+            });
+        }
+
         return solicitudRepo.actualizar(id, { estado: 'cancelada' });
     },
 };

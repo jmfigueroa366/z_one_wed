@@ -15,7 +15,7 @@ import {
 
 // Incrementa este valor cuando cambie SEED para que los navegadores
 // con datos antiguos se repueblen automáticamente.
-export const SEED_VERSION = '2026-10-14-2';
+export const SEED_VERSION = '2026-10-15-1';
 
 function fechaLocalISO(fecha) {
     return (
@@ -169,6 +169,88 @@ function construirOrdenCancion(cancionId, { numero, estado, pagos = [] }) {
     };
 }
 
+const SOLICITUDES = [
+    {
+        usuario_id: 2, solicitante_nombre: 'Lúa Ferreira', sala_id: 1,
+        fecha: enDias(0), franja: '10:00-12:00', tipo: 'grabacion',
+        titulo: 'Grabación de voces', descripcion: '', fecha_solicitud: enDias(-2),
+        colaboradores: [{ colaborador_id: 1, rol: 'artista', estado: 'pendiente' }],
+        estado: 'solicitada',
+    },
+    {
+        usuario_id: 3, solicitante_nombre: 'Cliente Zeta', sala_id: 3,
+        fecha: enDias(1), franja: '15:00-18:00', tipo: 'produccion',
+        titulo: 'Producción de sencillo', descripcion: 'Necesito dirección musical', fecha_solicitud: enDias(-1),
+        colaboradores: [
+            { colaborador_id: 2, rol: 'productor', estado: 'aceptada' },
+            { colaborador_id: 5, rol: 'artista', estado: 'aceptada' },
+        ],
+        estado: 'por_autorizar',
+    },
+    {
+        usuario_id: 3, solicitante_nombre: 'Cliente Zeta', sala_id: 1,
+        fecha: enDias(6), franja: '09:00-12:00', tipo: 'grabacion',
+        titulo: 'EP Primavera', descripcion: 'Primeras tomas del EP', fecha_solicitud: enDias(-3),
+        colaboradores: [
+            { colaborador_id: 3, rol: 'artista', estado: 'aceptada' },
+            { colaborador_id: 4, rol: 'productor', estado: 'aceptada' },
+        ],
+        estado: 'por_pagar',
+    },
+    {
+        usuario_id: 3, solicitante_nombre: 'Cliente Zeta', sala_id: 2,
+        fecha: enDias(2), franja: '09:00-11:00', tipo: 'grabacion',
+        titulo: 'Grabación Amanecer', cancion_id: 1, proyecto_id: 1, partes: ['Vocales', 'Guitarra'],
+        fecha_solicitud: enDias(-5),
+        colaboradores: [
+            { colaborador_id: 3, rol: 'artista', estado: 'aceptada' },
+            { colaborador_id: 4, rol: 'productor', estado: 'aceptada' },
+        ],
+        estado: 'confirmada',
+    },
+    {
+        usuario_id: 3, solicitante_nombre: 'Cliente Zeta', sala_id: 1,
+        fecha: enDias(-1), franja: '14:00-16:00', tipo: 'produccion',
+        titulo: 'Producción descartada', descripcion: '', fecha_solicitud: enDias(-4),
+        colaboradores: [
+            { colaborador_id: 4, rol: 'productor', estado: 'aceptada' },
+            { colaborador_id: 5, rol: 'artista', estado: 'rechazada' },
+        ],
+        estado: 'rechazada',
+    },
+    {
+        usuario_id: 2, solicitante_nombre: 'Lúa Ferreira', sala_id: 2,
+        fecha: enDias(3), franja: '18:00-20:00', tipo: 'masterizacion',
+        titulo: 'Masterización', descripcion: '', fecha_solicitud: enDias(0),
+        colaboradores: [{ colaborador_id: 5, rol: 'artista', estado: 'pendiente' }],
+        estado: 'solicitada',
+    },
+    {
+        usuario_id: 2, solicitante_nombre: 'Lúa Ferreira', sala_id: 3,
+        fecha: enDias(-4), franja: '11:00-13:00', tipo: 'ensayo',
+        titulo: 'Ensayo general', descripcion: '', fecha_solicitud: enDias(-8),
+        colaboradores: [{ colaborador_id: 1, rol: 'artista', estado: 'aceptada' }],
+        estado: 'confirmada',
+    },
+    {
+        usuario_id: 3, solicitante_nombre: 'Cliente Zeta', sala_id: 2,
+        fecha: enDias(4), franja: '10:00-12:00', tipo: 'mezcla',
+        titulo: 'Mezcla cancelada', descripcion: '', fecha_solicitud: enDias(-1),
+        colaboradores: [{ colaborador_id: 2, rol: 'productor', estado: 'pendiente' }],
+        estado: 'cancelada',
+    },
+    {
+        usuario_id: 3, solicitante_nombre: 'Cliente Zeta', sala_id: 2,
+        fecha: enDias(5), franja: '16:00-19:00', tipo: 'mezcla',
+        titulo: 'Mezcla Noche azul', cancion_id: 17, proyecto_id: 2, descripcion: '', fecha_solicitud: enDias(0),
+        colaboradores: [
+            { colaborador_id: 3, rol: 'artista', estado: 'pendiente' },
+            { colaborador_id: 4, rol: 'productor', estado: 'pendiente' },
+        ],
+        estado: 'solicitada',
+    },
+];
+
 const ORDENES_SERVICIO = [
     construirOrdenAlbum(),
     construirOrdenCancion(17, {
@@ -207,77 +289,7 @@ export const SEED = {
         { nombre: 'Mario', especialidad: 'Ingeniero de sonido', usuario_id: 4, activo: true },
     ],
 
-    solicitudes: [
-        {
-            usuario_id: 2, solicitante_nombre: 'Lúa Ferreira', sala_id: 1,
-            fecha: enDias(0), franja: '10:00-12:00', tipo: 'grabacion',
-            titulo: 'Grabación de voces', descripcion: '', fecha_solicitud: enDias(-2),
-            colaboradores: [{ colaborador_id: 1, rol: 'artista', estado: 'pendiente' }],
-            estado: 'solicitada',
-        },
-        {
-            usuario_id: 3, solicitante_nombre: 'Cliente Zeta', sala_id: 3,
-            fecha: enDias(1), franja: '15:00-18:00', tipo: 'produccion',
-            titulo: 'Producción de sencillo', descripcion: 'Necesito dirección musical', fecha_solicitud: enDias(-1),
-            colaboradores: [
-                { colaborador_id: 2, rol: 'productor', estado: 'aceptada' },
-                { colaborador_id: 5, rol: 'artista', estado: 'pendiente' },
-            ],
-            estado: 'solicitada',
-        },
-        {
-            usuario_id: 3, solicitante_nombre: 'Cliente Zeta', sala_id: 2,
-            fecha: enDias(2), franja: '09:00-11:00', tipo: 'grabacion',
-            titulo: 'Grabación Amanecer', cancion_id: 1, proyecto_id: 1, partes: ['Vocales', 'Guitarra'],
-            fecha_solicitud: enDias(-5),
-            colaboradores: [
-                { colaborador_id: 3, rol: 'artista', estado: 'aceptada' },
-                { colaborador_id: 4, rol: 'productor', estado: 'aceptada' },
-            ],
-            estado: 'confirmada',
-        },
-        {
-            usuario_id: 3, solicitante_nombre: 'Cliente Zeta', sala_id: 1,
-            fecha: enDias(-1), franja: '14:00-16:00', tipo: 'produccion',
-            titulo: 'Producción descartada', descripcion: '', fecha_solicitud: enDias(-4),
-            colaboradores: [
-                { colaborador_id: 4, rol: 'productor', estado: 'aceptada' },
-                { colaborador_id: 5, rol: 'artista', estado: 'rechazada' },
-            ],
-            estado: 'rechazada',
-        },
-        {
-            usuario_id: 2, solicitante_nombre: 'Lúa Ferreira', sala_id: 2,
-            fecha: enDias(3), franja: '18:00-20:00', tipo: 'masterizacion',
-            titulo: 'Masterización', descripcion: '', fecha_solicitud: enDias(0),
-            colaboradores: [{ colaborador_id: 5, rol: 'artista', estado: 'pendiente' }],
-            estado: 'solicitada',
-        },
-        {
-            usuario_id: 2, solicitante_nombre: 'Lúa Ferreira', sala_id: 3,
-            fecha: enDias(-4), franja: '11:00-13:00', tipo: 'ensayo',
-            titulo: 'Ensayo general', descripcion: '', fecha_solicitud: enDias(-8),
-            colaboradores: [{ colaborador_id: 1, rol: 'artista', estado: 'aceptada' }],
-            estado: 'confirmada',
-        },
-        {
-            usuario_id: 3, solicitante_nombre: 'Cliente Zeta', sala_id: 2,
-            fecha: enDias(4), franja: '10:00-12:00', tipo: 'mezcla',
-            titulo: 'Mezcla cancelada', descripcion: '', fecha_solicitud: enDias(-1),
-            colaboradores: [{ colaborador_id: 2, rol: 'productor', estado: 'pendiente' }],
-            estado: 'cancelada',
-        },
-        {
-            usuario_id: 3, solicitante_nombre: 'Cliente Zeta', sala_id: 2,
-            fecha: enDias(5), franja: '16:00-19:00', tipo: 'mezcla',
-            titulo: 'Mezcla Noche azul', cancion_id: 17, proyecto_id: 2, descripcion: '', fecha_solicitud: enDias(0),
-            colaboradores: [
-                { colaborador_id: 3, rol: 'artista', estado: 'pendiente' },
-                { colaborador_id: 4, rol: 'productor', estado: 'pendiente' },
-            ],
-            estado: 'solicitada',
-        },
-    ],
+    solicitudes: SOLICITUDES,
 
     sesiones: SESIONES,
 

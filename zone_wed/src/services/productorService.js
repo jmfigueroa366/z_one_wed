@@ -6,8 +6,8 @@ export const ProductorService = {
     listar() {
         return colaboradorRepo.listar().filter((colaborador) =>
             colaborador.activo !== false
-            && (colaborador.especialidad?.toLocaleLowerCase().includes('produ')
-                || colaborador.perfil === 'produccion')
+            && (colaborador.perfil === 'produccion'
+                || colaborador.especialidad?.toLocaleLowerCase().includes('produ'))
         );
     },
 
@@ -41,6 +41,7 @@ export const ProductorService = {
         return crearProductor(colaboradorRepo.crear({
             nombre,
             especialidad,
+            perfil: 'produccion',
             ...(imagen ? { imagen } : {}),
             activo: true,
         }));

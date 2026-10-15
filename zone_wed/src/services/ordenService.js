@@ -8,6 +8,7 @@ import { ConfiguracionService } from './configuracionService.js';
 import { calcularTotalAlbum, calcularTotalCancion, calcularTotalSesion, calcularAnticipoYSaldo, aplicarPoliticaCancelacion, horasDesdeSesiones, redondearMoneda } from './facturacionService.js';
 import { TIPOS_ORDEN } from '../config/facturacion.js';
 import { ROLES } from '../config/roles.js';
+import { SolicitudService } from './solicitudService.js';
 
 const ROLES_FACTURACION = [ROLES.ADMINISTRADOR, ROLES.CLIENTE];
 
@@ -199,30 +200,37 @@ export const OrdenService = {
         });
     },
 
-    // Genera la factura del anticipo de una reserva confirmada. La dispara el
-    // sistema al crear la sesión, por eso no exige rol de administrador.
-    emitirReserva(sesion, { usuario_id } = {}) {
-        if (!sesion) {
-            throw new Error('La sesión no existe.');
+    // Genera la factura del anticipo de una reserva. La dispara el sistema al
+    // autorizar la solicitud (o al crear la sesión), sin exigir rol.
+    emitirReserva(referencia, { usuario_id, solicitud_id = null } = {}) {
+        if (!referencia) {
+            throw new Error('La reserva no existe.');
         }
         const config = ConfiguracionService.obtener();
         const estimado = calcularTotalSesion(
-            { tipo: sesion.tipo, horaInicio: sesion.hora_inicio, horaFin: sesion.hora_fin },
+            { tipo: referencia.tipo, horaInicio: referencia.hora_inicio, horaFin: referencia.hora_fin },
             config
         );
         const anticipo = redondearMoneda(estimado.total * config.anticipoPorcentaje);
+        const refSolicitud = solicitud_id ?? referencia.solicitud_id ?? null;
+        const refSesion = referencia.sesion_id ?? (refSolicitud == null ? referencia.id ?? null : null);
+        const franja = referencia.hora_inicio && referencia.hora_fin
+            ? `${referencia.hora_inicio}-${referencia.hora_fin}`
+            : referencia.franja ?? null;
 
         return ordenRepo.crear({
             tipo: TIPOS_ORDEN.RESERVA,
             usuario_id: usuario_id ?? null,
-            proyecto_id: sesion.proyecto_id ?? null,
-            cancion_id: sesion.cancion_id ?? null,
-            descripcion: `Anticipo · ${sesion.titulo || 'Reserva de sesión'}`,
+            proyecto_id: referencia.proyecto_id ?? null,
+            cancion_id: referencia.cancion_id ?? null,
+            solicitud_id: refSolicitud,
+            descripcion: `Anticipo · ${referencia.titulo || 'Reserva de sesión'}`,
             detalle: {
-                sesion_id: sesion.id ?? null,
-                tipoSesion: sesion.tipo ?? null,
-                fecha: sesion.fecha ?? null,
-                franja: sesion.hora_inicio && sesion.hora_fin ? `${sesion.hora_inicio}-${sesion.hora_fin}` : null,
+                sesion_id: refSesion,
+                solicitud_id: refSolicitud,
+                tipoSesion: referencia.tipo ?? null,
+                fecha: referencia.fecha ?? null,
+                franja,
                 horasProduccion: estimado.horasProduccion,
                 horasEnsayo: estimado.horasEnsayo,
                 tarifaProduccion: config.tarifaProduccionHora,
@@ -257,11 +265,19 @@ export const OrdenService = {
             throw new Error('La orden no admite ese pago en su estado actual.');
         }
 
-        return ordenRepo.actualizar(id, {
+        const actualizada = ordenRepo.actualizar(id, {
             pagos,
             estado: nuevoEstado,
             pagada_en: nuevoEstado === 'pagada' ? pago.fecha : orden.pagada_en ?? null,
         });
+
+        // Al pagar el anticipo de la reserva, la solicitud se confirma y se
+        // crea la sesión: sin ese pago el proceso no continúa.
+        if (actualizada.estado === 'pagada' && actualizada.tipo === TIPOS_ORDEN.RESERVA && actualizada.solicitud_id != null) {
+            SolicitudService.confirmarPorPago(actualizada.solicitud_id);
+        }
+
+        return actualizada;
     },
 
     cancelar(id, { usuario, rol, horasAnticipacion = 0 } = {}) {
@@ -286,11 +302,22 @@ export const OrdenService = {
             config
         );
 
-        return ordenRepo.actualizar(id, {
+        const actualizada = ordenRepo.actualizar(id, {
             estado: 'cancelada',
             fecha_cancelacion: new Date().toISOString().slice(0, 10),
             cargo_cancelacion: cargo,
         });
+
+        // Si se cancela el anticipo de una reserva, la solicitud también se cancela.
+        if (actualizada.tipo === TIPOS_ORDEN.RESERVA && actualizada.solicitud_id != null) {
+            try {
+                SolicitudService.cancelar(actualizada.solicitud_id);
+            } catch {
+                /* la solicitud ya no se puede cancelar: se ignora */
+            }
+        }
+
+        return actualizada;
     },
 
     resumen({ usuario, rol } = {}) {

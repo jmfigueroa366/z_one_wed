@@ -1,16 +1,20 @@
 // CAPA: Presentación
-import { useEffect, useMemo, useRef } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import anime from 'animejs';
+import { Link } from 'react-router-dom';
+import { Check, Coins, XCircle } from 'lucide-react';
 import { useAuth } from '../context/AuthContext.jsx';
 import { esAdministrador } from '../config/roles.js';
 import { useColaboradores } from '../hooks/useColaboradores.js';
 import { useSalas } from '../hooks/useSalas.js';
 import { useSolicitudes } from '../hooks/useSolicitudes.js';
 import { CancionService } from '../services/cancionService.js';
+import { SolicitudService } from '../services/solicitudService.js';
+import { RUTAS } from '../config/rutas.js';
 import { etiquetaEstado, etiquetaInvitacion, etiquetaTipo, estimadoSala } from '../utils/solicitudes.js';
 import { formatearFecha, formatearMoneda } from '../utils/helpers.js';
 import MisSolicitudes from '../components/MisSolicitudes.jsx';
-import { clasePillEstado } from '../styles/clases.js';
+import { BOTON_PELIGRO, BOTON_PRIMARIO, clasePillEstado } from '../styles/clases.js';
 import '../styles/tailwind.css';
 
 const MENOS_MOVIMIENTO = () =>
@@ -18,21 +22,27 @@ const MENOS_MOVIMIENTO = () =>
 
 const COLUMNAS = [
     { clave: 'solicitada', titulo: 'Esperando respuestas', punto: 'bg-aviso', borde: 'border-aviso/40', fondo: 'from-aviso/[0.07]' },
+    { clave: 'por_autorizar', titulo: 'Por autorizar', punto: 'bg-accent', borde: 'border-accent/40', fondo: 'from-accent/[0.07]' },
+    { clave: 'por_pagar', titulo: 'Por pagar', punto: 'bg-magenta', borde: 'border-magenta/40', fondo: 'from-magenta/[0.07]' },
     { clave: 'confirmada', titulo: 'Confirmadas', punto: 'bg-exito', borde: 'border-exito/40', fondo: 'from-exito/[0.07]' },
     { clave: 'rechazada', titulo: 'Rechazadas', punto: 'bg-peligro', borde: 'border-peligro/40', fondo: 'from-peligro/[0.07]' },
     { clave: 'cancelada', titulo: 'Canceladas', punto: 'bg-sutil', borde: 'border-border', fondo: 'from-white/[0.03]' },
 ];
 
 function BandejaSolicitudes() {
+    const { usuario } = useAuth();
     const [solicitudes] = useSolicitudes();
     const [colaboradores] = useColaboradores();
     const [salas] = useSalas();
     const boardRef = useRef(null);
+    const [ocupado, setOcupado] = useState(null);
+    const [mensaje, setMensaje] = useState('');
+    const [error, setError] = useState('');
 
     const canciones = useMemo(() => CancionService.listar(), [solicitudes]);
 
     const grupos = useMemo(() => {
-        const base = { solicitada: [], confirmada: [], rechazada: [], cancelada: [] };
+        const base = { solicitada: [], por_autorizar: [], por_pagar: [], confirmada: [], rechazada: [], cancelada: [] };
         [...solicitudes]
             .sort((a, b) => String(b.fecha_solicitud ?? b.fecha ?? '').localeCompare(String(a.fecha_solicitud ?? a.fecha ?? '')))
             .forEach((solicitud) => {
@@ -67,6 +77,33 @@ function BandejaSolicitudes() {
     };
 
     const porResponder = grupos.solicitada.length;
+    const porAutorizar = grupos.por_autorizar.length;
+
+    const accion = (fn, solicitud, exito) => {
+        setMensaje('');
+        setError('');
+        setOcupado(solicitud.id);
+        try {
+            fn();
+            setMensaje(exito);
+        } catch (fallo) {
+            setError(fallo instanceof Error ? fallo.message : 'No se pudo completar la acción.');
+        } finally {
+            setOcupado(null);
+        }
+    };
+
+    const autorizar = (solicitud) => accion(
+        () => SolicitudService.autorizar(solicitud.id, { rol: usuario?.rol }),
+        solicitud,
+        `Solicitud autorizada. Se emitió el anticipo para ${nombreSolicitante(solicitud)}.`
+    );
+
+    const rechazar = (solicitud) => accion(
+        () => SolicitudService.rechazar(solicitud.id, { rol: usuario?.rol }),
+        solicitud,
+        'Solicitud rechazada.'
+    );
 
     return (
         <main className="workspace-content" data-page="solicitudes">
@@ -74,10 +111,13 @@ function BandejaSolicitudes() {
                 <div aria-hidden="true" className="pointer-events-none absolute -top-20 right-24 h-52 w-52 animate-aurora rounded-full bg-[#e34ba6]/15 blur-3xl" />
                 <p className="workspace-eyebrow">RESERVAS DEL ESTUDIO</p>
                 <h1>Solicitudes</h1>
-                <p>Sigue el pulso de cada solicitud. El estado se confirma solo cuando todos los artistas y productores invitados aceptan.</p>
+                <p>Flujo: el cliente pide, el equipo acepta, tú autorizas la reserva y el cliente paga el anticipo para confirmarla.</p>
             </header>
 
-            <section className="mt-6 grid gap-3 sm:grid-cols-3" aria-label="Resumen de solicitudes">
+            {mensaje && <p className="mt-5 rounded-xl border border-exito/30 bg-exito/10 px-4 py-3 text-sm text-exito-soft" role="status">{mensaje}</p>}
+            {error && <p className="mt-5 rounded-xl border border-peligro/30 bg-peligro/10 px-4 py-3 text-sm text-peligro-soft" role="alert">{error}</p>}
+
+            <section className="mt-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-4" aria-label="Resumen de solicitudes">
                 <article className="relative overflow-hidden rounded-2xl border border-border bg-gradient-to-br from-[#5b418f]/40 to-surface/40 p-4">
                     <span className="text-sm text-sutil">Total de solicitudes</span>
                     <strong className="mt-1 block text-3xl font-black text-texto-soft">{solicitudes.length}</strong>
@@ -86,13 +126,17 @@ function BandejaSolicitudes() {
                     <span className="text-sm text-sutil">Esperando respuestas</span>
                     <strong className="mt-1 block text-3xl font-black text-aviso-soft">{porResponder}</strong>
                 </article>
+                <article className="relative overflow-hidden rounded-2xl border border-border bg-gradient-to-br from-accent/20 to-surface/40 p-4">
+                    <span className="text-sm text-sutil">Por autorizar</span>
+                    <strong className="mt-1 block text-3xl font-black text-accent-soft">{porAutorizar}</strong>
+                </article>
                 <article className="relative overflow-hidden rounded-2xl border border-border bg-gradient-to-br from-exito/20 to-surface/40 p-4">
                     <span className="text-sm text-sutil">Confirmadas</span>
                     <strong className="mt-1 block text-3xl font-black text-exito-soft">{grupos.confirmada.length}</strong>
                 </article>
             </section>
 
-            <div ref={boardRef} className="mt-6 grid gap-4 lg:grid-cols-4">
+            <div ref={boardRef} className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-6">
                 {COLUMNAS.map((columna) => {
                     const items = grupos[columna.clave];
                     return (
@@ -157,6 +201,34 @@ function BandejaSolicitudes() {
                                                             </li>
                                                         ))}
                                                     </ul>
+                                                )}
+
+                                                {solicitud.estado === 'por_autorizar' && (
+                                                    <div className="mt-3 flex gap-2">
+                                                        <button
+                                                            className={`${BOTON_PRIMARIO} flex-1`}
+                                                            disabled={ocupado === solicitud.id}
+                                                            onClick={() => autorizar(solicitud)}
+                                                            type="button"
+                                                        >
+                                                            <Check className="mr-2 h-4 w-4" aria-hidden="true" /> Autorizar
+                                                        </button>
+                                                        <button
+                                                            className={BOTON_PELIGRO}
+                                                            disabled={ocupado === solicitud.id}
+                                                            onClick={() => rechazar(solicitud)}
+                                                            type="button"
+                                                        >
+                                                            <XCircle className="mr-2 h-4 w-4" aria-hidden="true" /> Rechazar
+                                                        </button>
+                                                    </div>
+                                                )}
+
+                                                {solicitud.estado === 'por_pagar' && (
+                                                    <p className="mt-3 flex items-center gap-2 text-xs text-magenta">
+                                                        <Coins className="h-3.5 w-3.5 shrink-0" aria-hidden="true" />
+                                                        Anticipo emitido. Esperando el pago del cliente.
+                                                    </p>
                                                 )}
                                             </article>
                                         );

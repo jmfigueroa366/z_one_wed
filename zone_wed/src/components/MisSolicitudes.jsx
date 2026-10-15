@@ -1,6 +1,6 @@
 // CAPA: Presentación
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { useLocation } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import anime from 'animejs';
 import {
     CalendarClock,
@@ -28,8 +28,11 @@ import { useSolicitudes } from '../hooks/useSolicitudes.js';
 import { useSesiones } from '../hooks/useSesiones.js';
 import { useProyectos } from '../hooks/useProyectos.js';
 import { useCancionesDeUsuario } from '../hooks/useCanciones.js';
+import { useOrdenes } from '../hooks/useOrdenes.js';
 import { SolicitudService } from '../services/solicitudService.js';
 import { TIPOS_SOLICITUD } from '../models/Solicitud.js';
+import { TIPOS_ORDEN } from '../config/facturacion.js';
+import { RUTAS } from '../config/rutas.js';
 import {
     aMinutos,
     etiquetaEstado,
@@ -70,10 +73,21 @@ const MENOS_MOVIMIENTO = () =>
 const ACENTO_ESTADO = {
     confirmada: '#7be0b0',
     solicitada: '#ffd166',
+    por_autorizar: '#a477ff',
+    por_pagar: '#f04fa6',
     rechazada: '#f2a4b1',
     cancelada: '#f2a4b1',
 };
 const acentoEstado = (estado) => ACENTO_ESTADO[estado] ?? '#a477ff';
+
+const ESTADOS_CANCELABLES = ['solicitada', 'por_autorizar', 'por_pagar'];
+
+const SIGUIENTE_PASO = {
+    solicitada: 'Esperando que el equipo invitado acepte.',
+    por_autorizar: 'El equipo aceptó. El estudio debe autorizar la reserva.',
+    por_pagar: 'El estudio autorizó. Paga el anticipo para confirmar tu sesión.',
+    confirmada: 'Reserva confirmada. ¡Tu sesión está agendada!',
+};
 
 function Paso({ numero, titulo, icono: Icono }) {
     return (
@@ -110,6 +124,7 @@ export default function MisSolicitudes() {
     const [colaboradores] = useColaboradores(true);
     const [proyectos] = useProyectos(usuario?.id);
     const [canciones] = useCancionesDeUsuario(usuario?.id);
+    const [ordenes] = useOrdenes(usuario);
     const [form, setForm] = useState(FORM_INICIAL);
     const [partesMarcadas, setPartesMarcadas] = useState([]);
     const [colaboradoresElegidos, setColaboradoresElegidos] = useState([]);
@@ -152,9 +167,16 @@ export default function MisSolicitudes() {
 
     const resumen = useMemo(() => ({
         total: misSolicitudes.length,
-        activas: misSolicitudes.filter((solicitud) => solicitud.estado === 'solicitada').length,
+        activas: misSolicitudes.filter((solicitud) => ESTADOS_CANCELABLES.includes(solicitud.estado)).length,
+        porPagar: misSolicitudes.filter((solicitud) => solicitud.estado === 'por_pagar').length,
         confirmadas: misSolicitudes.filter((solicitud) => solicitud.estado === 'confirmada').length,
     }), [misSolicitudes]);
+
+    const pagoPendiente = useMemo(
+        () => ordenes.find((orden) =>
+            orden.tipo === TIPOS_ORDEN.RESERVA && ['facturada', 'parcial'].includes(orden.estado)) ?? null,
+        [ordenes]
+    );
 
     const historialRef = useRef(null);
     useEffect(() => {
@@ -270,7 +292,7 @@ export default function MisSolicitudes() {
             setForm(FORM_INICIAL);
             setPartesMarcadas([]);
             setColaboradoresElegidos([]);
-            setMensaje(`Solicitud de ${etiquetaTipo(form.tipo)} enviada. El estudio la revisará.`);
+            setMensaje(`Solicitud de ${etiquetaTipo(form.tipo)} enviada. Espera a que el equipo acepte y el estudio la autorice.`);
         } catch (errorCrear) {
             setError(errorCrear instanceof Error ? errorCrear.message : 'No se pudo enviar la solicitud.');
         }
@@ -334,7 +356,8 @@ export default function MisSolicitudes() {
                             Reserva, produce, suena.
                         </h1>
                         <p className="mt-3 text-sm leading-7 text-sutil">
-                            Pide tu cabina para grabar, mezclar, masterizar o ensayar. Elige a los artistas y productores; cuando todos acepten, se crea tu sesión.
+                            Pide tu cabina para grabar, mezclar, masterizar o ensayar. Elige a los artistas y productores:
+                            cuando todos acepten, el estudio autoriza y podrás pagar el anticipo para confirmar tu sesión.
                         </p>
                         {esClienteActual && (
                             <a
@@ -353,7 +376,7 @@ export default function MisSolicitudes() {
                         </div>
                         <div className="min-w-[84px] rounded-2xl border border-white/10 bg-black/25 px-4 py-3 text-center">
                             <strong className="block text-3xl font-black tracking-tight text-aviso-soft"><Contador valor={resumen.activas} pad={2} /></strong>
-                            <span className="mt-1 block text-[0.62rem] font-bold uppercase tracking-[0.12em] text-sutil">Solicitadas</span>
+                            <span className="mt-1 block text-[0.62rem] font-bold uppercase tracking-[0.12em] text-sutil">En curso</span>
                         </div>
                         <div className="min-w-[84px] rounded-2xl border border-white/10 bg-black/25 px-4 py-3 text-center">
                             <strong className="block text-3xl font-black tracking-tight text-exito-soft"><Contador valor={resumen.confirmadas} pad={2} /></strong>
@@ -366,6 +389,15 @@ export default function MisSolicitudes() {
 
             {mensaje && <p className="mt-5 rounded-xl border border-exito/30 bg-exito/10 px-4 py-3 text-sm text-exito-soft" role="status">{mensaje}</p>}
             {error && <p className="mt-5 rounded-xl border border-peligro/30 bg-peligro/10 px-4 py-3 text-sm text-peligro-soft" role="alert">{error}</p>}
+
+            {pagoPendiente && esClienteActual && (
+                <div className="mt-5 flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-magenta/40 bg-magenta/[0.08] px-4 py-3.5">
+                    <p className="text-sm text-magenta">
+                        Tu reserva está autorizada pero el anticipo sigue sin pagar. Complétalo para poder crear nuevas solicitudes.
+                    </p>
+                    <Link to={RUTAS.PAGOS} className={BOTON_PRIMARIO}>Ir a pagar el anticipo</Link>
+                </div>
+            )}
 
             {/* INVITACIONES (colaborador) */}
             {invitacionesPorResponder.length > 0 && (
@@ -664,8 +696,20 @@ export default function MisSolicitudes() {
                                             </div>
                                         )}
 
-                                        {solicitud.estado === 'solicitada' && (
-                                            <div className="relative mt-4 flex justify-end">
+                                        {SIGUIENTE_PASO[solicitud.estado] && (
+                                            <p className="relative mt-3 flex items-center gap-2 text-xs text-sutil">
+                                                <Sparkles className="h-3.5 w-3.5 shrink-0 text-accent-soft" aria-hidden="true" />
+                                                {SIGUIENTE_PASO[solicitud.estado]}
+                                            </p>
+                                        )}
+
+                                        {ESTADOS_CANCELABLES.includes(solicitud.estado) && (
+                                            <div className="relative mt-4 flex flex-wrap items-center justify-end gap-2">
+                                                {solicitud.estado === 'por_pagar' && (
+                                                    <Link to={RUTAS.PAGOS} className={BOTON_PRIMARIO}>
+                                                        <Coins className="mr-2 h-4 w-4" aria-hidden="true" /> Pagar anticipo
+                                                    </Link>
+                                                )}
                                                 <button
                                                     className={BOTON_PELIGRO}
                                                     disabled={ocupado === solicitud.id}

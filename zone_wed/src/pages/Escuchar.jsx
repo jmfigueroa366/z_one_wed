@@ -84,7 +84,7 @@ function Barra({ valor, max, onCambiar, etiqueta }) {
     );
 }
 
-function Onda({ valores, progreso, duracion, onSeek }) {
+function Onda({ valores, progreso, duracion, onSeek, sonando }) {
     const ref = useRef(null);
     const [arrastrando, setArrastrando] = useState(false);
     const porcentaje = duracion > 0 ? Math.min((progreso / duracion) * 100, 100) : 0;
@@ -158,7 +158,9 @@ function Onda({ valores, progreso, duracion, onSeek }) {
                     <span
                         key={indice}
                         className={`flex-1 rounded-full transition-colors duration-150 ${
-                            activo ? 'bg-gradient-to-t from-[#9365f2] to-[#e34ba6]' : 'bg-white/[0.12] hover:bg-white/20'
+                            activo
+                                ? `bg-gradient-to-t from-[#9365f2] to-[#e34ba6] ${sonando ? 'shadow-[0_0_8px_rgba(227,75,166,0.5)]' : ''}`
+                                : 'bg-white/[0.12] hover:bg-white/20'
                         }`}
                         style={{ height: `${Math.round(altura * 100)}%` }}
                     />
@@ -521,8 +523,18 @@ export default function Escuchar() {
 
     return (
         <main className="workspace-content relative" data-page="estudio">
-            <div aria-hidden="true" className="pointer-events-none absolute -top-24 left-1/4 h-72 w-72 animate-aurora rounded-full bg-[#9365f2]/20 blur-3xl" />
-            <div aria-hidden="true" className="pointer-events-none absolute right-0 top-40 h-64 w-64 animate-aurora rounded-full bg-[#e34ba6]/15 blur-3xl [animation-delay:-7s]" />
+            <div
+                aria-hidden="true"
+                className={`pointer-events-none absolute -top-24 left-1/4 h-72 w-72 animate-aurora rounded-full bg-[#9365f2]/20 blur-3xl transition-opacity duration-1000 ${
+                    reproduciendo ? 'opacity-100' : 'opacity-40'
+                }`}
+            />
+            <div
+                aria-hidden="true"
+                className={`pointer-events-none absolute right-0 top-40 h-64 w-64 animate-aurora rounded-full bg-[#e34ba6]/15 blur-3xl transition-opacity duration-1000 [animation-delay:-7s] ${
+                    reproduciendo ? 'opacity-100' : 'opacity-40'
+                }`}
+            />
 
             <header className="page-heading relative border-l-4 border-accent pl-4">
                 <p className="workspace-eyebrow">ESTUDIO · ESCUCHAR ARTISTAS</p>
@@ -643,12 +655,28 @@ export default function Escuchar() {
                         />
                         <div
                             aria-hidden="true"
+                            className={`pointer-events-none absolute inset-0 transition-opacity duration-700 ${reproduciendo && !menosMovimiento ? 'opacity-100' : 'opacity-0'}`}
+                        >
+                            <span className="absolute -left-10 top-1/3 h-56 w-56 -translate-y-1/2 rounded-full bg-[#9365f2]/30 blur-3xl animate-[deriva_9s_ease-in-out_infinite]" />
+                            <span className="absolute -right-10 top-1/2 h-64 w-64 -translate-y-1/2 rounded-full bg-[#e34ba6]/25 blur-3xl animate-[deriva_11s_ease-in-out_infinite_reverse]" />
+                        </div>
+                        <div
+                            aria-hidden="true"
                             className="pointer-events-none absolute inset-0 opacity-0 transition-opacity duration-500 group-hover/hero:opacity-100 [background:radial-gradient(420px_circle_at_var(--mx,50%)_var(--my,50%),rgba(240,79,166,0.22),transparent_62%)]"
                         />
 
                         <div className="relative grid gap-8 p-6 sm:p-8 md:grid-cols-[auto_1fr] md:items-center">
-                            <div className="relative mx-auto w-fit overflow-hidden rounded-full">
+                            <div className="relative mx-auto w-fit rounded-full">
                                 <div className="absolute inset-0 rounded-full bg-[#9365f2]/30 blur-2xl" aria-hidden="true" />
+                                <div
+                                    aria-hidden="true"
+                                    className={`absolute -inset-4 rounded-full blur-xl transition-opacity duration-700 ${reproduciendo && !menosMovimiento ? 'opacity-100' : 'opacity-0'}`}
+                                    style={{
+                                        background:
+                                            'conic-gradient(from 0deg, transparent 0deg, rgba(147,101,242,0.55) 90deg, rgba(227,75,166,0.55) 200deg, transparent 320deg)',
+                                        animation: 'halo 6s linear infinite',
+                                    }}
+                                />
                                 <div
                                     className={`relative grid h-52 w-52 place-items-center rounded-full border border-white/10 shadow-2xl shadow-black/70 sm:h-60 sm:w-60 ${
                                         menosMovimiento ? '' : 'animate-spin'
@@ -693,7 +721,7 @@ export default function Escuchar() {
                                 </p>
 
                                 <div className="mt-5">
-                                    <Onda valores={ondas} progreso={progreso} duracion={duracion} onSeek={buscar} />
+                                    <Onda valores={ondas} progreso={progreso} duracion={duracion} onSeek={buscar} sonando={reproduciendo} />
                                     <div className="mt-1 flex items-center justify-between text-xs tabular-nums text-[#c8c1d7]">
                                         <span>{formatearTiempo(progreso)}</span>
                                         <span>
@@ -728,20 +756,30 @@ export default function Escuchar() {
                                         >
                                             <SkipBack className="h-5 w-5" aria-hidden="true" />
                                         </button>
-                                        <button
-                                            type="button"
-                                            onClick={() => {
-                                                despertarAudio();
-                                                setReproduciendo((actual) => !actual);
-                                            }}
-                                            aria-label={reproduciendo ? 'Pausar' : 'Reproducir'}
-                                            title="Reproducir / Pausar (Espacio)"
-                                            className={`grid h-16 w-16 place-items-center rounded-full bg-gradient-to-r from-[#9365f2] to-[#e34ba6] text-white transition hover:scale-105 ${
-                                                reproduciendo ? 'shadow-[0_0_45px_rgba(147,101,242,0.55)]' : 'shadow-xl shadow-accent/30'
-                                            }`}
-                                        >
-                                            {reproduciendo ? <Pause className="h-6 w-6" aria-hidden="true" /> : <Play className="ml-0.5 h-6 w-6" aria-hidden="true" />}
-                                        </button>
+                                        <span className="relative grid place-items-center">
+                                            {reproduciendo && !menosMovimiento && (
+                                                <span
+                                                    aria-hidden="true"
+                                                    className="pointer-events-none absolute inset-0 rounded-full bg-[#9365f2]/40 animate-ping [animation-duration:2.4s]"
+                                                />
+                                            )}
+                                            <button
+                                                type="button"
+                                                onClick={() => {
+                                                    despertarAudio();
+                                                    setReproduciendo((actual) => !actual);
+                                                }}
+                                                aria-label={reproduciendo ? 'Pausar' : 'Reproducir'}
+                                                title="Reproducir / Pausar (Espacio)"
+                                                className={`relative grid h-16 w-16 place-items-center rounded-full bg-gradient-to-r from-[#9365f2] to-[#e34ba6] text-white transition hover:scale-105 ${
+                                                    reproduciendo
+                                                        ? 'shadow-[0_0_55px_rgba(147,101,242,0.65)] animate-[latido-luz_3s_ease-in-out_infinite]'
+                                                        : 'shadow-xl shadow-accent/30'
+                                                }`}
+                                            >
+                                                {reproduciendo ? <Pause className="h-6 w-6" aria-hidden="true" /> : <Play className="ml-0.5 h-6 w-6" aria-hidden="true" />}
+                                            </button>
+                                        </span>
                                         <button
                                             type="button"
                                             onClick={irSiguiente}
@@ -837,7 +875,7 @@ export default function Escuchar() {
                                         <div
                                             className={`flex items-center gap-3 rounded-2xl border px-3 py-2.5 transition ${
                                                 activa
-                                                    ? 'border-accent/60 bg-white/[0.05]'
+                                                    ? `border-accent/60 bg-white/[0.05] ${activa && reproduciendo ? 'shadow-[0_0_28px_-10px_rgba(147,101,242,0.85)]' : ''}`
                                                     : 'border-transparent bg-white/[0.02] hover:border-border hover:bg-white/[0.045]'
                                             }`}
                                         >

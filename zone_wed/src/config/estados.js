@@ -1,8 +1,13 @@
 export const ESTADOS = {
     solicitud: {
-        estados: ['solicitada', 'confirmada', 'rechazada', 'cancelada'],
+        // Flujo: el cliente pide -> los colaboradores aceptan (por_autorizar)
+        // -> el administrador autoriza (por_pagar) -> el cliente paga (confirmada).
+        estados: ['solicitada', 'por_autorizar', 'por_pagar', 'confirmada', 'rechazada', 'cancelada'],
         transiciones: {
-            solicitada: ['confirmada', 'rechazada', 'cancelada'],
+            solicitada: ['por_autorizar', 'rechazada', 'cancelada'],
+            por_autorizar: ['por_pagar', 'confirmada', 'rechazada', 'cancelada'],
+            por_pagar: ['confirmada', 'cancelada'],
+            confirmada: ['cancelada'],
         },
     },
     invitacion: {
@@ -29,3 +34,6 @@ export const ESTADOS = {
         },
     },
 };
+
+// Estados de solicitud que mantienen la cabina y el equipo comprometidos.
+export const ESTADOS_SOLICITUD_ACTIVOS = ['solicitada', 'por_autorizar', 'por_pagar', 'confirmada'];

@@ -6,7 +6,9 @@ import { Folder, FolderOpen, Music, Sparkles, X } from 'lucide-react';
 import { Contador, Ecualizador, FondoHero } from '../components/Animados.jsx';
 import { useAuth } from '../context/AuthContext.jsx';
 import { RUTAS } from '../config/rutas.js';
+import { ROLES, esAdministrador } from '../config/roles.js';
 import { TIPOS_PROYECTO, ETIQUETAS_PROYECTO } from '../config/facturacion.js';
+import { usuarioRepo } from '../repositories/usuarioRepo.js';
 import { useProyectos } from '../hooks/useProyectos.js';
 import { useCanciones } from '../hooks/useCanciones.js';
 import { useSpotlight } from '../hooks/useSpotlight.js';
@@ -88,7 +90,8 @@ function PartesCancion({ cancion }) {
 export default function MisProyectos() {
     const { usuario } = useAuth();
     const navigate = useNavigate();
-    const [proyectos] = useProyectos(usuario?.id);
+    const esAdmin = esAdministrador(usuario);
+    const [proyectos] = useProyectos(esAdmin ? null : usuario?.id);
     const [proyectoActivoId, setProyectoActivoId] = useState(null);
     const [canciones] = useCanciones(proyectoActivoId);
     const [partesAbierta, setPartesAbierta] = useState(null);
@@ -102,6 +105,13 @@ export default function MisProyectos() {
     const [requiereEnsayo, setRequiereEnsayo] = useState(false);
     const [mensaje, setMensaje] = useState('');
     const [error, setError] = useState('');
+    const [propietarioId, setPropietarioId] = useState('');
+
+    const propietarios = useMemo(
+        () => usuarioRepo.listar().filter((item) => item.activo !== false && item.rol !== ROLES.ADMINISTRADOR),
+        []
+    );
+    const nombrePropietario = (proyecto) => ProyectoService.propietarioDe(proyecto)?.nombre ?? 'Sin cliente';
 
     const conteoCanciones = useMemo(() => {
         const grupo = new Map();
@@ -146,10 +156,20 @@ export default function MisProyectos() {
             setError('Escribe un nombre para la carpeta.');
             return;
         }
-        const proyecto = ProyectoService.crear({ nombre, tipo: tipoProyecto, usuario_id: usuario?.id });
-        setNombreProyecto('');
-        setProyectoActivoId(proyecto.id);
-        setMensaje(`Carpeta "${proyecto.nombre}" creada.`);
+        const usuarioId = esAdmin ? Number(propietarioId) : usuario?.id;
+        if (esAdmin && !usuarioId) {
+            setError('Selecciona el cliente al que pertenece el proyecto.');
+            return;
+        }
+        try {
+            const proyecto = ProyectoService.crear({ nombre, tipo: tipoProyecto, usuario_id: usuarioId });
+            setNombreProyecto('');
+            setPropietarioId('');
+            setProyectoActivoId(proyecto.id);
+            setMensaje(`Carpeta "${proyecto.nombre}" creada para ${nombrePropietario(proyecto)}.`);
+        } catch (errorCreacion) {
+            setError(errorCreacion.message || 'No se pudo crear la carpeta.');
+        }
     };
 
     const eliminarProyecto = (proyecto) => {
@@ -197,9 +217,13 @@ export default function MisProyectos() {
         <main className="workspace-content" data-page="mis-proyectos">
             <header className="page-heading relative border-l-4 border-accent pl-4">
                 <div aria-hidden="true" className="pointer-events-none absolute -top-20 right-20 h-52 w-52 animate-aurora rounded-full bg-[#9365f2]/18 blur-3xl" />
-                <p className="workspace-eyebrow">TU ESPACIO DE TRABAJO</p>
-                <h1>Mis proyectos</h1>
-                <p>Organiza tus proyectos en carpetas y nombra las canciones que quieres trabajar en el estudio.</p>
+                <p className="workspace-eyebrow">{esAdmin ? 'GESTIÓN DE PROYECTOS' : 'TU ESPACIO DE TRABAJO'}</p>
+                <h1>{esAdmin ? 'Proyectos' : 'Mis proyectos'}</h1>
+                <p>
+                    {esAdmin
+                        ? 'Organiza los proyectos de cada cliente en carpetas y asigna a quién pertenece cada uno.'
+                        : 'Organiza tus proyectos en carpetas y nombra las canciones que quieres trabajar en el estudio.'}
+                </p>
             </header>
 
             {mensaje && <p className="mt-5 rounded-xl border border-exito/30 bg-exito/10 px-4 py-2 text-sm text-exito" role="status">{mensaje}</p>}
@@ -258,7 +282,7 @@ export default function MisProyectos() {
                     <form className="mb-5" onSubmit={crearProyecto} aria-label="Crear carpeta de proyecto">
                         <label className="flex flex-col">
                             <span className={ETIQUETA}>Nueva carpeta</span>
-                            <div className="grid gap-2 sm:grid-cols-[1fr_auto_auto]">
+                            <div className={`grid gap-2 ${esAdmin ? 'sm:grid-cols-[1fr_auto_auto_auto]' : 'sm:grid-cols-[1fr_auto_auto]'}`}>
                                 <input
                                     className={CAMPO}
                                     placeholder="Nombre de la carpeta"
@@ -275,6 +299,21 @@ export default function MisProyectos() {
                                         <option key={tipo} value={tipo}>{ETIQUETAS_PROYECTO[tipo]}</option>
                                     ))}
                                 </select>
+                                {esAdmin && (
+                                    <select
+                                        className={CAMPO}
+                                        aria-label="Cliente del proyecto"
+                                        value={propietarioId}
+                                        onChange={(evento) => setPropietarioId(evento.target.value)}
+                                    >
+                                        <option value="">Cliente…</option>
+                                        {propietarios.map((propietario) => (
+                                            <option key={propietario.id} value={propietario.id}>
+                                                {propietario.nombre}{propietario.rol === ROLES.CLIENTE ? '' : ` · ${propietario.rol}`}
+                                            </option>
+                                        ))}
+                                    </select>
+                                )}
                                 <button className={`${BOTON_PRIMARIO} shrink-0`} type="submit">Crear</button>
                             </div>
                         </label>
@@ -318,7 +357,9 @@ export default function MisProyectos() {
                                                 <div className="min-w-0">
                                                     <p className="truncate font-semibold text-texto-soft">{proyecto.nombre}</p>
                                                     <p className="text-xs text-sutil">
-                                                        {ETIQUETAS_PROYECTO[proyecto.tipo] ?? 'Sencillo'} · {conteoCanciones.get(String(proyecto.id)) ?? 0} canciones · {formatearFecha(proyecto.creado_en, { day: 'numeric', month: 'short' })}
+                                                        {ETIQUETAS_PROYECTO[proyecto.tipo] ?? 'Sencillo'} · {conteoCanciones.get(String(proyecto.id)) ?? 0} canciones
+                                                        {esAdmin && <span className="text-accent-soft"> · {nombrePropietario(proyecto)}</span>}
+                                                        {' · '}{formatearFecha(proyecto.creado_en, { day: 'numeric', month: 'short' })}
                                                     </p>
                                                 </div>
                                             </div>

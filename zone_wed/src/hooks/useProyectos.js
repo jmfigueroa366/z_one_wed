@@ -4,10 +4,11 @@ import { ReactiveStore } from '../infrastructure/reactiveStore.js';
 import { proyectoRepo } from '../repositories/proyectoRepo.js';
 
 export function useProyectos(usuarioId) {
-    const [proyectos, setProyectos] = useState(() => proyectoRepo.listarPorUsuario(usuarioId));
+    const listar = () => (usuarioId == null ? proyectoRepo.listar() : proyectoRepo.listarPorUsuario(usuarioId));
+    const [proyectos, setProyectos] = useState(listar);
 
     useEffect(
-        () => ReactiveStore.suscribirse(() => setProyectos(proyectoRepo.listarPorUsuario(usuarioId))),
+        () => ReactiveStore.suscribirse(() => setProyectos(listar())),
         [usuarioId]
     );
 

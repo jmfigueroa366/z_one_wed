@@ -1,7 +1,11 @@
 // CAPA: Presentación
-import { useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { GrabacionService } from '../services/grabacionService.js';
+import { OndaEstatica, OndaGrabacion, extraerPeaks, peaksDeDataUrl } from './OndaAudio.jsx';
 import '../styles/tailwind.css';
+
+const ACENTO_GRABACION = '#e2687d';
+const ACENTO_AUDIO = '#a477ff';
 
 const MIME_GRABADOR = (() => {
     if (typeof MediaRecorder === 'undefined') return null;
@@ -31,16 +35,34 @@ export default function GrabadorAudio({ cancionId, parte = '', mostrarEtiqueta =
     const [clip, setClip] = useState(null);
     const [error, setError] = useState('');
     const [mensaje, setMensaje] = useState('');
+    const [peaks, setPeaks] = useState(null);
+    const [progreso, setProgreso] = useState(0);
 
     const grabadorRef = useRef(null);
     const flujoRef = useRef(null);
     const partesRef = useRef([]);
     const inicioRef = useRef(0);
     const temporizadorRef = useRef(null);
+    const audioContextoRef = useRef(null);
+    const analizadorRef = useRef(null);
+    const datosNivelRef = useRef(null);
+    const audioRef = useRef(null);
+
+    const leerNivel = useCallback(() => {
+        const analizador = analizadorRef.current;
+        if (!analizador) return null;
+        const datos = datosNivelRef.current ?? (datosNivelRef.current = new Uint8Array(analizador.fftSize));
+        analizador.getByteTimeDomainData(datos);
+        return datos;
+    }, []);
 
     const detenerFlujo = () => {
         flujoRef.current?.getTracks().forEach((pista) => pista.stop());
         flujoRef.current = null;
+        analizadorRef.current = null;
+        datosNivelRef.current = null;
+        audioContextoRef.current?.close?.();
+        audioContextoRef.current = null;
     };
 
     const limpiarTemporizador = () => {
@@ -76,8 +98,25 @@ export default function GrabadorAudio({ cancionId, parte = '', mostrarEtiqueta =
                     lector.readAsDataURL(blob);
                 });
                 setClip({ url, dataUrl, duracion, mimeType: grabador.mimeType || 'audio/webm' });
+                setProgreso(0);
+                extraerPeaks(blob).then((calculados) => {
+                    if (calculados) setPeaks(calculados);
+                });
                 detenerFlujo();
             };
+
+            const AudioCtx = window.AudioContext || window.webkitAudioContext;
+            if (AudioCtx) {
+                const contexto = new AudioCtx();
+                const fuente = contexto.createMediaStreamSource(flujo);
+                const analizador = contexto.createAnalyser();
+                analizador.fftSize = 1024;
+                fuente.connect(analizador);
+                audioContextoRef.current = contexto;
+                analizadorRef.current = analizador;
+                datosNivelRef.current = null;
+            }
+
             grabador.start();
             grabadorRef.current = grabador;
             flujoRef.current = flujo;
@@ -128,6 +167,8 @@ export default function GrabadorAudio({ cancionId, parte = '', mostrarEtiqueta =
             setClip(null);
         }
         setGrabacion(null);
+        setPeaks(null);
+        setProgreso(0);
         setMensaje('Audio eliminado.');
     };
 
@@ -143,6 +184,30 @@ export default function GrabadorAudio({ cancionId, parte = '', mostrarEtiqueta =
     const hayAudio = Boolean(clip || grabacion);
     const fuente = clip?.url ?? grabacion?.dataUrl;
     const etiqueta = parte || 'Canción completa';
+
+    useEffect(() => {
+        if (peaks) return undefined;
+        const dataUrl = clip?.dataUrl ?? grabacion?.dataUrl;
+        if (!dataUrl) return undefined;
+        let activo = true;
+        peaksDeDataUrl(dataUrl).then((calculados) => {
+            if (activo && calculados) setPeaks(calculados);
+        });
+        return () => {
+            activo = false;
+        };
+    }, [clip, grabacion, peaks]);
+
+    useEffect(() => {
+        setProgreso(0);
+    }, [fuente]);
+
+    const irA = (fraccion) => {
+        const audio = audioRef.current;
+        if (!audio || !Number.isFinite(audio.duration) || audio.duration <= 0) return;
+        audio.currentTime = fraccion * audio.duration;
+        setProgreso(fraccion);
+    };
 
     return (
         <div className="rounded-xl border border-border bg-surface-2 p-3">
@@ -211,9 +276,12 @@ export default function GrabadorAudio({ cancionId, parte = '', mostrarEtiqueta =
             </div>
 
             {enGrabacion && (
-                <p className="mt-2 text-xs text-sutil">
-                    Grabando… Habla y toca <strong className="text-texto">Detener</strong> cuando termines.
-                </p>
+                <div className="mt-3 space-y-2">
+                    <OndaGrabacion obtenerNivel={leerNivel} grabando acento={ACENTO_GRABACION} />
+                    <p className="text-xs text-sutil">
+                        Grabando… Habla y toca <strong className="text-texto">Detener</strong> cuando termines.
+                    </p>
+                </div>
             )}
 
             {!enGrabacion && clip && !grabacion && (
@@ -223,17 +291,37 @@ export default function GrabadorAudio({ cancionId, parte = '', mostrarEtiqueta =
             )}
 
             {hayAudio && (
-                <div className="mt-2 flex flex-wrap items-center gap-2">
-                    <audio className="min-w-0 flex-1" controls src={fuente} preload="metadata" />
-                    {clip && (
-                        <button
-                            className="rounded-lg bg-exito/15 px-3 py-1.5 text-xs font-bold text-exito transition hover:bg-exito/25"
-                            type="button"
-                            onClick={guardar}
-                        >
-                            Guardar audio
-                        </button>
-                    )}
+                <div className="mt-3 space-y-2">
+                    <OndaEstatica
+                        peaks={peaks}
+                        progreso={progreso}
+                        acento={ACENTO_AUDIO}
+                        onSeek={irA}
+                        etiqueta={`Onda de ${etiqueta}`}
+                    />
+                    <div className="flex flex-wrap items-center gap-2">
+                        <audio
+                            ref={audioRef}
+                            className="min-w-0 flex-1"
+                            controls
+                            src={fuente}
+                            preload="metadata"
+                            onTimeUpdate={(evento) => {
+                                const audio = evento.currentTarget;
+                                setProgreso(audio.duration ? audio.currentTime / audio.duration : 0);
+                            }}
+                            onEnded={() => setProgreso(0)}
+                        />
+                        {clip && (
+                            <button
+                                className="rounded-lg bg-exito/15 px-3 py-1.5 text-xs font-bold text-exito transition hover:bg-exito/25"
+                                type="button"
+                                onClick={guardar}
+                            >
+                                Guardar audio
+                            </button>
+                        )}
+                    </div>
                 </div>
             )}
 
