@@ -121,6 +121,22 @@ test('solo el administrador puede emitir facturas', () => {
     assert.ok(emitida.total > 0);
 });
 
+test('emitirReserva genera la factura del anticipo de la sesión confirmada', () => {
+    const reserva = OrdenService.emitirReserva(
+        { id: 99, titulo: 'Grabación prueba', tipo: 'grabacion', hora_inicio: '08:00', hora_fin: '10:00' },
+        { usuario_id: 3 }
+    );
+
+    // 2 h de producción = 80000; anticipo 50% = 40000.
+    assert.equal(reserva.tipo, 'reserva');
+    assert.equal(reserva.usuario_id, 3);
+    assert.equal(reserva.estado, 'facturada');
+    assert.equal(reserva.total_estimado, 80000);
+    assert.equal(reserva.total, 40000);
+    assert.equal(reserva.saldo, 40000);
+    assert.equal(reserva.detalle.sesion_id, 99);
+});
+
 test('la numeración de las órdenes es consecutiva y no se repite', () => {
     const antes = ordenRepo.listar();
     const nueva = ordenRepo.crear({ usuario_id: 3, total: 10000, estado: 'facturada' });

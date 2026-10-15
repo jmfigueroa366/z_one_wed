@@ -8,6 +8,7 @@ import {
     calcularTotalCancion,
     aplicarDescuentoAlbum,
     calcularTotalAlbum,
+    calcularTotalSesion,
     calcularAnticipoYSaldo,
     aplicarPoliticaCancelacion,
 } from '../src/services/facturacionService.js';
@@ -103,6 +104,38 @@ test('horasDesdeSesiones suma varias sesiones', () => {
         { bloqueMin: FACTURACION.bloqueRedondeoMin }
     );
     assert.equal(horas, 18);
+});
+
+test('total de una sesión de producción usa la tarifa de producción', () => {
+    const resultado = calcularTotalSesion(
+        { tipo: 'grabacion', horaInicio: '10:00', horaFin: '12:00' },
+        FACTURACION
+    );
+
+    assert.equal(resultado.horasProduccion, 2);
+    assert.equal(resultado.horasEnsayo, 0);
+    assert.equal(resultado.total, 80000);
+});
+
+test('total de una sesión de ensayo usa la tarifa de ensayo', () => {
+    const resultado = calcularTotalSesion(
+        { tipo: 'ensayo', horaInicio: '10:00', horaFin: '12:00' },
+        FACTURACION
+    );
+
+    assert.equal(resultado.horasProduccion, 0);
+    assert.equal(resultado.horasEnsayo, 2);
+    assert.equal(resultado.total, 100000);
+});
+
+test('el total de una sesión redondea la franja a bloques de 30 min', () => {
+    const resultado = calcularTotalSesion(
+        { tipo: 'mezcla', horaInicio: '10:00', horaFin: '11:20' },
+        FACTURACION
+    );
+
+    assert.equal(resultado.horasProduccion, 1.5);
+    assert.equal(resultado.total, 60000);
 });
 
 test('anticipo es 50% del estimado y el saldo es total menos lo pagado', () => {

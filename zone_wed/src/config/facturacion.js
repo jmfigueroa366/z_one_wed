@@ -21,6 +21,7 @@ export const TIPOS_PROYECTO = Object.freeze({
 export const TIPOS_ORDEN = Object.freeze({
     CANCION: 'cancion',
     ALBUM: 'album',
+    RESERVA: 'reserva',
 });
 
 export const ETIQUETAS_PROYECTO = Object.freeze({

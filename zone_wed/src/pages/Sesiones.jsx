@@ -1,8 +1,10 @@
 // CAPA: Presentación
 import { useEffect, useMemo, useRef, useState } from 'react';
 import anime from 'animejs';
-import { CheckCircle2, Mic, Music, Search, SlidersHorizontal } from 'lucide-react';
+import { CalendarDays, Mic, Music, Search, SlidersHorizontal } from 'lucide-react';
 import FormularioSesion from '../components/FormularioSesion.jsx';
+import { Contador, FondoHero } from '../components/Animados.jsx';
+import { useSpotlight } from '../hooks/useSpotlight.js';
 import { useColaboradores } from '../hooks/useColaboradores.js';
 import { useSalas } from '../hooks/useSalas.js';
 import { useSesiones } from '../hooks/useSesiones.js';
@@ -49,6 +51,7 @@ export default function Sesiones() {
     const [filtro, setFiltro] = useState('todas');
     const [busqueda, setBusqueda] = useState('');
     const listaRef = useRef(null);
+    const [heroRef, seguirSpotlight] = useSpotlight();
 
     const canciones = useMemo(() => CancionService.listar(), []);
     const proyectos = useMemo(() => ProyectoService.listar(), []);
@@ -120,10 +123,10 @@ export default function Sesiones() {
         return () => animacion.pause();
     }, [dias]);
 
-    const resumen = [
-        { etiqueta: 'Sesiones registradas', valor: sesiones.length, Icono: Mic, clase: 'from-[#5b418f]/50' },
-        { etiqueta: 'Confirmadas', valor: sesiones.filter((sesion) => sesion.estado === 'confirmada').length, Icono: CheckCircle2, clase: 'from-exito/30' },
-        { etiqueta: 'Cabinas disponibles', valor: salas.length, Icono: SlidersHorizontal, clase: 'from-[#5393da]/30' },
+    const metricasHero = [
+        { etiqueta: 'Sesiones', valor: sesiones.length },
+        { etiqueta: 'Confirmadas', valor: sesiones.filter((sesion) => sesion.estado === 'confirmada').length },
+        { etiqueta: 'Cabinas', valor: salas.length },
     ];
 
     return (
@@ -135,24 +138,44 @@ export default function Sesiones() {
                 <p>Registra sesiones y sigue la programación del estudio como una línea de tiempo viva.</p>
             </header>
 
-            <section className="mt-6 grid grid-cols-1 gap-3 sm:grid-cols-3" aria-label="Resumen de sesiones">
-                {resumen.map((item) => {
-                    const Icono = item.Icono;
-                    return (
-                        <article
-                            key={item.etiqueta}
-                            className={`tarjeta-brillo relative flex items-center justify-between gap-3 overflow-hidden rounded-2xl border border-border bg-gradient-to-br ${item.clase} to-surface/40 p-4 transition hover:-translate-y-0.5 hover:border-accent/50`}
-                        >
-                            <div>
-                                <span className="block text-xs text-sutil">{item.etiqueta}</span>
-                                <strong className="block text-3xl font-bold text-texto-soft">{item.valor}</strong>
+            <section
+                ref={heroRef}
+                onMouseMove={seguirSpotlight}
+                className="group/hero relative mt-6 overflow-hidden rounded-[2.25rem] border border-accent/25 p-6 sm:p-8"
+                style={{
+                    background:
+                        'radial-gradient(ellipse at 88% 4%, rgba(83, 147, 218, 0.3), transparent 46%), radial-gradient(ellipse at 4% 100%, rgba(111, 75, 187, 0.34), transparent 50%), linear-gradient(120deg, rgba(83, 147, 218, 0.32), rgba(23, 19, 34, 0.97) 72%)',
+                }}
+            >
+                <FondoHero acento="#669fe8" />
+                <div aria-hidden="true" className="pointer-events-none absolute -right-10 -top-24 h-64 w-64 animate-aurora rounded-full bg-[#5393da]/25 blur-3xl" />
+                <div aria-hidden="true" className="pointer-events-none absolute right-6 top-1/2 hidden -translate-y-1/2 select-none text-[11rem] font-black leading-none tracking-tighter text-white/[0.04] lg:block">
+                    ◷
+                </div>
+                <div className="relative flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
+                    <div className="max-w-xl">
+                        <span className="inline-flex items-center gap-2 rounded-full border border-[#669fe8]/40 bg-[#5393da]/10 px-3 py-1 text-xs font-bold text-[#9ecbff]">
+                            <CalendarDays className="h-3.5 w-3.5" aria-hidden="true" />
+                            Agenda en vivo
+                        </span>
+                        <h2 className="mt-3 text-3xl font-extrabold tracking-tight text-texto-soft sm:text-4xl">
+                            El estudio, <span className="texto-degradado">afinado al minuto.</span>
+                        </h2>
+                        <p className="mt-3 text-sm leading-7 text-sutil">
+                            Registra sesiones y sigue la programación de las cabinas como una línea de tiempo viva.
+                        </p>
+                    </div>
+                    <div className="grid grid-cols-3 gap-3">
+                        {metricasHero.map((metrica) => (
+                            <div key={metrica.etiqueta} className="rounded-2xl border border-white/10 bg-black/25 px-4 py-3 text-center">
+                                <strong className="block text-2xl font-black tracking-tight text-texto-soft">
+                                    <Contador valor={metrica.valor} pad={2} />
+                                </strong>
+                                <span className="mt-1 block text-[0.62rem] font-bold uppercase tracking-[0.12em] text-sutil">{metrica.etiqueta}</span>
                             </div>
-                            <span className="grid h-11 w-11 shrink-0 place-items-center rounded-xl border border-white/10 bg-black/20 text-accent-soft" aria-hidden="true">
-                                <Icono className="h-5 w-5" />
-                            </span>
-                        </article>
-                    );
-                })}
+                        ))}
+                    </div>
+                </div>
             </section>
 
             <div className="mt-6 grid items-start gap-4 lg:grid-cols-[minmax(0,1.55fr)_minmax(320px,0.9fr)]">

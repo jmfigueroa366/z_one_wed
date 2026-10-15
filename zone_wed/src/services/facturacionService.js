@@ -80,6 +80,29 @@ export function calcularTotalAlbum(
     };
 }
 
+// Total de una sesión suelta (una franja): horas redondeadas × tarifa según tipo.
+// Se usa para estimar el anticipo de una reserva confirmada.
+export function calcularTotalSesion(
+    { tipo, horaInicio, horaFin } = {},
+    config = FACTURACION
+) {
+    const esEnsayo = tipo === 'ensayo';
+    const horas = redondearHaciaArribaBloque(
+        minutosDeFranja(horaInicio, horaFin) / 60,
+        config.bloqueRedondeoMin
+    );
+    const tarifa = esEnsayo ? config.tarifaEnsayoHora : config.tarifaProduccionHora;
+    const subtotal = redondearMoneda(horas * tarifa);
+    return {
+        horasProduccion: esEnsayo ? 0 : horas,
+        horasEnsayo: esEnsayo ? horas : 0,
+        subtotalProduccion: esEnsayo ? 0 : subtotal,
+        descuento: 0,
+        subtotalEnsayo: esEnsayo ? subtotal : 0,
+        total: subtotal,
+    };
+}
+
 // Anticipo (sobre el estimado) y saldo (sobre el real menos lo ya pagado).
 export function calcularAnticipoYSaldo(
     { total = 0, totalEstimado = 0, anticipoPagado = 0 } = {},
@@ -113,6 +136,7 @@ export default {
     calcularTotalCancion,
     aplicarDescuentoAlbum,
     calcularTotalAlbum,
+    calcularTotalSesion,
     calcularAnticipoYSaldo,
     aplicarPoliticaCancelacion,
 };

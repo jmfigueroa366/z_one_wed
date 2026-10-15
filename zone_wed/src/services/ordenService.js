@@ -5,7 +5,7 @@ import { proyectoRepo } from '../repositories/proyectoRepo.js';
 import { cancionRepo } from '../repositories/cancionRepo.js';
 import { sesionRepo } from '../repositories/sesionRepo.js';
 import { ConfiguracionService } from './configuracionService.js';
-import { calcularTotalAlbum, calcularTotalCancion, calcularAnticipoYSaldo, aplicarPoliticaCancelacion, horasDesdeSesiones } from './facturacionService.js';
+import { calcularTotalAlbum, calcularTotalCancion, calcularTotalSesion, calcularAnticipoYSaldo, aplicarPoliticaCancelacion, horasDesdeSesiones, redondearMoneda } from './facturacionService.js';
 import { TIPOS_ORDEN } from '../config/facturacion.js';
 import { ROLES } from '../config/roles.js';
 
@@ -194,6 +194,45 @@ export const OrdenService = {
             desglose: construccion.total,
             anticipo,
             saldo,
+            estado: 'facturada',
+            fecha_emision: new Date().toISOString().slice(0, 10),
+        });
+    },
+
+    // Genera la factura del anticipo de una reserva confirmada. La dispara el
+    // sistema al crear la sesión, por eso no exige rol de administrador.
+    emitirReserva(sesion, { usuario_id } = {}) {
+        if (!sesion) {
+            throw new Error('La sesión no existe.');
+        }
+        const config = ConfiguracionService.obtener();
+        const estimado = calcularTotalSesion(
+            { tipo: sesion.tipo, horaInicio: sesion.hora_inicio, horaFin: sesion.hora_fin },
+            config
+        );
+        const anticipo = redondearMoneda(estimado.total * config.anticipoPorcentaje);
+
+        return ordenRepo.crear({
+            tipo: TIPOS_ORDEN.RESERVA,
+            usuario_id: usuario_id ?? null,
+            proyecto_id: sesion.proyecto_id ?? null,
+            cancion_id: sesion.cancion_id ?? null,
+            descripcion: `Anticipo · ${sesion.titulo || 'Reserva de sesión'}`,
+            detalle: {
+                sesion_id: sesion.id ?? null,
+                tipoSesion: sesion.tipo ?? null,
+                fecha: sesion.fecha ?? null,
+                franja: sesion.hora_inicio && sesion.hora_fin ? `${sesion.hora_inicio}-${sesion.hora_fin}` : null,
+                horasProduccion: estimado.horasProduccion,
+                horasEnsayo: estimado.horasEnsayo,
+                tarifaProduccion: config.tarifaProduccionHora,
+                tarifaEnsayo: config.tarifaEnsayoHora,
+                bloqueRedondeoMin: config.bloqueRedondeoMin,
+            },
+            desglose: estimado,
+            total: anticipo,
+            total_estimado: estimado.total,
+            anticipo: 0,
             estado: 'facturada',
             fecha_emision: new Date().toISOString().slice(0, 10),
         });

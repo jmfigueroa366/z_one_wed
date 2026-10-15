@@ -2,7 +2,7 @@
 const CARPETA_BASE = '/canciones';
 
 export function urlCancion(carpeta, archivo) {
-    return `${CARPETA_BASE}/${encodeURIComponent(carpeta)}/${encodeURIComponent(archivo)}`;
+    return encodeURI(`${CARPETA_BASE}/${carpeta}/${archivo}`);
 }
 
 export const cancionesArtistas = [
@@ -31,7 +31,7 @@ export const cancionesArtistas = [
             { titulo: 'Eso Va', archivo: 'Eso Va - LuisRa.mp3' },
             { titulo: 'Habla Claro', archivo: 'Habla Claro - LuisRa.mp3' },
             { titulo: 'Por Que Las Paredes Hablan', archivo: 'Por Que Las Paredes Hablan - LuisRa.mp3' },
-            { titulo: 'Una Cosa Rara', archivo: 'Una Cosa Rara - LuisRa (Audio - #ElNiñoDeGarupal).mp3' },
+            { titulo: 'Una Cosa Rara', archivo: 'Una Cosa Rara - LuisRa (Audio).mp3' },
         ],
     },
     {
@@ -105,8 +105,8 @@ export const cancionesArtistas = [
         imagen: '/Imagenes/artistas/samuel morales.jpg',
         origen: 'Colombia · hijo de Kaleth Morales',
         canciones: [
-            { titulo: 'Ayúdame a Olvidarla (con Juan K Ricardo, en vivo)', archivo: 'AYUDAME A OLVIDARLA - @SamuelMoralesofc X @JuanKRicardoOficial (En Vivo).mp3' },
-            { titulo: "Pa' Olvidarte (con Juan K Ricardo, en vivo)", archivo: 'PA` OLVIDARTE - @SamuelMoralesofc X @JuanKRicardoOficial (En Vivo).mp3' },
+            { titulo: 'Ayúdame a Olvidarla (con Juan K Ricardo, en vivo)', archivo: 'AYUDAME A OLVIDARLA.mp3' },
+            { titulo: "Pa Olvidarte (con Juan K Ricardo, en vivo)", archivo: 'PA OLVIDARTE.mp3'},
             { titulo: 'Qué Mal Hicimos (con Juan K Ricardo)', archivo: 'QUÉ MAL HICIMOS - @SamuelMoralesofc X @JuanKRicardoOficial.mp3' },
             { titulo: 'Tu Forma de Amar (con Juan K Ricardo y Miguel Morales)', archivo: 'TU FORMA DE AMAR - @SamuelMoralesofc X @JuanKRicardoOficial FT @MiguelMorales_LaVoz.mp3' },
         ],

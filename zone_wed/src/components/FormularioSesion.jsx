@@ -83,13 +83,13 @@ export default function FormularioSesion({ salas, colaboradores }) {
     };
 
     return (
-        <section id="crear" className="scroll-mt-5 rounded-2xl border border-border bg-surface p-5">
+        <section id="crear" className="scroll-mt-5 rounded-[2rem] border border-border bg-surface/60 p-5 backdrop-blur sm:p-6">
             <div className="mb-4 flex items-center justify-between gap-3">
                 <div>
                     <p className="workspace-eyebrow">NUEVA RESERVA</p>
-                    <h2 className="text-xl font-bold tracking-tight text-texto">Crear sesión</h2>
+                    <h2 className="text-xl font-bold tracking-tight text-texto-soft">Crear sesión</h2>
                 </div>
-                <span className="grid h-9 w-9 shrink-0 place-items-center rounded-lg border border-accent/30 bg-accent/15 text-accent" aria-hidden="true">
+                <span className="grid h-10 w-10 shrink-0 place-items-center rounded-2xl bg-gradient-to-br from-[#9365f2] to-[#e34ba6] text-white shadow-lg" aria-hidden="true">
                     ◷
                 </span>
             </div>

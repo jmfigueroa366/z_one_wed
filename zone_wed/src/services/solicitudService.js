@@ -4,7 +4,10 @@ import { solicitudRepo } from '../repositories/solicitudRepo.js';
 import { colaboradorRepo } from '../repositories/colaboradorRepo.js';
 import { salaRepo } from '../repositories/salaRepo.js';
 import { sesionRepo } from '../repositories/sesionRepo.js';
+import { usuarioRepo } from '../repositories/usuarioRepo.js';
 import { seSolapan } from '../utils/solicitudes.js';
+import { ROLES } from '../config/roles.js';
+import { OrdenService } from './ordenService.js';
 
 function franjaDe(sesion) {
     if (!sesion?.hora_inicio || !sesion?.hora_fin) return null;
@@ -40,7 +43,7 @@ function crearSesionDesdeSolicitud(solicitud) {
     const aceptados = Solicitud.colaboradoresDe(solicitud).filter((invitacion) => invitacion.estado === 'aceptada');
     const principal = aceptados[0]?.colaborador_id ?? null;
 
-    return sesionRepo.crear({
+    const sesion = sesionRepo.crear({
         titulo: solicitud.titulo || 'Sesión de estudio',
         solicitud_id: solicitud.id,
         tipo: solicitud.tipo ?? null,
@@ -54,6 +57,17 @@ function crearSesionDesdeSolicitud(solicitud) {
         proyecto_id: solicitud.proyecto_id ?? null,
         partes: solicitud.partes ?? [],
     });
+    emitirAnticipoDeReserva(solicitud, sesion);
+    return sesion;
+}
+
+// Al confirmarse la reserva se emite la factura del anticipo para el cliente.
+function emitirAnticipoDeReserva(solicitud, sesion) {
+    const solicitante = usuarioRepo.obtenerPorId(solicitud.usuario_id);
+    if (solicitante?.rol !== ROLES.CLIENTE) {
+        return null;
+    }
+    return OrdenService.emitirReserva(sesion, { usuario_id: solicitante.id });
 }
 
 export const SolicitudService = {
