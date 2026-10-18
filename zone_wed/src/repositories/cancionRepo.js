@@ -3,6 +3,7 @@ import { Storage } from '../infrastructure/storage.js';
 import { SEED } from '../data/seed.js';
 import { crearCancion } from '../models/Cancion.js';
 import { sincronizarCanciones } from '../infrastructure/supabaseSync.js';
+import { proyectoRepo } from './proyectoRepo.js';
 
 const CLAVE = 'canciones';
 
@@ -55,8 +56,6 @@ export const cancionRepo = {
         if (!usuarioId) {
             return [];
         }
-        // Algunas canciones no tienen usuario directo; se filtran por proyecto del usuario.
-        const { proyectoRepo } = require('./proyectoRepo.js');
         const proyectosUsuario = proyectoRepo.listarPorUsuario(usuarioId);
         const idsProyectos = new Set(proyectosUsuario.map((proyecto) => String(proyecto.id)));
         return this.listar().filter((cancion) => idsProyectos.has(String(cancion.proyecto_id)));
@@ -89,6 +88,13 @@ export const cancionRepo = {
 
     eliminar(id) {
         const canciones = this.listar().filter((cancion) => String(cancion.id) !== String(id));
+        Storage.guardarValor(CLAVE, canciones);
+        return canciones;
+    },
+
+    eliminarPorProyecto(proyectoId) {
+        if (proyectoId == null) return [];
+        const canciones = this.listar().filter((cancion) => String(cancion.proyecto_id) !== String(proyectoId));
         Storage.guardarValor(CLAVE, canciones);
         return canciones;
     },
