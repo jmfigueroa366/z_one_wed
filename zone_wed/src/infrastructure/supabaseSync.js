@@ -41,3 +41,47 @@ export async function sincronizarColaboradores() {
     Storage.guardarValor('colaboradores', mapeados);
     return mapeados;
 }
+
+// Mapea un proyecto de Supabase al formato que espera la app.
+export function mapearProyecto(row) {
+    if (!row || typeof row !== 'object') {
+        return row;
+    }
+    return {
+        ...row,
+        usuario_id: row.usuario_id ?? row.cliente_id ?? null,
+        cliente_id: row.cliente_id ?? row.usuario_id ?? null,
+    };
+}
+
+export async function sincronizarProyectos() {
+    const { data, error } = await supabase.from('proyectos').select('*');
+    if (error) {
+        throw new Error(error.message);
+    }
+    const mapeados = (data ?? []).map(mapearProyecto);
+    Storage.guardarValor('proyectos', mapeados);
+    return mapeados;
+}
+
+// Mapea una canción de Supabase al formato que espera la app.
+export function mapearCancion(row) {
+    if (!row || typeof row !== 'object') {
+        return row;
+    }
+    return {
+        ...row,
+        duracion: row.duracion ?? row.duracion_seg ?? null,
+        duracion_seg: row.duracion_seg ?? row.duracion ?? null,
+    };
+}
+
+export async function sincronizarCanciones() {
+    const { data, error } = await supabase.from('canciones').select('*');
+    if (error) {
+        throw new Error(error.message);
+    }
+    const mapeados = (data ?? []).map(mapearCancion);
+    Storage.guardarValor('canciones', mapeados);
+    return mapeados;
+}
