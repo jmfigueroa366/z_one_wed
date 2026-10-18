@@ -2,12 +2,30 @@
 import { Storage } from '../infrastructure/storage.js';
 import { SEED } from '../data/seed.js';
 import { crearSala } from '../models/Sala.js';
+import { sincronizarTabla } from '../infrastructure/supabaseSync.js';
 
 const CLAVE = 'salas';
 
 function obtenerListaInicial() {
     return SEED.salas.map((sala, indice) => crearSala({ ...sala, id: indice + 1 }));
 }
+
+// Trae las salas reales de Supabase una vez y las guarda en la caché local.
+let sincronizado = false;
+export async function sincronizarSalas() {
+    if (sincronizado) {
+        return;
+    }
+    try {
+        await sincronizarTabla('salas', CLAVE);
+        sincronizado = true;
+    } catch (error) {
+        console.warn('No se pudieron sincronizar las salas con Supabase.', error);
+    }
+}
+
+// Se ejecuta al cargar el módulo.
+sincronizarSalas();
 
 export const salaRepo = {
     listar() {
