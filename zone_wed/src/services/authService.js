@@ -1,80 +1,142 @@
 // CAPA: Aplicación
-import { Crypto } from '../infrastructure/crypto.js';
-import { Session } from '../infrastructure/session.js';
-import { usuarioRepo } from '../repositories/usuarioRepo.js';
-import { crearUsuario } from '../models/Usuario.js';
+import { supabase } from '../lib/supabaseClient.js';
 import { validarRegistro } from '../utils/validators.js';
 
+//Toma usuario de Auth
+async function construirUsuario(usuarioAuth) {
+    if (!usuarioAuth) {
+        return null;
+    }
+
+    const { data: fila, error } = await supabase
+        .from('usuarios')
+        .select('id, email, rol, activo')
+        .eq('id', usuarioAuth.id)
+        .maybeSingle();
+
+        if (error || !fila || fila.activo === false) {
+            return null;
+        }
+
+        let nombre = fila.email;
+        let perfil = null;
+
+        if (fila.rol === 'colaborador') {
+            const { data: colaborador } = await supabase
+                .from('colaboradores')
+                .select('perfil, nombre_artistico, nombre_real')
+                .eq('usuario_id', fila.id)
+                .maybeSingle();
+
+            if (colaborador) {
+                perfil = colaborador.perfil ?? null;
+                nombre = colaborador.nombre_artistico || colaborador.nombre_real || nombre;
+            }
+        } else if (fila.rol === 'cliente') {
+            const { data: cliente } = await supabase
+                .from('clientes')
+                .select('nombre')
+                .eq('usuario_id', fila.id)
+                .maybeSingle();
+
+                if (cliente && cliente.nombre) {
+                    nombre = cliente.nombre;
+                }
+        }
+
+    return {
+        id: fila.id,
+        email: fila.email,
+        rol: fila.rol,
+        perfil,
+        nombre,
+    activo: fila.activo,
+    };
+}
+
 export const AuthService = {
+    // Devuelve el usuario si las credenciales son correctas; null si no.
     async iniciarSesion(email, password, rol = null) {
-        const usuarios = usuarioRepo.listar();
-        const usuario = usuarios.find((item) => String(item.email).toLowerCase() === String(email).trim().toLowerCase());
+        const correo = String(email ?? '').trim().toLowerCase();
 
-        if (!usuario || !usuario.password || (rol && usuario.rol !== rol)) {
+        const { data, error } = await supabase.auth.signInWithPassword({
+            email: correo,
+            password: String(password ?? ''),
+        });
+
+        if (error || !data || !data.user) {
             return null;
         }
 
-        const passwordGuardada = String(usuario.password);
-        const esPasswordHash = passwordGuardada.includes(':');
-        const coincide = esPasswordHash
-            ? await Crypto.verifyPassword(password, passwordGuardada)
-            : password === passwordGuardada;
+        const usuario = await construirUsuario(data.user);
 
-        if (!coincide) {
+        if (!usuario || (rol && usuario.rol !== rol)) {
+            await supabase.auth.signOut();
             return null;
         }
 
-        if (!esPasswordHash && usuario.id !== null && usuario.id !== undefined) {
-            const passwordHash = await Crypto.hashPassword(password);
-            usuarioRepo.actualizar(usuario.id, { ...usuario, password: passwordHash });
-        }
-
-        const usuarioSesion = crearUsuario({ ...usuario, password: undefined });
-        delete usuarioSesion.password;
-        Session.guardar(usuarioSesion);
-        return usuarioSesion;
+        return usuario;
     },
 
-    async registrarUsuario(data) {
-        const email = String(data?.email ?? '').trim();
-        const password = String(data?.password ?? '');
-        const nombre = String(data?.nombre ?? '').trim();
-        const rol = String(data?.rol ?? 'cliente');
+    // Crea la cuenta en Supabase Auth (siempre queda como cliente).
+    async registrarUsuario(datos) {
+        const email = String(datos?.email ?? '').trim().toLowerCase();
+        const password = String(datos?.password ?? '');
+        const nombre = String(datos?.nombre ?? '').trim();
 
         const errores = validarRegistro({ nombre, email, password });
         if (Object.keys(errores).length > 0) {
             throw new Error(Object.values(errores)[0]);
         }
 
-        if (!['cliente', 'colaborador'].includes(rol)) {
-            throw new Error('El tipo de cuenta debe ser Cliente o Colaborador.');
-        }
-
-        const usuarios = usuarioRepo.listar();
-        const existente = usuarios.find((usuario) => String(usuario.email).toLowerCase() === email.toLowerCase());
-        if (existente) {
-            throw new Error('El email ya existe en la base de datos.');
-        }
-
-        const usuarioConHash = crearUsuario({
-            ...data,
-            nombre,
+        const { error } = await supabase.auth.signUp({
             email,
-            password: await Crypto.hashPassword(password),
-            rol,
-            activo: data?.activo ?? true,
+            password,
+            options: { data: { nombre } },
         });
 
-        return usuarioRepo.crear(usuarioConHash);
-    },
+        if (error) {
+            throw new Error(error.message);
+        }
 
-    obtenerSesion() {
-        return Session.obtener();
-    },
-
-    cerrarSesion() {
-        Session.cerrar();
         return true;
+    },
+
+    // Recupera la sesión guardada por Supabase al abrir la app.
+    async obtenerSesion() {
+        const { data } = await supabase.auth.getSession();
+        const usuarioAuth = data?.session?.user;
+
+        if (!usuarioAuth) {
+            return null;
+        }
+
+        const usuario = await construirUsuario(usuarioAuth);
+
+        if (!usuario) {
+            await supabase.auth.signOut();
+            return null;
+        }
+
+        return usuario;
+    },
+
+    async cerrarSesion() {
+        await supabase.auth.signOut();
+        return true;
+    },
+
+    // Avisa cuando Supabase cierra la sesión (por ejemplo, en otra pestaña).
+    escucharSesion(callback) {
+        const { data } = supabase.auth.onAuthStateChange((evento, sesion) => {
+            callback(evento, sesion);
+        });
+
+        return () => {
+            if (data && data.subscription) {
+                data.subscription.unsubscribe();
+            }
+        };
     },
 };
 
