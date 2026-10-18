@@ -5,6 +5,13 @@ import { colaboradorRepo } from '../repositories/colaboradorRepo.js';
 import { salaRepo } from '../repositories/salaRepo.js';
 import { sesionRepo } from '../repositories/sesionRepo.js';
 import { seSolapan } from '../utils/solicitudes.js';
+import { haySupabase } from '../lib/supabaseClient.js';
+import {
+    insertarSolicitud,
+    actualizarEstadoSolicitud,
+    actualizarInvitacionSolicitud,
+    sincronizarSolicitudes,
+} from '../infrastructure/supabaseSync.js';
 
 function franjaDe(sesion) {
     if (!sesion?.hora_inicio || !sesion?.hora_fin) return null;
@@ -54,6 +61,19 @@ function crearSesionDesdeSolicitud(solicitud) {
     });
 }
 
+// Ejecuta una escritura en Supabase sin romper la app si falla.
+// Se usa en actualizaciones; al crear sí se propaga el error al usuario.
+async function escribirEnSupabase(operacion, textoDeError) {
+    if (!haySupabase) {
+        return;
+    }
+    try {
+        await operacion();
+    } catch (error) {
+        console.warn(textoDeError, error);
+    }
+}
+
 export const SolicitudService = {
     listar() {
         return solicitudRepo.listar();
@@ -63,7 +83,7 @@ export const SolicitudService = {
         return solicitudRepo.obtenerPorId(id);
     },
 
-    crear(data) {
+    async crear(data) {
         const sala = salaRepo.obtenerPorId(data.sala_id);
         if (!sala) {
             throw new Error('La sala no existe.');
@@ -97,10 +117,24 @@ export const SolicitudService = {
             estado: 'solicitada',
             fecha_solicitud: new Date().toISOString(),
         });
+
+        if (haySupabase) {
+            const { id } = await insertarSolicitud(solicitud);
+            try {
+                await sincronizarSolicitudes();
+                const creada = solicitudRepo.obtenerPorId(id);
+                if (creada) {
+                    return creada;
+                }
+            } catch (errorSincronizar) {
+                console.warn('No se pudo refrescar la lista de solicitudes.', errorSincronizar);
+            }
+        }
+
         return solicitudRepo.crear(solicitud);
     },
 
-    responderInvitacion(solicitudId, colaboradorId, decision) {
+    async responderInvitacion(solicitudId, colaboradorId, decision) {
         if (!['aceptada', 'rechazada'].includes(decision)) {
             throw new Error('Respuesta inválida.');
         }
@@ -127,21 +161,29 @@ export const SolicitudService = {
                 : item
         );
 
+        await escribirEnSupabase(
+            () => actualizarInvitacionSolicitud(solicitud.id, colaboradorId, decision),
+            'No se pudo registrar tu respuesta en Supabase.'
+        );
+
         let actualizada = solicitudRepo.actualizar(solicitud.id, { colaboradores });
 
         if (Solicitud.todosRespondieron(actualizada)) {
-            if (Solicitud.todosAceptaron(actualizada)) {
-                actualizada = solicitudRepo.actualizar(solicitud.id, { estado: 'confirmada' });
+            const nuevoEstado = Solicitud.todosAceptaron(actualizada) ? 'confirmada' : 'rechazada';
+            await escribirEnSupabase(
+                () => actualizarEstadoSolicitud(solicitud.id, nuevoEstado),
+                'No se pudo actualizar el estado de la solicitud en Supabase.'
+            );
+            actualizada = solicitudRepo.actualizar(solicitud.id, { estado: nuevoEstado });
+            if (nuevoEstado === 'confirmada') {
                 crearSesionDesdeSolicitud(actualizada);
-            } else {
-                actualizada = solicitudRepo.actualizar(solicitud.id, { estado: 'rechazada' });
             }
         }
 
         return actualizada;
     },
 
-    cancelar(id) {
+    async cancelar(id) {
         const solicitud = solicitudRepo.obtenerPorId(id);
         if (!solicitud) {
             return null;
@@ -149,6 +191,10 @@ export const SolicitudService = {
         if (!Solicitud.puedeTransicionar(solicitud, 'cancelada')) {
             throw new Error('La solicitud ya no se puede cancelar.');
         }
+        await escribirEnSupabase(
+            () => actualizarEstadoSolicitud(id, 'cancelada'),
+            'No se pudo cancelar la solicitud en Supabase.'
+        );
         return solicitudRepo.actualizar(id, { estado: 'cancelada' });
     },
 };

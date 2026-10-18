@@ -25,8 +25,8 @@ after(() => {
     }
 });
 
-test('crear registra una solicitud solicitada con invitaciones pendientes', () => {
-    const solicitud = SolicitudService.crear({
+test('crear registra una solicitud solicitada con invitaciones pendientes', async () => {
+    const solicitud = await SolicitudService.crear({
         usuario_id: 3,
         solicitante_nombre: 'Cliente Zeta',
         titulo: 'Prueba',
@@ -45,8 +45,8 @@ test('crear registra una solicitud solicitada con invitaciones pendientes', () =
     assert.ok(solicitud.colaboradores.every((invitacion) => invitacion.estado === 'pendiente'));
 });
 
-test('crear exige al menos un colaborador', () => {
-    assert.throws(
+test('crear exige al menos un colaborador', async () => {
+    await assert.rejects(
         () => SolicitudService.crear({
             sala_id: 1,
             fecha: '2026-12-02',
@@ -58,8 +58,8 @@ test('crear exige al menos un colaborador', () => {
     );
 });
 
-test('crear rechaza una franja que choca con otra solicitud activa', () => {
-    SolicitudService.crear({
+test('crear rechaza una franja que choca con otra solicitud activa', async () => {
+    await SolicitudService.crear({
         sala_id: 1,
         fecha: '2026-12-07',
         franja: '10:00-12:00',
@@ -67,7 +67,7 @@ test('crear rechaza una franja que choca con otra solicitud activa', () => {
         colaboradores: [{ colaborador_id: 1 }],
     });
 
-    assert.throws(
+    await assert.rejects(
         () => SolicitudService.crear({
             sala_id: 1,
             fecha: '2026-12-07',
@@ -79,8 +79,8 @@ test('crear rechaza una franja que choca con otra solicitud activa', () => {
     );
 });
 
-test('la solicitud se confirma y crea sesión cuando todos aceptan', () => {
-    const solicitud = SolicitudService.crear({
+test('la solicitud se confirma y crea sesión cuando todos aceptan', async () => {
+    const solicitud = await SolicitudService.crear({
         sala_id: 1,
         fecha: '2026-12-03',
         franja: '08:00-09:00',
@@ -88,10 +88,10 @@ test('la solicitud se confirma y crea sesión cuando todos aceptan', () => {
         colaboradores: [{ colaborador_id: 1 }, { colaborador_id: 2 }],
     });
 
-    const parcial = SolicitudService.responderInvitacion(solicitud.id, 1, 'aceptada');
+    const parcial = await SolicitudService.responderInvitacion(solicitud.id, 1, 'aceptada');
     assert.equal(parcial.estado, 'solicitada');
 
-    const final = SolicitudService.responderInvitacion(solicitud.id, 2, 'aceptada');
+    const final = await SolicitudService.responderInvitacion(solicitud.id, 2, 'aceptada');
     assert.equal(final.estado, 'confirmada');
 
     const sesion = SesionService.listar().find((item) => String(item.solicitud_id) === String(solicitud.id));
@@ -100,8 +100,8 @@ test('la solicitud se confirma y crea sesión cuando todos aceptan', () => {
     assert.equal(sesion.sala_id, solicitud.sala_id);
 });
 
-test('la solicitud se rechaza cuando alguien rechaza y ya respondieron todos', () => {
-    const solicitud = SolicitudService.crear({
+test('la solicitud se rechaza cuando alguien rechaza y ya respondieron todos', async () => {
+    const solicitud = await SolicitudService.crear({
         sala_id: 2,
         fecha: '2026-12-04',
         franja: '08:00-09:00',
@@ -109,16 +109,16 @@ test('la solicitud se rechaza cuando alguien rechaza y ya respondieron todos', (
         colaboradores: [{ colaborador_id: 1 }, { colaborador_id: 2 }],
     });
 
-    SolicitudService.responderInvitacion(solicitud.id, 1, 'aceptada');
-    const final = SolicitudService.responderInvitacion(solicitud.id, 2, 'rechazada');
+    await SolicitudService.responderInvitacion(solicitud.id, 1, 'aceptada');
+    const final = await SolicitudService.responderInvitacion(solicitud.id, 2, 'rechazada');
     assert.equal(final.estado, 'rechazada');
 
     const sesion = SesionService.listar().find((item) => String(item.solicitud_id) === String(solicitud.id));
     assert.equal(sesion, undefined);
 });
 
-test('no se puede responder dos veces ni responder sin invitación', () => {
-    const solicitud = SolicitudService.crear({
+test('no se puede responder dos veces ni responder sin invitación', async () => {
+    const solicitud = await SolicitudService.crear({
         sala_id: 3,
         fecha: '2026-12-05',
         franja: '08:00-09:00',
@@ -126,13 +126,13 @@ test('no se puede responder dos veces ni responder sin invitación', () => {
         colaboradores: [{ colaborador_id: 1 }, { colaborador_id: 2 }],
     });
 
-    SolicitudService.responderInvitacion(solicitud.id, 1, 'aceptada');
-    assert.throws(() => SolicitudService.responderInvitacion(solicitud.id, 1, 'rechazada'), /Ya respondiste/);
-    assert.throws(() => SolicitudService.responderInvitacion(solicitud.id, 7, 'aceptada'), /No fuiste invitado/);
+    await SolicitudService.responderInvitacion(solicitud.id, 1, 'aceptada');
+    await assert.rejects(() => SolicitudService.responderInvitacion(solicitud.id, 1, 'rechazada'), /Ya respondiste/);
+    await assert.rejects(() => SolicitudService.responderInvitacion(solicitud.id, 7, 'aceptada'), /No fuiste invitado/);
 });
 
-test('cancelar deja la solicitud en cancelada y respeta la máquina de estados', () => {
-    const solicitud = SolicitudService.crear({
+test('cancelar deja la solicitud en cancelada y respeta la máquina de estados', async () => {
+    const solicitud = await SolicitudService.crear({
         sala_id: 1,
         fecha: '2026-12-06',
         franja: '08:00-09:00',
@@ -140,7 +140,7 @@ test('cancelar deja la solicitud en cancelada y respeta la máquina de estados',
         colaboradores: [{ colaborador_id: 1 }],
     });
 
-    const cancelada = SolicitudService.cancelar(solicitud.id);
+    const cancelada = await SolicitudService.cancelar(solicitud.id);
     assert.equal(cancelada.estado, 'cancelada');
-    assert.throws(() => SolicitudService.cancelar(solicitud.id), /ya no se puede cancelar/);
+    await assert.rejects(() => SolicitudService.cancelar(solicitud.id), /ya no se puede cancelar/);
 });

@@ -33,15 +33,30 @@ export function mapearColaborador(row) {
 }
 
 export async function sincronizarColaboradores() {
-    const { data, error } = await supabase.from('colaboradores').select('*');
-    if (error) {
-        throw new Error(error.message);
+    // La vista pública la pueden leer todos (clientes e invitados).
+    const [privados, publicos] = await Promise.all([
+        supabase.from('colaboradores').select('*'),
+        supabase.from('colaboradores_publicos').select('*'),
+    ]);
+    if (privados.error) {
+        throw new Error(privados.error.message);
     }
-    const mapeados = (data ?? []).map(mapearColaborador);
+    if (publicos.error) {
+        throw new Error(publicos.error.message);
+    }
+
+    const filas = new Map();
+    for (const fila of publicos.data ?? []) {
+        filas.set(String(fila.id), fila);
+    }
+    for (const fila of privados.data ?? []) {
+        filas.set(String(fila.id), { ...filas.get(String(fila.id)), ...fila });
+    }
+
+    const mapeados = [...filas.values()].map(mapearColaborador);
     Storage.guardarValor('colaboradores', mapeados);
     return mapeados;
 }
-
 // Mapea un proyecto de Supabase al formato que espera la app.
 export function mapearProyecto(row) {
     if (!row || typeof row !== 'object') {
@@ -127,10 +142,84 @@ export async function sincronizarSolicitudes() {
     return mapeadas;
 }
 
+// Devuelve el id de la fila "clientes" del usuario que tiene la sesión.
+export async function obtenerMiClienteId() {
+    const { data, error } = await supabase.rpc('mi_cliente_id');
+    if (error) {
+        throw new Error(error.message);
+    }
+    return data ?? null;
+}
+
+export async function insertarSolicitud(solicitud) {
+    const clienteId = await obtenerMiClienteId();
+    if (!clienteId) {
+        throw new Error('Tu cuenta no tiene un cliente asociado en el estudio.');
+    }
+
+    const { data, error } = await supabase
+        .from('solicitudes')
+        .insert({
+            cliente_id: clienteId,
+            sala_id: solicitud.sala_id ?? null,
+            estado: solicitud.estado ?? 'solicitada',
+            descripcion: solicitud.descripcion ?? '',
+            fecha_deseada: solicitud.fecha ?? null,
+            titulo: solicitud.titulo ?? '',
+            tipo: solicitud.tipo ?? 'grabacion',
+            franja: solicitud.franja ?? '',
+            partes: solicitud.partes ?? [],
+            cancion_id: solicitud.cancion_id ?? null,
+            proyecto_id: solicitud.proyecto_id ?? null,
+        })
+        .select('id')
+        .single();
+
+    if (error) {
+        throw new Error(error.message);
+    }
+
+    const invitaciones = (solicitud.colaboradores ?? []).map((invitacion) => ({
+        solicitud_id: data.id,
+        colaborador_id: invitacion.colaborador_id,
+        rol: invitacion.rol ?? null,
+        estado: invitacion.estado ?? 'pendiente',
+    }));
+
+    if (invitaciones.length > 0) {
+        const { error: errorInvitaciones } = await supabase
+            .from('solicitud_colaboradores')
+            .insert(invitaciones);
+        if (errorInvitaciones) {
+            throw new Error(errorInvitaciones.message);
+        }
+    }
+
+    return { id: data.id };
+}
+
+export async function actualizarEstadoSolicitud(id, estado) {
+    const { error } = await supabase.from('solicitudes').update({ estado }).eq('id', id);
+    if (error) {
+        throw new Error(error.message);
+    }
+}
+
+export async function actualizarInvitacionSolicitud(solicitudId, colaboradorId, estado) {
+    const { error } = await supabase
+        .from('solicitud_colaboradores')
+        .update({ estado })
+        .eq('solicitud_id', solicitudId)
+        .eq('colaborador_id', colaboradorId);
+    if (error) {
+        throw new Error(error.message);
+    }
+}
+
 // Recarga los datos que dependen del usuario logueado.
-// Se llama después de iniciar sesión para que cada usuario vea lo suyo.
 export async function refrescarDatosUsuario() {
     await Promise.allSettled([
+        sincronizarColaboradores(),
         sincronizarProyectos(),
         sincronizarCanciones(),
         sincronizarSolicitudes(),

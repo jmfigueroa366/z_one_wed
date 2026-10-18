@@ -1,6 +1,7 @@
 // CAPA: Presentación
 import { createContext, useContext, useEffect, useMemo, useState } from 'react';
 import { AuthService } from '../services/authService.js';
+import { refrescarDatosUsuario } from '../infrastructure/supabaseSync.js';
 
 export const AuthContext = createContext(null);
 
@@ -43,6 +44,7 @@ export function AuthProvider({ children }) {
             const usuarioAutenticado = await AuthService.iniciarSesion(...args);
             if(usuarioAutenticado) {
                 setUsuario(usuarioAutenticado);
+                refrescarDatosUsuario();
             }
             return usuarioAutenticado;
         },

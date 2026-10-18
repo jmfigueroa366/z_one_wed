@@ -4,38 +4,39 @@ import { createClient } from '@supabase/supabase-js';
 const supabaseUrl = import.meta.env?.VITE_SUPABASE_URL ?? '';
 const supabaseLlave = import.meta.env?.VITE_SUPABASE_ANON_KEY ?? '';
 
+// Simula una consulta encadenable (select().order()... ) que se puede
+// esperar con await, igual que el cliente real de Supabase.
+function crearConsulta(dataInicial = [], esUnico = false) {
+    const respuesta = { data: esUnico ? null : dataInicial, error: null };
+    const promesa = Promise.resolve(respuesta);
+    const consulta = {
+        select() { return consulta; },
+        insert() { return consulta; },
+        update() { return consulta; },
+        delete() { return consulta; },
+        upsert() { return consulta; },
+        eq() { return consulta; },
+        neq() { return consulta; },
+        in() { return consulta; },
+        order() { return consulta; },
+        limit() { return consulta; },
+        range() { return consulta; },
+        maybeSingle() { return crearConsulta(null, true); },
+        single() { return crearConsulta(null, true); },
+        then(cuandoListo, cuandoFalla) { return promesa.then(cuandoListo, cuandoFalla); },
+        catch(cuandoFalla) { return promesa.catch(cuandoFalla); },
+        finally(alTerminar) { return promesa.finally(alTerminar); },
+    };
+    return consulta;
+}
+
 // Si faltan las variables de entorno (entornos de test o sin .env),
 // exportamos un cliente mínimo para evitar errores al importar los módulos.
 export const supabase = (supabaseUrl && supabaseLlave)
     ? createClient(supabaseUrl, supabaseLlave)
     : {
         from() {
-            return {
-                select() {
-                    return Promise.resolve({ data: [], error: null });
-                },
-                insert() {
-                    return Promise.resolve({ data: [], error: null });
-                },
-                update() {
-                    return Promise.resolve({ data: [], error: null });
-                },
-                delete() {
-                    return Promise.resolve({ data: [], error: null });
-                },
-                eq() {
-                    return this;
-                },
-                order() {
-                    return this;
-                },
-                maybeSingle() {
-                    return Promise.resolve({ data: null, error: null });
-                },
-                single() {
-                    return Promise.resolve({ data: null, error: null });
-                },
-            };
+            return crearConsulta();
         },
         auth: {
             signInWithPassword() {
@@ -55,3 +56,6 @@ export const supabase = (supabaseUrl && supabaseLlave)
             },
         },
     };
+
+    // Hay credenciales reales de Supabase
+export const haySupabase = Boolean(supabaseUrl && supabaseLlave);
