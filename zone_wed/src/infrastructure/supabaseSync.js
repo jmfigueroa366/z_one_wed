@@ -85,3 +85,54 @@ export async function sincronizarCanciones() {
     Storage.guardarValor('canciones', mapeados);
     return mapeados;
 }
+// Mapea una solicitud de Supabase al formato que espera la app.
+export function mapearSolicitud(row) {
+    if (!row || typeof row !== 'object') {
+        return row;
+    }
+    const cliente = row.clientes ?? null;
+    return {
+        id: row.id,
+        usuario_id: cliente?.usuario_id ?? null,
+        solicitante_nombre: cliente?.nombre ?? null,
+        titulo: row.titulo ?? '',
+        descripcion: row.descripcion ?? '',
+        tipo: row.tipo ?? 'grabacion',
+        sala_id: row.sala_id ?? null,
+        cancion_id: row.cancion_id ?? null,
+        proyecto_id: row.proyecto_id ?? null,
+        partes: row.partes ?? [],
+        fecha: row.fecha ?? row.fecha_deseada ?? null,
+        franja: row.franja ?? '',
+        fecha_solicitud: row.fecha_solicitud ?? row.creado_en ?? null,
+        colaboradores: (row.solicitud_colaboradores ?? []).map((inv) => ({
+            colaborador_id: inv.colaborador_id ?? null,
+            rol: inv.rol ?? null,
+            estado: inv.estado ?? 'pendiente',
+        })),
+        estado: row.estado ?? 'solicitada',
+    };
+}
+
+export async function sincronizarSolicitudes() {
+    const { data, error } = await supabase
+        .from('solicitudes')
+        .select('*, solicitud_colaboradores(*), clientes(usuario_id, nombre)')
+        .order('id');
+    if (error) {
+        throw new Error(error.message);
+    }
+    const mapeadas = (data ?? []).map(mapearSolicitud);
+    Storage.guardarValor('solicitudes', mapeadas);
+    return mapeadas;
+}
+
+// Recarga los datos que dependen del usuario logueado.
+// Se llama después de iniciar sesión para que cada usuario vea lo suyo.
+export async function refrescarDatosUsuario() {
+    await Promise.allSettled([
+        sincronizarProyectos(),
+        sincronizarCanciones(),
+        sincronizarSolicitudes(),
+    ]);
+}
