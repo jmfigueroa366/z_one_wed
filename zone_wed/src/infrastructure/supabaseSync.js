@@ -216,6 +216,84 @@ export async function actualizarInvitacionSolicitud(solicitudId, colaboradorId, 
     }
 }
 
+// Mapea una sesión de Supabase al formato que espera la app.
+export function mapearSesion(row) {
+    if (!row || typeof row !== 'object') {
+        return row;
+    }
+    const estadosValidos = ['solicitada', 'confirmada', 'completada', 'cancelada'];
+    return {
+        id: row.id,
+        solicitud_id: row.solicitud_id ?? null,
+        titulo: row.titulo ?? '',
+        sala_id: row.sala_id ?? null,
+        colaborador_id: row.colaborador_id ?? null,
+        fecha: row.fecha ?? null,
+        hora_inicio: row.hora_inicio ?? null,
+        hora_fin: row.hora_fin ?? null,
+        // 'programada' (default de la BD) no es un estado válido en la app.
+        estado: estadosValidos.includes(row.estado) ? row.estado : 'confirmada',
+        cancion_id: row.cancion_id ?? null,
+        partes: Array.isArray(row.partes) ? row.partes : [],
+    };
+}
+
+export async function sincronizarSesiones() {
+    const { data, error } = await supabase.from('sesiones').select('*').order('id');
+    if (error) {
+        throw new Error(error.message);
+    }
+    const mapeadas = (data ?? []).map(mapearSesion);
+    Storage.guardarValor('sesiones', mapeadas);
+    return mapeadas;
+}
+
+export async function insertarSesion(sesion) {
+    // El cliente de la sesión: si viene del flujo de una solicitud, lo sacamos
+    // de la solicitud; si no, del que tiene la sesión iniciada.
+    let clienteId = sesion.cliente_id ?? null;
+
+    if (!clienteId && sesion.solicitud_id != null) {
+        const { data: solicitud, error: errorSolicitud } = await supabase
+            .from('solicitudes')
+            .select('cliente_id')
+            .eq('id', sesion.solicitud_id)
+            .maybeSingle();
+        if (errorSolicitud) {
+            throw new Error(errorSolicitud.message);
+        }
+        clienteId = solicitud?.cliente_id ?? null;
+    }
+
+    if (!clienteId) {
+        clienteId = await obtenerMiClienteId();
+    }
+
+    const { data, error } = await supabase
+        .from('sesiones')
+        .insert({
+            solicitud_id: sesion.solicitud_id ?? null,
+            cliente_id: clienteId,
+            sala_id: sesion.sala_id ?? null,
+            colaborador_id: sesion.colaborador_id ?? null,
+            cancion_id: sesion.cancion_id ?? null,
+            estado: sesion.estado ?? 'confirmada',
+            titulo: sesion.titulo ?? '',
+            fecha: sesion.fecha ?? null,
+            hora_inicio: sesion.hora_inicio ?? null,
+            hora_fin: sesion.hora_fin ?? null,
+            partes: sesion.partes ?? [],
+        })
+        .select('id')
+        .single();
+
+    if (error) {
+        throw new Error(error.message);
+    }
+
+    return { id: data.id };
+}
+
 // Recarga los datos que dependen del usuario logueado.
 export async function refrescarDatosUsuario() {
     await Promise.allSettled([
@@ -223,5 +301,6 @@ export async function refrescarDatosUsuario() {
         sincronizarProyectos(),
         sincronizarCanciones(),
         sincronizarSolicitudes(),
+        sincronizarSesiones(),
     ]);
 }

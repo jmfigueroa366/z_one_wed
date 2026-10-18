@@ -2,11 +2,40 @@
 import { Storage } from '../infrastructure/storage.js';
 import { SEED } from '../data/seed.js';
 import { crearSesion } from '../models/Sesion.js';
+import { haySupabase } from '../lib/supabaseClient.js';
+import { insertarSesion, sincronizarSesiones } from '../infrastructure/supabaseSync.js';
 
 const CLAVE = 'sesiones';
 
 function obtenerListaInicial() {
     return SEED.sesiones.map((sesion, indice) => crearSesion({ ...sesion, id: indice + 1 }));
+}
+
+// Sincroniza sesiones desde Supabase una vez al cargar el módulo.
+let sincronizado = false;
+export async function sincronizar() {
+    if (sincronizado) {
+        return;
+    }
+    try {
+        await sincronizarSesiones();
+        sincronizado = true;
+    } catch (error) {
+        console.warn('No se pudieron sincronizar las sesiones con Supabase.', error);
+    }
+}
+
+sincronizar();
+
+// Guarda la sesión en Supabase sin frenar la interfaz: la app ya guardó la
+// sesión en local y la muestra; en segundo plano se sube y se refresca la lista.
+function guardarEnSupabase(sesion) {
+    if (!haySupabase) {
+        return;
+    }
+    insertarSesion(sesion)
+        .then(() => sincronizarSesiones())
+        .catch((error) => console.warn('No se pudo guardar la sesión en Supabase.', error));
 }
 
 export const sesionRepo = {
