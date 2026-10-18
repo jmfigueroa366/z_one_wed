@@ -1,7 +1,8 @@
-// CAPA: Infraestructura
+﻿// CAPA: Infraestructura
 import { Storage } from '../infrastructure/storage.js';
 import { SEED } from '../data/seed.js';
 import { crearColaborador } from '../models/Colaborador.js';
+import { sincronizarColaboradores } from '../infrastructure/supabaseSync.js';
 
 const CLAVE = 'colaboradores';
 
@@ -16,6 +17,22 @@ function normalizarLista(colaboradores) {
         crearColaborador({ ...colaborador, id: colaborador.id ?? indice + 1 })
     );
 }
+
+// Sincroniza colaboradores desde Supabase una vez al cargar el módulo.
+let sincronizado = false;
+export async function sincronizar() {
+    if (sincronizado) {
+        return;
+    }
+    try {
+        await sincronizarColaboradores();
+        sincronizado = true;
+    } catch (error) {
+        console.warn('No se pudieron sincronizar los colaboradores con Supabase.', error);
+    }
+}
+
+sincronizar();
 
 export const colaboradorRepo = {
     listar() {
