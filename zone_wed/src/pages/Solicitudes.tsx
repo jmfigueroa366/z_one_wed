@@ -1,7 +1,7 @@
 // CAPA: Presentación
 import { useEffect, useMemo, useRef, useState } from 'react';
 import anime from 'animejs';
-import { Check, Coins, XCircle } from 'lucide-react';
+import { Check, Coins, Music, Sparkles, Users, XCircle } from 'lucide-react';
 import { useAuth } from '../context/AuthContext.tsx';
 import { esAdministrador } from '../config/roles.ts';
 import { useColaboradores } from '../hooks/useColaboradores.ts';
@@ -13,6 +13,7 @@ import { etiquetaEstado, etiquetaInvitacion, etiquetaTipo, estimadoSala } from '
 import type { Solicitud } from '../models/Solicitud.ts';
 import { formatearFecha, formatearMoneda } from '../utils/helpers.ts';
 import MisSolicitudes from '../components/MisSolicitudes.tsx';
+import { Contador } from '../components/Animados.tsx';
 import { BOTON_PELIGRO, BOTON_PRIMARIO, clasePillEstado } from '../styles/clases.ts';
 import '../styles/tailwind.css';
 
@@ -28,6 +29,11 @@ const COLUMNAS = [
     { clave: 'cancelada', titulo: 'Canceladas', punto: 'bg-sutil', borde: 'border-border', fondo: 'from-white/[0.03]' },
 ];
 
+const FILTROS = [
+    { clave: 'todas', titulo: 'Todas' },
+    ...COLUMNAS.map((columna) => ({ clave: columna.clave, titulo: columna.titulo })),
+];
+
 function BandejaSolicitudes() {
     const { usuario } = useAuth();
     const [solicitudes] = useSolicitudes();
@@ -37,6 +43,7 @@ function BandejaSolicitudes() {
     const [ocupado, setOcupado] = useState<number | null>(null);
     const [mensaje, setMensaje] = useState('');
     const [error, setError] = useState('');
+    const [filtro, setFiltro] = useState<string>('todas');
 
     const canciones = useMemo(() => CancionService.listar(), [solicitudes]);
 
@@ -51,6 +58,11 @@ function BandejaSolicitudes() {
         return base;
     }, [solicitudes]);
 
+    const columnasVisibles = useMemo(
+        () => (filtro === 'todas' ? COLUMNAS : COLUMNAS.filter((columna) => columna.clave === filtro)),
+        [filtro]
+    );
+
     useEffect(() => {
         if (MENOS_MOVIMIENTO()) return undefined;
         const board = boardRef.current;
@@ -58,13 +70,13 @@ function BandejaSolicitudes() {
         const animacion = anime({
             targets: board.querySelectorAll('[data-solicitud]'),
             opacity: [0, 1],
-            translateY: [16, 0],
-            duration: 420,
-            delay: anime.stagger(40),
+            translateY: [14, 0],
+            duration: 380,
+            delay: anime.stagger(45),
             easing: 'easeOutCubic',
         });
         return () => animacion.pause();
-    }, [solicitudes]);
+    }, [solicitudes, filtro]);
 
     const nombreSolicitante = (solicitud: Solicitud): string => solicitud.solicitante_nombre ?? 'Cliente';
     const nombreColaborador = (id: number | string | null): string =>
@@ -110,38 +122,79 @@ function BandejaSolicitudes() {
                 <div aria-hidden="true" className="pointer-events-none absolute -top-20 right-24 h-52 w-52 animate-aurora rounded-full bg-[#e34ba6]/15 blur-3xl" />
                 <p className="workspace-eyebrow">RESERVAS DEL ESTUDIO</p>
                 <h1>Solicitudes</h1>
-                <p>Flujo: el cliente pide, el equipo acepta, tú autorizas la reserva y el cliente paga el anticipo para confirmarla.</p>
+                <p>El cliente pide, el equipo acepta, tú autorizas y el cliente paga el anticipo para confirmar la reserva.</p>
             </header>
 
             {mensaje && <p className="mt-5 rounded-xl border border-exito/30 bg-exito/10 px-4 py-3 text-sm text-exito-soft" role="status">{mensaje}</p>}
             {error && <p className="mt-5 rounded-xl border border-peligro/30 bg-peligro/10 px-4 py-3 text-sm text-peligro-soft" role="alert">{error}</p>}
 
+            {/* Flujo visual: explica el recorrido de una solicitud */}
+            <ol className="mt-6 flex flex-wrap items-center gap-x-2 gap-y-2 text-xs text-sutil" aria-label="Flujo de una solicitud">
+                {['Cliente pide', 'Equipo acepta', 'Tú autorizas', 'Cliente paga', 'Reserva confirmada'].map((paso, indice, arreglo) => (
+                    <li key={paso} className="flex items-center gap-2">
+                        <span className="flex items-center gap-1.5 rounded-full border border-border bg-surface/60 px-3 py-1.5 font-semibold text-texto-soft">
+                            <span className="grid h-5 w-5 place-items-center rounded-full bg-accent/20 text-[0.62rem] font-black text-accent-soft">{indice + 1}</span>
+                            {paso}
+                        </span>
+                        {indice < arreglo.length - 1 && <span aria-hidden="true" className="text-accent/50">→</span>}
+                    </li>
+                ))}
+            </ol>
+
             <section className="mt-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-4" aria-label="Resumen de solicitudes">
                 <article className="relative overflow-hidden rounded-2xl border border-border bg-gradient-to-br from-[#5b418f]/40 to-surface/40 p-4">
                     <span className="text-sm text-sutil">Total de solicitudes</span>
-                    <strong className="mt-1 block text-3xl font-black text-texto-soft">{solicitudes.length}</strong>
+                    <strong className="mt-1 block text-3xl font-black text-texto-soft"><Contador valor={solicitudes.length} pad={2} /></strong>
                 </article>
                 <article className="relative overflow-hidden rounded-2xl border border-border bg-gradient-to-br from-aviso/20 to-surface/40 p-4">
                     <span className="text-sm text-sutil">Esperando respuestas</span>
-                    <strong className="mt-1 block text-3xl font-black text-aviso-soft">{porResponder}</strong>
+                    <strong className="mt-1 block text-3xl font-black text-aviso-soft"><Contador valor={porResponder} pad={2} /></strong>
                 </article>
                 <article className="relative overflow-hidden rounded-2xl border border-border bg-gradient-to-br from-accent/20 to-surface/40 p-4">
                     <span className="text-sm text-sutil">Por autorizar</span>
-                    <strong className="mt-1 block text-3xl font-black text-accent-soft">{porAutorizar}</strong>
+                    <strong className="mt-1 block text-3xl font-black text-accent-soft"><Contador valor={porAutorizar} pad={2} /></strong>
                 </article>
                 <article className="relative overflow-hidden rounded-2xl border border-border bg-gradient-to-br from-exito/20 to-surface/40 p-4">
                     <span className="text-sm text-sutil">Confirmadas</span>
-                    <strong className="mt-1 block text-3xl font-black text-exito-soft">{grupos.confirmada.length}</strong>
+                    <strong className="mt-1 block text-3xl font-black text-exito-soft"><Contador valor={grupos.confirmada.length} pad={2} /></strong>
                 </article>
             </section>
 
-            <div ref={boardRef} className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-6">
-                {COLUMNAS.map((columna) => {
+            {/* Filtros por estado: evita apretar las 6 columnas en pantallas medianas */}
+            <div className="mt-6 flex flex-wrap gap-2" role="tablist" aria-label="Filtrar por estado">
+                {FILTROS.map((opcion) => {
+                    const activo = filtro === opcion.clave;
+                    const cantidad = opcion.clave === 'todas' ? solicitudes.length : grupos[opcion.clave].length;
+                    return (
+                        <button
+                            key={opcion.clave}
+                            type="button"
+                            role="tab"
+                            aria-selected={activo}
+                            onClick={() => setFiltro(opcion.clave)}
+                            className={`inline-flex min-h-[38px] items-center gap-2 rounded-full border px-3.5 text-xs font-bold transition ${
+                                activo
+                                    ? 'border-accent/60 bg-accent/15 text-accent-soft'
+                                    : 'border-border bg-white/[0.03] text-sutil hover:border-accent/40 hover:text-texto'
+                            }`}
+                        >
+                            {opcion.titulo}
+                            <span className="grid h-5 min-w-5 place-items-center rounded-full bg-white/[0.08] px-1.5 text-[0.62rem]">{cantidad}</span>
+                        </button>
+                    );
+                })}
+            </div>
+
+            <div
+                ref={boardRef}
+                className="mt-5 flex gap-4 overflow-x-auto pb-3 [scrollbar-color:theme(colors.accent/40)_transparent]"
+            >
+                {columnasVisibles.map((columna) => {
                     const items = grupos[columna.clave];
                     return (
                         <section
                             key={columna.clave}
-                            className={`flex flex-col rounded-[1.75rem] border ${columna.borde} bg-gradient-to-b ${columna.fondo} to-transparent p-3.5`}
+                            className={`flex w-[340px] shrink-0 flex-col rounded-[1.75rem] border ${columna.borde} bg-gradient-to-b ${columna.fondo} to-transparent p-3.5`}
                             aria-label={columna.titulo}
                         >
                             <header className="mb-3 flex items-center justify-between px-1">
@@ -152,54 +205,79 @@ function BandejaSolicitudes() {
                                 <span className="grid h-7 min-w-7 place-items-center rounded-lg bg-white/[0.06] px-2 text-xs font-bold text-sutil">{items.length}</span>
                             </header>
 
-                            <div className="flex flex-1 flex-col gap-3 lg:max-h-[68vh] lg:overflow-y-auto lg:pr-1">
+                            <div className="flex max-h-[68vh] min-h-[120px] flex-1 flex-col gap-3 overflow-y-auto pr-1">
                                 {items.length ? (
                                     items.map((solicitud) => {
                                         const sala = salas.find((item) => String(item.id) === String(solicitud.sala_id));
                                         const estimado = estimadoSala(sala, solicitud.franja);
-                                        const detalles: Array<[string, string | null]> = [
-                                            ['Solicitante', nombreSolicitante(solicitud)],
-                                            ['Sala', obtenerSala(solicitud.sala_id)],
-                                            ['Tipo', etiquetaTipo(solicitud.tipo)],
-                                            ['Horario', solicitud.franja || 'Por coordinar'],
-                                        ];
-                                        if (nombreCancionDe(solicitud)) detalles.push(['Canción', nombreCancionDe(solicitud)]);
-                                        if ((solicitud.partes ?? []).length > 0) detalles.push(['Partes', solicitud.partes.join(', ')]);
-                                        if (estimado !== null) detalles.push(['Estimado', formatearMoneda(estimado)]);
+                                        const cancion = nombreCancionDe(solicitud);
 
                                         return (
                                             <article
                                                 key={solicitud.id}
                                                 data-solicitud
-                                                className="rounded-2xl border border-border bg-surface/80 p-4 transition hover:-translate-y-0.5 hover:border-accent/50"
+                                                data-estado={solicitud.estado}
+                                                className="group rounded-2xl border border-border bg-surface/80 p-4 shadow-sm shadow-black/20 transition duration-300 hover:-translate-y-0.5 hover:border-accent/50 hover:shadow-lg hover:shadow-accent/10"
                                             >
                                                 <div className="flex items-start justify-between gap-3">
                                                     <div className="min-w-0">
-                                                        <p className="text-[0.66rem] font-bold uppercase tracking-wider text-sutil">
+                                                        <p className="flex items-center gap-1.5 text-[0.66rem] font-bold uppercase tracking-wider text-sutil">
+                                                            <Sparkles className="h-3 w-3 text-accent-soft" aria-hidden="true" />
                                                             {formatearFecha(solicitud.fecha, { weekday: 'short', day: 'numeric' }) || 'Fecha pendiente'}
                                                         </p>
-                                                        <h3 className="mt-0.5 truncate text-sm font-bold text-texto-soft">{solicitud.titulo || etiquetaTipo(solicitud.tipo)}</h3>
+                                                        <h3 className="mt-1 truncate text-sm font-bold text-texto-soft">{solicitud.titulo || etiquetaTipo(solicitud.tipo)}</h3>
+                                                        <p className="mt-0.5 truncate text-xs text-sutil">
+                                                            <span className="font-semibold text-texto">{nombreSolicitante(solicitud)}</span> · {etiquetaTipo(solicitud.tipo)}
+                                                        </p>
                                                     </div>
                                                     <span className={clasePillEstado(solicitud.estado)}>{etiquetaEstado(solicitud.estado)}</span>
                                                 </div>
 
-                                                <dl className="mt-3 grid gap-2">
-                                                    {detalles.map(([etiqueta, valor]) => (
-                                                        <div className="flex items-baseline justify-between gap-3 border-b border-border/40 pb-1.5 text-sm last:border-0 last:pb-0" key={etiqueta}>
-                                                            <dt className="shrink-0 text-xs text-sutil">{etiqueta}</dt>
-                                                            <dd className="min-w-0 truncate text-right text-xs font-medium text-texto">{valor}</dd>
-                                                        </div>
-                                                    ))}
-                                                </dl>
+                                                <div className="mt-3 grid gap-1.5 text-xs">
+                                                    <p className="flex items-center gap-2 text-sutil">
+                                                        <span className="grid h-6 w-6 shrink-0 place-items-center rounded-lg bg-white/[0.05] text-accent-soft" aria-hidden="true">
+                                                            <Check className="h-3.5 w-3.5" />
+                                                        </span>
+                                                        <span className="truncate">{obtenerSala(solicitud.sala_id)} · {solicitud.franja || 'Por coordinar'}</span>
+                                                    </p>
+                                                    {cancion && (
+                                                        <p className="flex items-center gap-2 text-sutil">
+                                                            <span className="grid h-6 w-6 shrink-0 place-items-center rounded-lg bg-white/[0.05] text-accent-soft" aria-hidden="true">
+                                                                <Music className="h-3.5 w-3.5" />
+                                                            </span>
+                                                            <span className="truncate">{cancion}</span>
+                                                        </p>
+                                                    )}
+                                                    {estimado !== null && (
+                                                        <p className="flex items-center gap-2 text-sutil">
+                                                            <span className="grid h-6 w-6 shrink-0 place-items-center rounded-lg bg-white/[0.05] text-accent-soft" aria-hidden="true">
+                                                                <Coins className="h-3.5 w-3.5" />
+                                                            </span>
+                                                            <span className="truncate">Estimado <strong className="font-bold text-texto-soft">{formatearMoneda(estimado)}</strong></span>
+                                                        </p>
+                                                    )}
+                                                </div>
 
                                                 {(solicitud.colaboradores ?? []).length > 0 && (
-                                                    <ul className="mt-3 flex flex-wrap gap-1.5" aria-label={`Colaboradores de ${solicitud.titulo || etiquetaTipo(solicitud.tipo)}`}>
-                                                        {(solicitud.colaboradores ?? []).map((invitacion) => (
-                                                            <li key={`${solicitud.id}-${invitacion.colaborador_id}`} className={clasePillEstado(invitacion.estado)}>
-                                                                {nombreColaborador(invitacion.colaborador_id)} · {etiquetaInvitacion(invitacion.estado)}
-                                                            </li>
-                                                        ))}
-                                                    </ul>
+                                                    <div className="mt-3 rounded-xl border border-border/60 bg-black/15 p-2.5">
+                                                        <p className="mb-1.5 flex items-center gap-1.5 text-[0.6rem] font-bold uppercase tracking-wider text-sutil">
+                                                            <Users className="h-3 w-3" aria-hidden="true" /> Equipo
+                                                        </p>
+                                                        <ul className="flex flex-wrap gap-1.5" aria-label={`Colaboradores de ${solicitud.titulo || etiquetaTipo(solicitud.tipo)}`}>
+                                                            {(solicitud.colaboradores ?? []).map((invitacion) => (
+                                                                <li key={`${solicitud.id}-${invitacion.colaborador_id}`} className={clasePillEstado(invitacion.estado)}>
+                                                                    {nombreColaborador(invitacion.colaborador_id)}
+                                                                    <span className="ml-1.5 font-normal opacity-80">{etiquetaInvitacion(invitacion.estado)}</span>
+                                                                </li>
+                                                            ))}
+                                                        </ul>
+                                                    </div>
+                                                )}
+
+                                                {(solicitud.partes ?? []).length > 0 && (
+                                                    <p className="mt-2 text-[0.68rem] text-sutil">
+                                                        <span className="font-semibold text-texto-soft">Partes:</span> {solicitud.partes.join(', ')}
+                                                    </p>
                                                 )}
 
                                                 {solicitud.estado === 'por_autorizar' && (
@@ -224,7 +302,7 @@ function BandejaSolicitudes() {
                                                 )}
 
                                                 {solicitud.estado === 'por_pagar' && (
-                                                    <p className="mt-3 flex items-center gap-2 text-xs text-magenta">
+                                                    <p className="mt-3 flex items-center gap-2 rounded-xl border border-magenta/30 bg-magenta/[0.08] px-3 py-2 text-xs text-magenta">
                                                         <Coins className="h-3.5 w-3.5 shrink-0" aria-hidden="true" />
                                                         Anticipo emitido. Esperando el pago del cliente.
                                                     </p>

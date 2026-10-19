@@ -1,16 +1,15 @@
-// CAPA: Presentación
+// CAPA: Presentaci�n
 import { createContext, useContext, useEffect, useMemo, useState } from 'react';
 import type { ReactNode } from 'react';
 import { AuthService } from '../services/authService.ts';
 import type { EntradaUsuario, Usuario } from '../models/Usuario.ts';
-zone_wed/src/context/AuthContext.jsx
 
 interface ContextoAuth {
     usuario: Usuario | null;
     cargando: boolean;
     isAuthenticated: boolean;
     iniciarSesion: (email: string, password: string, rol?: string | null) => Promise<Usuario | null>;
-    registrarUsuario: (data?: EntradaUsuario) => Promise<Usuario>;
+    registrarUsuario: (data?: EntradaUsuario) => Promise<Usuario | boolean>;
     cerrarSesion: () => Promise<boolean>;
 }
 
@@ -22,28 +21,21 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     useEffect(() => {
         let activo = true;
-
-        //Al abrir la app, recupera la sesión del usuario guardada por Supabase
         AuthService.obtenerSesion().then((sesion) => {
             if (activo) {
                 setUsuario(sesion);
                 setCargando(false);
             }
         });
-
-        //Si Supabase cierra la sesión, actualiza el estado del usuario
-        const desuscribir = AuthService.escucharSesion((evento) => {
+        const desuscribir = AuthService.escucharSesion((evento: string) => {
             if (evento === 'SIGNED_OUT') {
                 setUsuario(null);
                 setCargando(false);
             }
         });
-
         return () => {
             activo = false;
-            if (typeof desuscribir === 'function') {
-                desuscribir();
-            }
+            if (typeof desuscribir === 'function') desuscribir();
         };
     }, []);
 
@@ -57,8 +49,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             return usuarioAutenticado;
         },
         registrarUsuario: async (data: EntradaUsuario = {}) => {
-            const usuarioRegistrado = await AuthService.registrarUsuario(data);
-zone_wed/src/context/AuthContext.jsx
+            const resultado = await AuthService.registrarUsuario(data);
             setUsuario(null);
             return resultado;
         },

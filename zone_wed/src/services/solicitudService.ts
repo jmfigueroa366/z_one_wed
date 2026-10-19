@@ -11,10 +11,25 @@ import { ESTADOS_SOLICITUD_ACTIVOS } from '../config/estados.ts';
 import { ROLES } from '../config/roles.ts';
 import { TIPOS_ORDEN } from '../config/facturacion.ts';
 import { OrdenService } from './ordenService.ts';
+import { haySupabase } from '../lib/supabaseClient.ts';
+import {
+    insertarSolicitud,
+    actualizarEstadoSolicitud,
+    actualizarInvitacionSolicitud,
+    sincronizarSolicitudes,
+} from '../infrastructure/supabaseSync.ts';
 import type { Solicitud as SolicitudEntidad, EntradaSolicitud } from '../models/Solicitud.ts';
 import type { Sesion } from '../models/Sesion.ts';
 import type { Orden } from '../models/Orden.ts';
 import type { Usuario } from '../models/Usuario.ts';
+
+// Escribe en Supabase sin romper la app si falla: la app ya guardó en local.
+function escribirEnSupabase(operacion: () => Promise<unknown>, textoDeError: string): void {
+    if (!haySupabase) {
+        return;
+    }
+    operacion().catch((error) => console.warn(textoDeError, error));
+}
 
 function franjaDe(sesion: Sesion): string | null {
     if (!sesion?.hora_inicio || !sesion?.hora_fin) return null;
@@ -156,7 +171,14 @@ export const SolicitudService = {
             estado: 'solicitada',
             fecha_solicitud: new Date().toISOString(),
         });
-        return solicitudRepo.crear(solicitud);
+        const creada = solicitudRepo.crear(solicitud);
+
+        escribirEnSupabase(async () => {
+            await insertarSolicitud(creada);
+            await sincronizarSolicitudes();
+        }, 'No se pudo guardar la solicitud en Supabase.');
+
+        return creada;
     },
 
     responderInvitacion(solicitudId: number | string, colaboradorId: number | string, decision: string): SolicitudEntidad | null {
@@ -186,14 +208,27 @@ export const SolicitudService = {
                 : item
         );
 
+        escribirEnSupabase(
+            () => actualizarInvitacionSolicitud(solicitud.id, colaboradorId, decision),
+            'No se pudo registrar tu respuesta en Supabase.'
+        );
+
         let actualizada = solicitudRepo.actualizar(solicitud.id, { colaboradores });
 
         if (Solicitud.todosRespondieron(actualizada)) {
             if (Solicitud.todosAceptaron(actualizada)) {
                 // El equipo aceptó: queda en manos del administrador autorizar.
                 actualizada = solicitudRepo.actualizar(solicitud.id, { estado: 'por_autorizar' });
+                escribirEnSupabase(
+                    () => actualizarEstadoSolicitud(solicitud.id, 'por_autorizar'),
+                    'No se pudo actualizar el estado de la solicitud en Supabase.'
+                );
             } else {
                 actualizada = solicitudRepo.actualizar(solicitud.id, { estado: 'rechazada' });
+                escribirEnSupabase(
+                    () => actualizarEstadoSolicitud(solicitud.id, 'rechazada'),
+                    'No se pudo actualizar el estado de la solicitud en Supabase.'
+                );
             }
         }
 
@@ -280,6 +315,11 @@ export const SolicitudService = {
                 fecha_cancelacion: new Date().toISOString().slice(0, 10),
             });
         }
+
+        escribirEnSupabase(
+            () => actualizarEstadoSolicitud(id, 'cancelada'),
+            'No se pudo cancelar la solicitud en Supabase.'
+        );
 
         return solicitudRepo.actualizar(id, { estado: 'cancelada' });
     },

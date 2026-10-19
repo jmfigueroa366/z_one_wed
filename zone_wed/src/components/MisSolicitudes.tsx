@@ -1,4 +1,4 @@
-// CAPA: Presentación
+﻿// CAPA: Presentaci├│n
 import { useEffect, useMemo, useRef, useState } from 'react';
 import type { FormEvent, ReactNode } from 'react';
 import { Link, useLocation } from 'react-router-dom';
@@ -99,7 +99,7 @@ const TIPOS_META: Record<string, MetaTipo> = {
     [TIPOS_SOLICITUD.MEZCLA]: { icono: SlidersHorizontal, ayuda: 'Equilibrar pistas' },
     [TIPOS_SOLICITUD.MASTERIZACION]: { icono: Disc3, ayuda: 'Acabado final' },
     [TIPOS_SOLICITUD.ENSAYO]: { icono: Music, ayuda: 'Practicar en cabina' },
-    [TIPOS_SOLICITUD.PRODUCCION]: { icono: Wand2, ayuda: 'Arreglos y dirección' },
+    [TIPOS_SOLICITUD.PRODUCCION]: { icono: Wand2, ayuda: 'Arreglos y direcci├│n' },
 };
 
 const MENOS_MOVIMIENTO = () =>
@@ -119,9 +119,9 @@ const ESTADOS_CANCELABLES = ['solicitada', 'por_autorizar', 'por_pagar'];
 
 const SIGUIENTE_PASO: Record<string, string> = {
     solicitada: 'Esperando que el equipo invitado acepte.',
-    por_autorizar: 'El equipo aceptó. El estudio debe autorizar la reserva.',
-    por_pagar: 'El estudio autorizó. Paga el anticipo para confirmar tu sesión.',
-    confirmada: 'Reserva confirmada. ¡Tu sesión está agendada!',
+    por_autorizar: 'El equipo acept├│. El estudio debe autorizar la reserva.',
+    por_pagar: 'El estudio autoriz├│. Paga el anticipo para confirmar tu sesi├│n.',
+    confirmada: 'Reserva confirmada. ┬íTu sesi├│n est├í agendada!',
 };
 
 function Paso({ numero, titulo, icono: Icono }: PasoProps) {
@@ -275,8 +275,7 @@ export default function MisSolicitudes() {
     const nombreColaborador = (id: string | number | null) =>
         colaboradores.find((colaborador) => String(colaborador.id) === String(id))?.nombre ?? `Colaborador #${id}`;
 
-    const enviar = (evento: FormEvent<HTMLFormElement>) => {
-zone_wed/src/components/MisSolicitudes.jsx
+    const enviar = async (evento: FormEvent<HTMLFormElement>) => {
         evento.preventDefault();
         setError('');
         setMensaje('');
@@ -297,18 +296,18 @@ zone_wed/src/components/MisSolicitudes.jsx
         const inicio = aMinutos(form.hora_inicio);
         const fin = aMinutos(form.hora_fin);
         if (!Number.isFinite(inicio) || !Number.isFinite(fin) || fin <= inicio) {
-            setError('La franja horaria debe terminar después de comenzar.');
+            setError('La franja horaria debe terminar despu├®s de comenzar.');
             return;
         }
         if (tieneConflicto) {
-            setError(`La cabina ya está ocupada el ${formatearFecha(form.fecha)} en: ${franjasEnConflicto.join(', ')}. Elige otra franja.`);
+            setError(`La cabina ya est├í ocupada el ${formatearFecha(form.fecha)} en: ${franjasEnConflicto.join(', ')}. Elige otra franja.`);
             return;
         }
 
         const cancionElegida = canciones.find((item) => String(item.id) === String(form.cancion_id));
         const invitados = colaboradoresElegidos.map((id) => {
             const colaborador = colaboradores.find((item) => String(item.id) === String(id));
-            return { colaborador_id: id, rol: rolDeColaborador(colaborador) };
+            return { colaborador_id: Number(id), rol: rolDeColaborador(colaborador) };
         });
 
         try {
@@ -335,8 +334,7 @@ zone_wed/src/components/MisSolicitudes.jsx
         }
     };
 
-    const cancelar = (id: number | string) => {
-zone_wed/src/components/MisSolicitudes.jsx
+    const cancelar = async (id: number | string) => {
         setError('');
         setMensaje('');
         setOcupado(id);
@@ -350,8 +348,7 @@ zone_wed/src/components/MisSolicitudes.jsx
         }
     };
 
-    const responder = (solicitudId: number | string, colaboradorId: number | string, decision: string) => {
-zone_wed/src/components/MisSolicitudes.jsx
+    const responder = async (solicitudId: number | string, colaboradorId: number | string, decision: string) => {
         setError('');
         setMensaje('');
         try {
@@ -367,7 +364,7 @@ zone_wed/src/components/MisSolicitudes.jsx
 
     const nombreCancionDe = (solicitud: Solicitud): string | null => {
         if (!solicitud.cancion_id) return null;
-        return canciones.find((item) => String(item.id) === String(solicitud.cancion_id))?.nombre ?? 'Canción no encontrada';
+        return canciones.find((item) => String(item.id) === String(solicitud.cancion_id))?.nombre ?? 'Canci├│n no encontrada';
     };
 
     const pasoFecha = esGrabacion ? '06' : '05';
@@ -396,7 +393,7 @@ zone_wed/src/components/MisSolicitudes.jsx
                         </h1>
                         <p className="mt-3 text-sm leading-7 text-sutil">
                             Pide tu cabina para grabar, mezclar, masterizar o ensayar. Elige a los artistas y productores:
-                            cuando todos acepten, el estudio autoriza y podrás pagar el anticipo para confirmar tu sesión.
+                            cuando todos acepten, el estudio autoriza y podr├ís pagar el anticipo para confirmar tu sesi├│n.
                         </p>
                         {esClienteActual && (
                             <a
@@ -432,7 +429,7 @@ zone_wed/src/components/MisSolicitudes.jsx
             {pagoPendiente && esClienteActual && (
                 <div className="mt-5 flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-magenta/40 bg-magenta/[0.08] px-4 py-3.5">
                     <p className="text-sm text-magenta">
-                        Tu reserva está autorizada pero el anticipo sigue sin pagar. Complétalo para poder crear nuevas solicitudes.
+                        Tu reserva est├í autorizada pero el anticipo sigue sin pagar. Compl├®talo para poder crear nuevas solicitudes.
                     </p>
                     <Link to={RUTAS.PAGOS} className={BOTON_PRIMARIO}>Ir a pagar el anticipo</Link>
                 </div>
@@ -449,14 +446,14 @@ zone_wed/src/components/MisSolicitudes.jsx
                         {invitacionesPorResponder.map((solicitud) => (
                             <article key={solicitud.id} className="rounded-2xl border border-aviso/30 bg-aviso/[0.06] p-5">
                                 <p className="text-[0.66rem] font-bold uppercase tracking-wider text-sutil">
-                                    {formatearFecha(solicitud.fecha, { weekday: 'short', day: 'numeric' }) || 'Fecha pendiente'} · {solicitud.franja}
+                                    {formatearFecha(solicitud.fecha, { weekday: 'short', day: 'numeric' }) || 'Fecha pendiente'} ┬À {solicitud.franja}
                                 </p>
                                 <h3 className="mt-1 text-lg font-bold text-texto-soft">{solicitud.titulo || etiquetaTipo(solicitud.tipo)}</h3>
-                                <p className="mt-1 text-sm text-sutil">{obtenerSala(solicitud.sala_id)} · {etiquetaTipo(solicitud.tipo)}</p>
+                                <p className="mt-1 text-sm text-sutil">{obtenerSala(solicitud.sala_id)} ┬À {etiquetaTipo(solicitud.tipo)}</p>
                                 <div className="mt-3 flex flex-wrap gap-2 text-xs text-sutil">
                                     {(solicitud.colaboradores ?? []).map((invitacion) => (
                                         <span key={invitacion.colaborador_id} className={clasePillEstado(invitacion.estado)}>
-                                            {nombreColaborador(invitacion.colaborador_id)} · {etiquetaInvitacion(invitacion.estado)}
+                                            {nombreColaborador(invitacion.colaborador_id)} ┬À {etiquetaInvitacion(invitacion.estado)}
                                         </span>
                                     ))}
                                 </div>
@@ -483,7 +480,7 @@ zone_wed/src/components/MisSolicitudes.jsx
                         </span>
                         <div>
                             <p className="workspace-eyebrow">NUEVA RESERVA</p>
-                            <h2 className="text-2xl font-bold tracking-tight text-texto-soft">Arma tu sesión</h2>
+                            <h2 className="text-2xl font-bold tracking-tight text-texto-soft">Arma tu sesi├│n</h2>
                         </div>
                     </div>
 
@@ -515,16 +512,16 @@ zone_wed/src/components/MisSolicitudes.jsx
                             <Paso numero="02" titulo="Nombre y detalles" icono={Music} />
                             <div className="grid gap-5 rounded-2xl border border-border bg-white/[0.02] p-5">
                                 <label className="flex flex-col">
-                                    <span className={ETIQUETA}>Nombre de la sesión</span>
+                                    <span className={ETIQUETA}>Nombre de la sesi├│n</span>
                                     <input className={CAMPO} type="text" value={form.titulo}
                                         onChange={(evento) => cambiarCampo('titulo', evento.target.value)}
-                                        placeholder="Ej. Grabación de voces — Sencillo 1" />
+                                        placeholder="Ej. Grabaci├│n de voces ÔÇö Sencillo 1" />
                                 </label>
                                 <label className="flex flex-col">
-                                    <span className={ETIQUETA}>Descripción (opcional)</span>
+                                    <span className={ETIQUETA}>Descripci├│n (opcional)</span>
                                     <textarea className={CAMPO} rows={3} value={form.descripcion}
                                         onChange={(evento) => cambiarCampo('descripcion', evento.target.value)}
-                                        placeholder="Cuéntanos qué necesitas, instrumentos, referencias…" />
+                                        placeholder="Cu├®ntanos qu├® necesitas, instrumentos, referenciasÔÇª" />
                                 </label>
                             </div>
                         </div>
@@ -532,7 +529,7 @@ zone_wed/src/components/MisSolicitudes.jsx
                         {/* 03 ARTISTAS Y PRODUCTORES */}
                         <div>
                             <Paso numero="03" titulo="Artistas y productores" icono={Users} />
-                            <p className="mb-3 text-sm text-sutil">Elige con quién quieres la sesión. <strong className="text-texto-soft">Todos deben aceptar</strong> para confirmarla.</p>
+                            <p className="mb-3 text-sm text-sutil">Elige con qui├®n quieres la sesi├│n. <strong className="text-texto-soft">Todos deben aceptar</strong> para confirmarla.</p>
                             {colaboradores.length ? (
                                 <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3" role="group" aria-label="Artistas y productores">
                                     {colaboradores.map((colaborador) => {
@@ -545,7 +542,7 @@ zone_wed/src/components/MisSolicitudes.jsx
                                                     <span className="text-sm font-bold text-texto-soft">{colaborador.nombre}</span>
                                                     {activo && <Check className="h-4 w-4 text-accent-soft" aria-hidden="true" />}
                                                 </span>
-                                                <span className="text-xs text-sutil">{etiquetaRol(rolDeColaborador(colaborador))} · {colaborador.especialidad}</span>
+                                                <span className="text-xs text-sutil">{etiquetaRol(rolDeColaborador(colaborador))} ┬À {colaborador.especialidad}</span>
                                             </button>
                                         );
                                     })}
@@ -582,17 +579,17 @@ zone_wed/src/components/MisSolicitudes.jsx
                         {/* 05 CANCION (solo grabacion) */}
                         {esGrabacion && (
                             <div>
-                                <Paso numero="05" titulo="Detalles de grabación" icono={Music} />
+                                <Paso numero="05" titulo="Detalles de grabaci├│n" icono={Music} />
                                 <div className="grid gap-5 rounded-2xl border border-border bg-white/[0.02] p-5">
                                     <label className="flex flex-col">
-                                        <span className={ETIQUETA}>Canción a grabar</span>
+                                        <span className={ETIQUETA}>Canci├│n a grabar</span>
                                         <select className={CAMPO} value={form.cancion_id} onChange={(evento) => cambiarCancion(evento.target.value)}>
-                                            <option value="">Grabación general (sin canción específica)</option>
+                                            <option value="">Grabaci├│n general (sin canci├│n espec├¡fica)</option>
                                             {canciones.map((cancion) => {
                                                 const proyecto = proyectoDe(cancion.id);
                                                 return (
                                                     <option key={cancion.id} value={cancion.id ?? undefined}>
-                                                        {cancion.nombre}{proyecto ? ` — ${proyecto.nombre}` : ''}
+                                                        {cancion.nombre}{proyecto ? ` ÔÇö ${proyecto.nombre}` : ''}
                                                     </option>
                                                 );
                                             })}
@@ -641,7 +638,7 @@ zone_wed/src/components/MisSolicitudes.jsx
                                 <div className="mt-5 flex flex-col gap-2 rounded-2xl border border-border bg-surface-2/60 px-4 py-3.5">
                                     <p className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-sutil">
                                         <Clock className="h-3.5 w-3.5" aria-hidden="true" />
-                                        Disponibilidad · {obtenerSala(form.sala_id)} · {formatearFecha(form.fecha)}
+                                        Disponibilidad ┬À {obtenerSala(form.sala_id)} ┬À {formatearFecha(form.fecha)}
                                     </p>
                                     {ocupadas.length ? (
                                         <div className="flex flex-wrap gap-2">
@@ -655,7 +652,7 @@ zone_wed/src/components/MisSolicitudes.jsx
                                             })}
                                         </div>
                                     ) : (
-                                        <p className="text-sm text-exito">Sin reservas ese día. Cabina despejada.</p>
+                                        <p className="text-sm text-exito">Sin reservas ese d├¡a. Cabina despejada.</p>
                                     )}
                                     {tieneConflicto && (
                                         <p className="text-sm text-peligro" role="alert">Tu franja ({franjaPropuesta}) choca con la reserva indicada. Elige otra.</p>
@@ -671,7 +668,7 @@ zone_wed/src/components/MisSolicitudes.jsx
                                 </span>
                                 <div>
                                     <p className="text-[0.62rem] font-bold uppercase tracking-[0.12em] text-sutil">Estimado de la franja</p>
-                                    <strong className="text-2xl font-black tracking-tight text-texto-soft">{estimado !== null ? formatearMoneda(estimado) : '—'}</strong>
+                                    <strong className="text-2xl font-black tracking-tight text-texto-soft">{estimado !== null ? formatearMoneda(estimado) : 'ÔÇö'}</strong>
                                 </div>
                             </div>
                             <button className={`${BOTON_PRIMARIO} w-full sm:w-auto`} type="submit">
@@ -720,7 +717,7 @@ zone_wed/src/components/MisSolicitudes.jsx
                                         <div className="relative mt-4 grid gap-x-6 gap-y-4 sm:grid-cols-2 lg:grid-cols-3">
                                             <Dato icono={Clock} etiqueta="Horario" valor={solicitud.franja || 'Por coordinar'} />
                                             <Dato icono={MapPin} etiqueta="Sala" valor={obtenerSala(solicitud.sala_id)} />
-                                            {nombreCancionDe(solicitud) && <Dato icono={Music} etiqueta="Canción" valor={nombreCancionDe(solicitud)} />}
+                                            {nombreCancionDe(solicitud) && <Dato icono={Music} etiqueta="Canci├│n" valor={nombreCancionDe(solicitud)} />}
                                             {costo !== null && <Dato icono={Coins} etiqueta="Estimado" valor={formatearMoneda(costo)} />}
                                         </div>
 
@@ -729,7 +726,7 @@ zone_wed/src/components/MisSolicitudes.jsx
                                                 <span className="text-[0.62rem] font-bold uppercase tracking-[0.12em] text-sutil">Equipo</span>
                                                 {(solicitud.colaboradores ?? []).map((invitacion) => (
                                                     <span key={invitacion.colaborador_id} className={clasePillEstado(invitacion.estado)}>
-                                                        {nombreColaborador(invitacion.colaborador_id)} · {etiquetaInvitacion(invitacion.estado)}
+                                                        {nombreColaborador(invitacion.colaborador_id)} ┬À {etiquetaInvitacion(invitacion.estado)}
                                                     </span>
                                                 ))}
                                             </div>
@@ -766,7 +763,7 @@ zone_wed/src/components/MisSolicitudes.jsx
                     </div>
                 ) : (
                     <p className="rounded-2xl border border-dashed border-border bg-surface/40 px-4 py-10 text-center text-sm text-sutil">
-                        Todavía no has creado solicitudes.
+                        Todav├¡a no has creado solicitudes.
                     </p>
                 )}
             </section>

@@ -1,10 +1,12 @@
-﻿// CAPA: Infraestructura
-import { supabase } from '../lib/supabaseClient.js';
-import { Storage } from './storage.js';
+// CAPA: Infraestructura
+import { supabase } from '../lib/supabaseClient.ts';
+import { Storage } from './storage.ts';
+
+type FilaSupabase = Record<string, unknown>;
 
 // Trae una tabla de Supabase y la deja en el almacenamiento local
-// que la app ya usa (así los hooks y componentes no cambian).
-export async function sincronizarTabla(tabla, clave) {
+// que la app ya usa (as� los hooks y componentes no cambian).
+export async function sincronizarTabla(tabla: string, clave: string) {
     const { data, error } = await supabase.from(tabla).select('*');
 
     if (error) {
@@ -16,24 +18,25 @@ export async function sincronizarTabla(tabla, clave) {
 }
 
 // Mapea un colaborador de Supabase al formato que espera la app (seed/modelo).
-export function mapearColaborador(row) {
+export function mapearColaborador(row: unknown): FilaSupabase {
     if (!row || typeof row !== 'object') {
-        return row;
+        return row as FilaSupabase;
     }
-    const nombre = row.nombre_artistico || row.nombre_real || row.nombre || '';
-    const activo = row.vinculacion !== 'desvinculado' && row.activo !== false;
+    const fila = row as FilaSupabase;
+    const nombre = fila.nombre_artistico || fila.nombre_real || fila.nombre || '';
+    const activo = fila.vinculacion !== 'desvinculado' && fila.activo !== false;
     return {
-        ...row,
+        ...fila,
         nombre,
         activo,
-        especialidad: row.especialidad ?? row.perfil ?? '',
-        perfil: row.perfil ?? '',
+        especialidad: fila.especialidad ?? fila.perfil ?? '',
+        perfil: fila.perfil ?? '',
         rol: 'colaborador',
     };
 }
 
 export async function sincronizarColaboradores() {
-    // La vista pública la pueden leer todos (clientes e invitados).
+    // La vista p�blica la pueden leer todos (clientes e invitados).
     const [privados, publicos] = await Promise.all([
         supabase.from('colaboradores').select('*'),
         supabase.from('colaboradores_publicos').select('*'),
@@ -45,12 +48,14 @@ export async function sincronizarColaboradores() {
         throw new Error(publicos.error.message);
     }
 
-    const filas = new Map();
+    const filas = new Map<string, FilaSupabase>();
     for (const fila of publicos.data ?? []) {
-        filas.set(String(fila.id), fila);
+        const f = fila as FilaSupabase;
+        filas.set(String(f.id), f);
     }
     for (const fila of privados.data ?? []) {
-        filas.set(String(fila.id), { ...filas.get(String(fila.id)), ...fila });
+        const f = fila as FilaSupabase;
+        filas.set(String(f.id), { ...filas.get(String(f.id)), ...f });
     }
 
     const mapeados = [...filas.values()].map(mapearColaborador);
@@ -58,14 +63,15 @@ export async function sincronizarColaboradores() {
     return mapeados;
 }
 // Mapea un proyecto de Supabase al formato que espera la app.
-export function mapearProyecto(row) {
+export function mapearProyecto(row: unknown): FilaSupabase {
     if (!row || typeof row !== 'object') {
-        return row;
+        return row as FilaSupabase;
     }
+    const fila = row as FilaSupabase;
     return {
-        ...row,
-        usuario_id: row.usuario_id ?? row.cliente_id ?? null,
-        cliente_id: row.cliente_id ?? row.usuario_id ?? null,
+        ...fila,
+        usuario_id: fila.usuario_id ?? fila.cliente_id ?? null,
+        cliente_id: fila.cliente_id ?? fila.usuario_id ?? null,
     };
 }
 
@@ -80,14 +86,15 @@ export async function sincronizarProyectos() {
 }
 
 // Mapea una canción de Supabase al formato que espera la app.
-export function mapearCancion(row) {
+export function mapearCancion(row: unknown): FilaSupabase {
     if (!row || typeof row !== 'object') {
-        return row;
+        return row as FilaSupabase;
     }
+    const fila = row as FilaSupabase;
     return {
-        ...row,
-        duracion: row.duracion ?? row.duracion_seg ?? null,
-        duracion_seg: row.duracion_seg ?? row.duracion ?? null,
+        ...fila,
+        duracion: fila.duracion ?? fila.duracion_seg ?? null,
+        duracion_seg: fila.duracion_seg ?? fila.duracion ?? null,
     };
 }
 
@@ -101,31 +108,36 @@ export async function sincronizarCanciones() {
     return mapeados;
 }
 // Mapea una solicitud de Supabase al formato que espera la app.
-export function mapearSolicitud(row) {
+export function mapearSolicitud(row: unknown): FilaSupabase {
     if (!row || typeof row !== 'object') {
-        return row;
+        return row as FilaSupabase;
     }
-    const cliente = row.clientes ?? null;
+    const fila = row as FilaSupabase;
+    const cliente = (fila.clientes ?? null) as FilaSupabase | null;
+    const invitaciones = Array.isArray(fila.solicitud_colaboradores) ? fila.solicitud_colaboradores : [];
     return {
-        id: row.id,
+        id: fila.id,
         usuario_id: cliente?.usuario_id ?? null,
         solicitante_nombre: cliente?.nombre ?? null,
-        titulo: row.titulo ?? '',
-        descripcion: row.descripcion ?? '',
-        tipo: row.tipo ?? 'grabacion',
-        sala_id: row.sala_id ?? null,
-        cancion_id: row.cancion_id ?? null,
-        proyecto_id: row.proyecto_id ?? null,
-        partes: row.partes ?? [],
-        fecha: row.fecha ?? row.fecha_deseada ?? null,
-        franja: row.franja ?? '',
-        fecha_solicitud: row.fecha_solicitud ?? row.creado_en ?? null,
-        colaboradores: (row.solicitud_colaboradores ?? []).map((inv) => ({
-            colaborador_id: inv.colaborador_id ?? null,
-            rol: inv.rol ?? null,
-            estado: inv.estado ?? 'pendiente',
-        })),
-        estado: row.estado ?? 'solicitada',
+        titulo: fila.titulo ?? '',
+        descripcion: fila.descripcion ?? '',
+        tipo: fila.tipo ?? 'grabacion',
+        sala_id: fila.sala_id ?? null,
+        cancion_id: fila.cancion_id ?? null,
+        proyecto_id: fila.proyecto_id ?? null,
+        partes: fila.partes ?? [],
+        fecha: fila.fecha ?? fila.fecha_deseada ?? null,
+        franja: fila.franja ?? '',
+        fecha_solicitud: fila.fecha_solicitud ?? fila.creado_en ?? null,
+        colaboradores: invitaciones.map((inv) => {
+            const item = inv as FilaSupabase;
+            return {
+                colaborador_id: item.colaborador_id ?? null,
+                rol: item.rol ?? null,
+                estado: item.estado ?? 'pendiente',
+            };
+        }),
+        estado: fila.estado ?? 'solicitada',
     };
 }
 
@@ -142,7 +154,7 @@ export async function sincronizarSolicitudes() {
     return mapeadas;
 }
 
-// Devuelve el id de la fila "clientes" del usuario que tiene la sesión.
+// Devuelve el id de la fila "clientes" del usuario que tiene la sesi�n.
 export async function obtenerMiClienteId() {
     const { data, error } = await supabase.rpc('mi_cliente_id');
     if (error) {
@@ -151,7 +163,7 @@ export async function obtenerMiClienteId() {
     return data ?? null;
 }
 
-export async function insertarSolicitud(solicitud) {
+export async function insertarSolicitud(solicitud: FilaSupabase): Promise<{ id: unknown }> {
     const clienteId = await obtenerMiClienteId();
     if (!clienteId) {
         throw new Error('Tu cuenta no tiene un cliente asociado en el estudio.');
@@ -179,12 +191,16 @@ export async function insertarSolicitud(solicitud) {
         throw new Error(error.message);
     }
 
-    const invitaciones = (solicitud.colaboradores ?? []).map((invitacion) => ({
-        solicitud_id: data.id,
-        colaborador_id: invitacion.colaborador_id,
-        rol: invitacion.rol ?? null,
-        estado: invitacion.estado ?? 'pendiente',
-    }));
+    const colaboradores = Array.isArray(solicitud.colaboradores) ? solicitud.colaboradores : [];
+    const invitaciones = colaboradores.map((invitacion) => {
+        const item = invitacion as FilaSupabase;
+        return {
+            solicitud_id: (data as FilaSupabase | null)?.id ?? null,
+            colaborador_id: item.colaborador_id ?? null,
+            rol: item.rol ?? null,
+            estado: item.estado ?? 'pendiente',
+        };
+    });
 
     if (invitaciones.length > 0) {
         const { error: errorInvitaciones } = await supabase
@@ -195,17 +211,17 @@ export async function insertarSolicitud(solicitud) {
         }
     }
 
-    return { id: data.id };
+    return { id: (data as FilaSupabase | null)?.id ?? null };
 }
 
-export async function actualizarEstadoSolicitud(id, estado) {
+export async function actualizarEstadoSolicitud(id: unknown, estado: unknown): Promise<void> {
     const { error } = await supabase.from('solicitudes').update({ estado }).eq('id', id);
     if (error) {
         throw new Error(error.message);
     }
 }
 
-export async function actualizarInvitacionSolicitud(solicitudId, colaboradorId, estado) {
+export async function actualizarInvitacionSolicitud(solicitudId: unknown, colaboradorId: unknown, estado: unknown): Promise<void> {
     const { error } = await supabase
         .from('solicitud_colaboradores')
         .update({ estado })
@@ -217,24 +233,25 @@ export async function actualizarInvitacionSolicitud(solicitudId, colaboradorId, 
 }
 
 // Mapea una sesión de Supabase al formato que espera la app.
-export function mapearSesion(row) {
+export function mapearSesion(row: unknown): FilaSupabase {
     if (!row || typeof row !== 'object') {
-        return row;
+        return row as FilaSupabase;
     }
+    const fila = row as FilaSupabase;
     const estadosValidos = ['solicitada', 'confirmada', 'completada', 'cancelada'];
     return {
-        id: row.id,
-        solicitud_id: row.solicitud_id ?? null,
-        titulo: row.titulo ?? '',
-        sala_id: row.sala_id ?? null,
-        colaborador_id: row.colaborador_id ?? null,
-        fecha: row.fecha ?? null,
-        hora_inicio: row.hora_inicio ?? null,
-        hora_fin: row.hora_fin ?? null,
+        id: fila.id,
+        solicitud_id: fila.solicitud_id ?? null,
+        titulo: fila.titulo ?? '',
+        sala_id: fila.sala_id ?? null,
+        colaborador_id: fila.colaborador_id ?? null,
+        fecha: fila.fecha ?? null,
+        hora_inicio: fila.hora_inicio ?? null,
+        hora_fin: fila.hora_fin ?? null,
         // 'programada' (default de la BD) no es un estado válido en la app.
-        estado: estadosValidos.includes(row.estado) ? row.estado : 'confirmada',
-        cancion_id: row.cancion_id ?? null,
-        partes: Array.isArray(row.partes) ? row.partes : [],
+        estado: estadosValidos.includes(String(fila.estado)) ? fila.estado : 'confirmada',
+        cancion_id: fila.cancion_id ?? null,
+        partes: Array.isArray(fila.partes) ? fila.partes : [],
     };
 }
 
@@ -248,7 +265,7 @@ export async function sincronizarSesiones() {
     return mapeadas;
 }
 
-export async function insertarSesion(sesion) {
+export async function insertarSesion(sesion: FilaSupabase): Promise<{ id: unknown }> {
     // El cliente de la sesión: si viene del flujo de una solicitud, lo sacamos
     // de la solicitud; si no, del que tiene la sesión iniciada.
     let clienteId = sesion.cliente_id ?? null;
@@ -262,7 +279,7 @@ export async function insertarSesion(sesion) {
         if (errorSolicitud) {
             throw new Error(errorSolicitud.message);
         }
-        clienteId = solicitud?.cliente_id ?? null;
+        clienteId = (solicitud as FilaSupabase | null)?.cliente_id ?? null;
     }
 
     if (!clienteId) {
@@ -291,7 +308,7 @@ export async function insertarSesion(sesion) {
         throw new Error(error.message);
     }
 
-    return { id: data.id };
+    return { id: (data as FilaSupabase | null)?.id ?? null };
 }
 
 // Recarga los datos que dependen del usuario logueado.

@@ -10,9 +10,8 @@ const CLAVE = 'proyectos';
 function obtenerListaInicial(): Proyecto[] {
     return SEED.proyectos.map((proyecto, indice) => crearProyecto({ ...proyecto, id: proyecto.id ?? indice + 1 }));
 }
-}
 
-function normalizarLista(proyectos) {
+function normalizarLista(proyectos: EntradaProyecto[]): Proyecto[] {
     return proyectos.map((proyecto, indice) =>
         crearProyecto({ ...proyecto, id: proyecto.id ?? indice + 1 })
     );
