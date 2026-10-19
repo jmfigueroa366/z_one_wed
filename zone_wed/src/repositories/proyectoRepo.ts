@@ -3,12 +3,36 @@ import { Storage } from '../infrastructure/storage.ts';
 import { SEED } from '../data/seed.ts';
 import { crearProyecto } from '../models/Proyecto.ts';
 import type { EntradaProyecto, Proyecto } from '../models/Proyecto.ts';
+import { sincronizarProyectos } from '../infrastructure/supabaseSync.ts';
 
 const CLAVE = 'proyectos';
 
 function obtenerListaInicial(): Proyecto[] {
-    return SEED.proyectos.map((proyecto, indice) => crearProyecto({ ...proyecto, id: indice + 1 }));
+    return SEED.proyectos.map((proyecto, indice) => crearProyecto({ ...proyecto, id: proyecto.id ?? indice + 1 }));
 }
+}
+
+function normalizarLista(proyectos) {
+    return proyectos.map((proyecto, indice) =>
+        crearProyecto({ ...proyecto, id: proyecto.id ?? indice + 1 })
+    );
+}
+
+// Sincroniza proyectos desde Supabase una vez al cargar el módulo.
+let sincronizado = false;
+export async function sincronizar() {
+    if (sincronizado) {
+        return;
+    }
+    try {
+        await sincronizarProyectos();
+        sincronizado = true;
+    } catch (error) {
+        console.warn('No se pudieron sincronizar los proyectos con Supabase.', error);
+    }
+}
+
+sincronizar();
 
 export const proyectoRepo = {
     listar(): Proyecto[] {
@@ -17,14 +41,17 @@ export const proyectoRepo = {
             Storage.guardarValor(CLAVE, obtenerListaInicial());
             return obtenerListaInicial();
         }
-        return proyectos.map((proyecto, indice) => crearProyecto({ ...proyecto, id: proyecto.id ?? indice + 1 }));
+        return normalizarLista(proyectos as EntradaProyecto[]);
     },
 
-    obtenerPorId(id: number | string): Proyecto | null {
+    obtenerPorId(id: number | string | null | undefined): Proyecto | null {
         return this.listar().find((proyecto) => String(proyecto.id ?? proyecto.nombre) === String(id)) ?? null;
     },
 
     listarPorUsuario(usuarioId: number | string | null | undefined): Proyecto[] {
+        if (!usuarioId) {
+            return [];
+        }
         return this.listar().filter((proyecto) => String(proyecto.usuario_id) === String(usuarioId));
     },
 

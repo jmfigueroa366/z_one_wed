@@ -3,6 +3,7 @@ import { createContext, useContext, useEffect, useMemo, useState } from 'react';
 import type { ReactNode } from 'react';
 import { AuthService } from '../services/authService.ts';
 import type { EntradaUsuario, Usuario } from '../models/Usuario.ts';
+zone_wed/src/context/AuthContext.jsx
 
 interface ContextoAuth {
     usuario: Usuario | null;
@@ -20,9 +21,30 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const [cargando, setCargando] = useState(true);
 
     useEffect(() => {
-        const sesion = AuthService.obtenerSesion();
-        setUsuario(sesion);
-        setCargando(false);
+        let activo = true;
+
+        //Al abrir la app, recupera la sesión del usuario guardada por Supabase
+        AuthService.obtenerSesion().then((sesion) => {
+            if (activo) {
+                setUsuario(sesion);
+                setCargando(false);
+            }
+        });
+
+        //Si Supabase cierra la sesión, actualiza el estado del usuario
+        const desuscribir = AuthService.escucharSesion((evento) => {
+            if (evento === 'SIGNED_OUT') {
+                setUsuario(null);
+                setCargando(false);
+            }
+        });
+
+        return () => {
+            activo = false;
+            if (typeof desuscribir === 'function') {
+                desuscribir();
+            }
+        };
     }, []);
 
     const value = useMemo<ContextoAuth>(() => ({
@@ -36,11 +58,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         },
         registrarUsuario: async (data: EntradaUsuario = {}) => {
             const usuarioRegistrado = await AuthService.registrarUsuario(data);
+zone_wed/src/context/AuthContext.jsx
             setUsuario(null);
-            return usuarioRegistrado;
+            return resultado;
         },
         cerrarSesion: async () => {
-            const resultado = AuthService.cerrarSesion();
+            const resultado = await AuthService.cerrarSesion();
             setUsuario(null);
             return resultado;
         },

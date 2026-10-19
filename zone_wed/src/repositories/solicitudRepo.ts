@@ -3,6 +3,7 @@ import { Storage } from '../infrastructure/storage.ts';
 import { SEED } from '../data/seed.ts';
 import { crearSolicitud } from '../models/Solicitud.ts';
 import type { EntradaSolicitud, Solicitud } from '../models/Solicitud.ts';
+import { sincronizarSolicitudes } from '../infrastructure/supabaseSync.ts';
 
 const CLAVE = 'solicitudes';
 
@@ -11,6 +12,22 @@ function obtenerListaInicial(): Solicitud[] {
         crearSolicitud({ ...solicitud, id: solicitud.id ?? indice + 1 })
     );
 }
+
+// Sincroniza solicitudes desde Supabase una vez al cargar el módulo.
+let sincronizado = false;
+export async function sincronizar() {
+    if (sincronizado) {
+        return;
+    }
+    try {
+        await sincronizarSolicitudes();
+        sincronizado = true;
+    } catch (error) {
+        console.warn('No se pudieron sincronizar las solicitudes con Supabase.', error);
+    }
+}
+
+sincronizar();
 
 export const solicitudRepo = {
     listar(): Solicitud[] {

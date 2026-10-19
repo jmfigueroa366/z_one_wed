@@ -3,6 +3,7 @@ import { Storage } from '../infrastructure/storage.ts';
 import { SEED } from '../data/seed.ts';
 import { crearColaborador } from '../models/Colaborador.ts';
 import type { Colaborador, EntradaColaborador } from '../models/Colaborador.ts';
+import { sincronizarColaboradores } from '../infrastructure/supabaseSync.ts';
 
 const CLAVE = 'colaboradores';
 
@@ -18,6 +19,22 @@ function normalizarLista(colaboradores: EntradaColaborador[]): Colaborador[] {
     );
 }
 
+// Sincroniza colaboradores desde Supabase una vez al cargar el módulo.
+let sincronizado = false;
+export async function sincronizar() {
+    if (sincronizado) {
+        return;
+    }
+    try {
+        await sincronizarColaboradores();
+        sincronizado = true;
+    } catch (error) {
+        console.warn('No se pudieron sincronizar los colaboradores con Supabase.', error);
+    }
+}
+
+sincronizar();
+
 export const colaboradorRepo = {
     listar(): Colaborador[] {
         const colaboradores = Storage.obtenerValor<unknown>(CLAVE, []);
@@ -25,7 +42,7 @@ export const colaboradorRepo = {
             Storage.guardarValor(CLAVE, obtenerListaInicial());
             return obtenerListaInicial();
         }
-        return normalizarLista(colaboradores);
+        return normalizarLista(colaboradores as EntradaColaborador[]);
     },
 
     obtenerPorId(id: number | string | null | undefined): Colaborador | null {

@@ -276,6 +276,7 @@ export default function MisSolicitudes() {
         colaboradores.find((colaborador) => String(colaborador.id) === String(id))?.nombre ?? `Colaborador #${id}`;
 
     const enviar = (evento: FormEvent<HTMLFormElement>) => {
+zone_wed/src/components/MisSolicitudes.jsx
         evento.preventDefault();
         setError('');
         setMensaje('');
@@ -307,11 +308,11 @@ export default function MisSolicitudes() {
         const cancionElegida = canciones.find((item) => String(item.id) === String(form.cancion_id));
         const invitados = colaboradoresElegidos.map((id) => {
             const colaborador = colaboradores.find((item) => String(item.id) === String(id));
-            return { colaborador_id: Number(id), rol: rolDeColaborador(colaborador) };
+            return { colaborador_id: id, rol: rolDeColaborador(colaborador) };
         });
 
         try {
-            SolicitudService.crear({
+            await SolicitudService.crear({
                 usuario_id: usuario?.id ?? null,
                 solicitante_nombre: usuario?.nombre ?? null,
                 titulo: form.titulo.trim(),
@@ -335,11 +336,12 @@ export default function MisSolicitudes() {
     };
 
     const cancelar = (id: number | string) => {
+zone_wed/src/components/MisSolicitudes.jsx
         setError('');
         setMensaje('');
         setOcupado(id);
         try {
-            SolicitudService.cancelar(id);
+            await SolicitudService.cancelar(id);
             setMensaje('Solicitud cancelada.');
         } catch (errorCancelar) {
             setError(errorCancelar instanceof Error ? errorCancelar.message : 'No se pudo cancelar la solicitud.');
@@ -349,10 +351,11 @@ export default function MisSolicitudes() {
     };
 
     const responder = (solicitudId: number | string, colaboradorId: number | string, decision: string) => {
+zone_wed/src/components/MisSolicitudes.jsx
         setError('');
         setMensaje('');
         try {
-            SolicitudService.responderInvitacion(solicitudId, colaboradorId, decision);
+            await SolicitudService.responderInvitacion(solicitudId, colaboradorId, decision);
             setMensaje(decision === 'aceptada' ? 'Aceptaste la solicitud.' : 'Rechazaste la solicitud.');
         } catch (errorResponder) {
             setError(errorResponder instanceof Error ? errorResponder.message : 'No se pudo responder la solicitud.');

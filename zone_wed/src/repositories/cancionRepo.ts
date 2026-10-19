@@ -3,12 +3,38 @@ import { Storage } from '../infrastructure/storage.ts';
 import { SEED } from '../data/seed.ts';
 import { crearCancion } from '../models/Cancion.ts';
 import type { Cancion, EntradaCancion } from '../models/Cancion.ts';
+import { sincronizarCanciones } from '../infrastructure/supabaseSync.ts';
+import { proyectoRepo } from './proyectoRepo.ts';
 
 const CLAVE = 'canciones';
 
 function obtenerListaInicial(): Cancion[] {
-    return SEED.canciones.map((cancion, indice) => crearCancion({ ...cancion, id: indice + 1 }));
+    return SEED.canciones.map((cancion, indice) =>
+        crearCancion({ ...cancion, id: cancion.id ?? indice + 1 })
+    );
 }
+
+function normalizarLista(canciones: EntradaCancion[]): Cancion[] {
+    return canciones.map((cancion, indice) =>
+        crearCancion({ ...cancion, id: cancion.id ?? indice + 1 })
+    );
+}
+
+// Sincroniza canciones desde Supabase una vez al cargar el módulo.
+let sincronizado = false;
+export async function sincronizar() {
+    if (sincronizado) {
+        return;
+    }
+    try {
+        await sincronizarCanciones();
+        sincronizado = true;
+    } catch (error) {
+        console.warn('No se pudieron sincronizar las canciones con Supabase.', error);
+    }
+}
+
+sincronizar();
 
 export const cancionRepo = {
     listar(): Cancion[] {
@@ -17,14 +43,27 @@ export const cancionRepo = {
             Storage.guardarValor(CLAVE, obtenerListaInicial());
             return obtenerListaInicial();
         }
-        return canciones.map((cancion, indice) => crearCancion({ ...cancion, id: cancion.id ?? indice + 1 }));
+        return normalizarLista(canciones as EntradaCancion[]);
     },
 
     listarPorProyecto(proyectoId: number | string | null | undefined): Cancion[] {
+        if (!proyectoId) {
+            return [];
+        }
         return this.listar().filter((cancion) => String(cancion.proyecto_id) === String(proyectoId));
     },
 
+    listarPorUsuario(usuarioId: number | string | null | undefined): Cancion[] {
+        if (!usuarioId) {
+            return [];
+        }
+        const proyectosUsuario = proyectoRepo.listarPorUsuario(usuarioId);
+        const idsProyectos = new Set(proyectosUsuario.map((proyecto) => String(proyecto.id)));
+        return this.listar().filter((cancion) => idsProyectos.has(String(cancion.proyecto_id)));
+    },
+
     obtenerPorId(id: number | string): Cancion | null {
+        if (id == null) return null;
         return this.listar().find((cancion) => String(cancion.id) === String(id)) ?? null;
     },
 
@@ -55,6 +94,7 @@ export const cancionRepo = {
     },
 
     eliminarPorProyecto(proyectoId: number | string | null | undefined): Cancion[] {
+        if (proyectoId == null) return [];
         const canciones = this.listar().filter((cancion) => String(cancion.proyecto_id) !== String(proyectoId));
         Storage.guardarValor(CLAVE, canciones);
         return canciones;
