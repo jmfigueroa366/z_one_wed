@@ -1,0 +1,58 @@
+// CAPA: Presentación
+import { createContext, useContext, useEffect, useMemo, useState } from 'react';
+import type { ReactNode } from 'react';
+import { AuthService } from '../services/authService.ts';
+import type { EntradaUsuario, Usuario } from '../models/Usuario.ts';
+
+interface ContextoAuth {
+    usuario: Usuario | null;
+    cargando: boolean;
+    isAuthenticated: boolean;
+    iniciarSesion: (email: string, password: string, rol?: string | null) => Promise<Usuario | null>;
+    registrarUsuario: (data?: EntradaUsuario) => Promise<Usuario>;
+    cerrarSesion: () => Promise<boolean>;
+}
+
+export const AuthContext = createContext<ContextoAuth | null>(null);
+
+export function AuthProvider({ children }: { children: ReactNode }) {
+    const [usuario, setUsuario] = useState<Usuario | null>(null);
+    const [cargando, setCargando] = useState(true);
+
+    useEffect(() => {
+        const sesion = AuthService.obtenerSesion();
+        setUsuario(sesion);
+        setCargando(false);
+    }, []);
+
+    const value = useMemo<ContextoAuth>(() => ({
+        usuario,
+        cargando,
+        isAuthenticated: Boolean(usuario),
+        iniciarSesion: async (email: string, password: string, rol: string | null = null) => {
+            const usuarioAutenticado = await AuthService.iniciarSesion(email, password, rol);
+            setUsuario(usuarioAutenticado);
+            return usuarioAutenticado;
+        },
+        registrarUsuario: async (data: EntradaUsuario = {}) => {
+            const usuarioRegistrado = await AuthService.registrarUsuario(data);
+            setUsuario(null);
+            return usuarioRegistrado;
+        },
+        cerrarSesion: async () => {
+            const resultado = AuthService.cerrarSesion();
+            setUsuario(null);
+            return resultado;
+        },
+    }), [usuario, cargando]);
+
+    return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
+}
+
+export function useAuth() {
+    const context = useContext(AuthContext);
+    if (!context) {
+        throw new Error('useAuth debe usarse dentro de AuthProvider.');
+    }
+    return context;
+}
