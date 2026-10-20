@@ -276,3 +276,40 @@ test('cancelar deja la solicitud en cancelada y respeta la máquina de estados',
     assert.equal(cancelada!.estado, 'cancelada');
     assert.throws(() => SolicitudService.cancelar(solicitud.id!), /ya no se puede cancelar/);
 });
+
+test('cancelar una solicitud confirmada libera la sesión vinculada', () => {
+    // El solicitante no es cliente: al autorizar se confirma y crea sesión.
+    const solicitud = SolicitudService.crear({
+        sala_id: 1,
+        fecha: '2026-12-07',
+        franja: '08:00-09:00',
+        tipo: 'mezcla',
+        colaboradores: [{ colaborador_id: 1 }],
+    });
+    SolicitudService.responderInvitacion(solicitud.id!, 1, 'aceptada');
+    SolicitudService.autorizar(solicitud.id!, { rol: ROLES.ADMINISTRADOR });
+
+    const antes = SesionService.listar().find((item) => String(item.solicitud_id) === String(solicitud.id));
+    assert.equal(antes?.estado, 'confirmada');
+
+    SolicitudService.cancelar(solicitud.id!);
+
+    const despues = SesionService.listar().find((item) => String(item.solicitud_id) === String(solicitud.id));
+    assert.equal(despues?.estado, 'cancelada');
+});
+
+test('un cliente no puede cancelar una solicitud ajena', () => {
+    const solicitud = SolicitudService.crear({
+        usuario_id: 99,
+        sala_id: 1,
+        fecha: '2026-12-08',
+        franja: '08:00-09:00',
+        tipo: 'mezcla',
+        colaboradores: [{ colaborador_id: 1 }],
+    });
+
+    assert.throws(
+        () => SolicitudService.cancelar(solicitud.id!, { usuario: CLIENTE, rol: ROLES.CLIENTE }),
+        /no es tuya/
+    );
+});

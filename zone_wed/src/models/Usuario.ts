@@ -1,7 +1,7 @@
 // CAPA: Dominio
 
 export interface Usuario {
-    id: number | null;
+    id: number | string | null;
     nombre: string;
     email: string;
     password?: string;

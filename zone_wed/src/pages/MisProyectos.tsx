@@ -100,9 +100,9 @@ export default function MisProyectos() {
     const navigate = useNavigate();
     const esAdmin = esAdministrador(usuario);
     const [proyectos] = useProyectos(esAdmin ? null : usuario?.id);
-    const [proyectoActivoId, setProyectoActivoId] = useState<number | null>(null);
+    const [proyectoActivoId, setProyectoActivoId] = useState<number | string | null>(null);
     const [canciones] = useCanciones(proyectoActivoId);
-    const [partesAbierta, setPartesAbierta] = useState<number | null>(null);
+    const [partesAbierta, setPartesAbierta] = useState<number | string | null>(null);
     const panelRef = useRef<HTMLUListElement | null>(null);
     const [heroRef, seguirSpotlight] = useSpotlight<HTMLDivElement>();
 

@@ -20,24 +20,24 @@ export const ETIQUETAS_METODO = Object.freeze({
 });
 
 export interface Pago {
-    id: number | null;
+    id: number | string | null;
     monto: number;
     metodo: string;
     fecha: string;
-    registrado_por: number | null;
+    registrado_por: number | string | null;
     [key: string]: unknown;
 }
 
 export type EntradaPago = Entrada<Pago>;
 
 export interface Orden {
-    id: number | null;
+    id: number | string | null;
     numero: string;
     tipo: string;
-    usuario_id: number | null;
-    proyecto_id: number | null;
-    cancion_id: number | null;
-    solicitud_id?: number | null;
+    usuario_id: number | string | null;
+    proyecto_id: number | string | null;
+    cancion_id: number | string | null;
+    solicitud_id?: number | string | null;
     descripcion: string;
     detalle: Record<string, unknown>;
     total_estimado: number;

@@ -32,7 +32,7 @@ sincronizar();
 export const solicitudRepo = {
     listar(): Solicitud[] {
         const solicitudes = Storage.obtenerValor<unknown>(CLAVE, []);
-        if (!Array.isArray(solicitudes) || solicitudes.length === 0) {
+        if (!Array.isArray(solicitudes) || !Storage.existeValor(CLAVE)) {
             Storage.guardarValor(CLAVE, obtenerListaInicial());
             return obtenerListaInicial();
         }

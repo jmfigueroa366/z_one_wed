@@ -121,7 +121,8 @@ export const NAVEGACION: readonly NavegacionGrupo[] = Object.freeze([
 ]);
 
 export function rutasPermitidasPorRol(rol: string | null | undefined): readonly string[] {
-    return (rol ? rutasPorRol[rol] : undefined) ?? rutasPorRol[ROLES.CLIENTE];
+    // Fail-closed: un rol desconocido o ausente no hereda los permisos del cliente.
+    return (rol ? rutasPorRol[rol] : undefined) ?? [];
 }
 
 export function rutaEsPermitida(rol: string | null | undefined, ruta: string): boolean {

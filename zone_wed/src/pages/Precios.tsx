@@ -95,8 +95,20 @@ export default function Precios() {
         return () => animacion.pause();
     }, []);
 
-    const cambiar = (campo: keyof FacturacionConfig, valor: string) =>
-        setConfig((actual) => ({ ...actual, [campo]: valor }) as FacturacionConfig);
+    const CAMPOS_PORCENTAJE: readonly (keyof FacturacionConfig)[] = [
+        'descuentoAlbum',
+        'anticipoPorcentaje',
+        'cancelacionPorcentaje',
+    ];
+
+    const cambiar = (campo: keyof FacturacionConfig, valor: string) => {
+        // Los campos porcentuales se editan en % (0-100) pero se guardan como
+        // fracción (0-1), igual que en ConfiguracionService.
+        const normalizado = CAMPOS_PORCENTAJE.includes(campo)
+            ? String((Number(valor) || 0) / 100)
+            : valor;
+        setConfig((actual) => ({ ...actual, [campo]: normalizado }) as FacturacionConfig);
+    };
 
     const guardar = (evento: FormEvent<HTMLFormElement>) => {
         evento.preventDefault();
@@ -107,11 +119,11 @@ export default function Precios() {
                 tarifaProduccionHora: Number(config.tarifaProduccionHora),
                 tarifaEnsayoHora: Number(config.tarifaEnsayoHora),
                 umbralAlbumDescuento: Number(config.umbralAlbumDescuento),
-                descuentoAlbum: Number(config.descuentoAlbum) / 100,
+                descuentoAlbum: Number(config.descuentoAlbum),
                 bloqueRedondeoMin: Number(config.bloqueRedondeoMin),
-                anticipoPorcentaje: Number(config.anticipoPorcentaje) / 100,
+                anticipoPorcentaje: Number(config.anticipoPorcentaje),
                 cancelacionHorasGratis: Number(config.cancelacionHorasGratis),
-                cancelacionPorcentaje: Number(config.cancelacionPorcentaje) / 100,
+                cancelacionPorcentaje: Number(config.cancelacionPorcentaje),
             });
             setConfig(actualizada);
             setMensaje('Precios actualizados. Se aplican a las próximas facturas.');

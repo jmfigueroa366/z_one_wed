@@ -1,4 +1,4 @@
-// CAPA: Presentación
+// CAPA: Presentaciï¿½n
 import { createContext, useContext, useEffect, useMemo, useState } from 'react';
 import type { ReactNode } from 'react';
 import { AuthService } from '../services/authService.ts';
@@ -42,6 +42,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             if (evento === 'SIGNED_OUT') {
                 setUsuario(null);
                 setCargando(false);
+            } else if (evento === 'SIGNED_IN') {
+                AuthService.obtenerSesion()
+                    .then((sesion: Usuario | null) => setUsuario(sesion))
+                    .catch(() => undefined);
             }
         });
         return () => {
@@ -63,7 +67,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
                 try {
                     await refrescarDatosUsuario();
                 } catch (error) {
-                    console.warn('No se pudieron refrescar los datos tras iniciar sesión.', error);
+                    console.warn('No se pudieron refrescar los datos tras iniciar sesiï¿½n.', error);
                 }
             }
             return usuarioAutenticado;

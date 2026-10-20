@@ -8,13 +8,12 @@ export function useGrabaciones(cancionId: number | string | null = null) {
         cancionId ? GrabacionService.listarPorCancion(cancionId) : GrabacionService.listar()
     );
 
-    useEffect(
-        () =>
-            ReactiveStore.suscribirse(() =>
-                setGrabaciones(cancionId ? GrabacionService.listarPorCancion(cancionId) : GrabacionService.listar())
-            ),
-        [cancionId]
-    );
+    useEffect(() => {
+        const refrescar = () =>
+            setGrabaciones(cancionId ? GrabacionService.listarPorCancion(cancionId) : GrabacionService.listar());
+        refrescar();
+        return ReactiveStore.suscribirse(refrescar);
+    }, [cancionId]);
 
     return [grabaciones, setGrabaciones] as const;
 }

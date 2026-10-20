@@ -42,7 +42,7 @@ function guardarEnSupabase(sesion: Sesion) {
 export const sesionRepo = {
     listar(): Sesion[] {
         const sesiones = Storage.obtenerValor<unknown>(CLAVE, []);
-        if (!Array.isArray(sesiones) || sesiones.length === 0) {
+        if (!Array.isArray(sesiones) || !Storage.existeValor(CLAVE)) {
             Storage.guardarValor(CLAVE, obtenerListaInicial());
             return obtenerListaInicial();
         }

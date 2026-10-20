@@ -40,7 +40,9 @@ export const ESTADOS: EstadosConfig = {
         transiciones: {
             borrador: ['facturada', 'cancelada'],
             facturada: ['parcial', 'pagada', 'cancelada'],
-            parcial: ['pagada'],
+            // Se puede cancelar una orden con anticipo parcial: lo pagado se
+            // conserva y el saldo pendiente deja de existir.
+            parcial: ['pagada', 'cancelada'],
             pagada: [],
             cancelada: [],
         },

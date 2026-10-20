@@ -1,8 +1,8 @@
 // CAPA: Dominio
 
 export interface Cancion {
-    id: number | null;
-    proyecto_id: number | null;
+    id: number | string | null;
+    proyecto_id: number | string | null;
     nombre: string;
     duracion: number | null;
     partes: string[];

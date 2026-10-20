@@ -216,6 +216,20 @@ export default function GrabadorAudio({ cancionId, parte = '', mostrarEtiqueta =
         setProgreso(0);
     }, [fuente]);
 
+    // Al desmontar: corta el micrófono, el intervalo y libera el clip temporal.
+    useEffect(() => () => {
+        if (temporizadorRef.current) {
+            clearInterval(temporizadorRef.current);
+            temporizadorRef.current = null;
+        }
+        grabadorRef.current?.stop();
+        grabadorRef.current = null;
+        flujoRef.current?.getTracks().forEach((pista) => pista.stop());
+        flujoRef.current = null;
+        audioContextoRef.current?.close?.();
+        audioContextoRef.current = null;
+    }, []);
+
     const irA = (fraccion: number) => {
         const audio = audioRef.current;
         if (!audio || !Number.isFinite(audio.duration) || audio.duration <= 0) return;

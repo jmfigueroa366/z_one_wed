@@ -35,14 +35,14 @@ interface ReferenciaReserva {
     tipo?: string | null;
     hora_inicio?: string | null;
     hora_fin?: string | null;
-    solicitud_id?: number | null;
-    sesion_id?: number | null;
-    id?: number | null;
+    solicitud_id?: number | string | null;
+    sesion_id?: number | string | null;
+    id?: number | string | null;
     franja?: string | null;
     titulo?: string | null;
     fecha?: string | null;
-    proyecto_id?: number | null;
-    cancion_id?: number | null;
+    proyecto_id?: number | string | null;
+    cancion_id?: number | string | null;
 }
 
 interface ConstruccionOrden {
@@ -98,7 +98,7 @@ function sesionesDeProyecto(proyectoId: number | string | null | undefined): Ses
 }
 
 function construirOrdenCancion(
-    { cancion, usuario_id }: { cancion: Cancion; usuario_id: number | null },
+    { cancion, usuario_id }: { cancion: Cancion; usuario_id: number | string | null },
     config: FacturacionConfig
 ): ConstruccionOrden {
     const sesiones = sesionesDeCancion(cancion.id);
@@ -140,7 +140,7 @@ function construirOrdenCancion(
 }
 
 function construirOrdenAlbum(
-    { proyecto, usuario_id }: { proyecto: Proyecto; usuario_id: number | null },
+    { proyecto, usuario_id }: { proyecto: Proyecto; usuario_id: number | string | null },
     config: FacturacionConfig
 ): ConstruccionOrden {
     const canciones = cancionRepo.listarPorProyecto(proyecto.id);
@@ -236,6 +236,10 @@ export const OrdenService = {
             config
         );
 
+        if (construccion.total.total <= 0) {
+            throw new Error('No hay horas registradas para facturar todavía.');
+        }
+
         return ordenRepo.crear({
             ...construccion.orden,
             total: construccion.total.total,
@@ -251,7 +255,7 @@ export const OrdenService = {
     // autorizar la solicitud (o al crear la sesión), sin exigir rol.
     emitirReserva(
         referencia: ReferenciaReserva | null | undefined,
-        { usuario_id = null, solicitud_id = null }: { usuario_id?: number | null; solicitud_id?: number | null } = {}
+        { usuario_id = null, solicitud_id = null }: { usuario_id?: number | string | null; solicitud_id?: number | string | null } = {}
     ): OrdenEntidad | null {
         if (!referencia) {
             throw new Error('La reserva no existe.');
@@ -262,6 +266,10 @@ export const OrdenService = {
             config
         );
         const anticipo = redondearMoneda(estimado.total * config.anticipoPorcentaje);
+        if (estimado.total <= 0 || anticipo <= 0) {
+            // Sin horas facturables no se emite una factura impagable.
+            return null;
+        }
         const refSolicitud = solicitud_id ?? referencia.solicitud_id ?? null;
         const refSesion = referencia.sesion_id ?? (refSolicitud == null ? referencia.id ?? null : null);
         const franja = referencia.hora_inicio && referencia.hora_fin
@@ -372,7 +380,7 @@ export const OrdenService = {
 
         // Al cancelar la reserva, se cancela la solicitud vinculada.
         if (actualizada.solicitud_id != null && actualizada.tipo === TIPOS_ORDEN.RESERVA) {
-            SolicitudService.cancelar(actualizada.solicitud_id);
+            SolicitudService.cancelar(actualizada.solicitud_id, { usuario, rol });
         }
 
         return actualizada;

@@ -97,7 +97,7 @@ interface EventoAgenda {
     fecha: string | null;
     hora_inicio: string | null;
     hora_fin: string | null;
-    sala_id: number | null;
+    sala_id: number | string | null;
 }
 
 function nombresDeSolicitud(solicitud: SolicitudColab, colaboradores: Array<{ id: number | string; nombre: string }>) {

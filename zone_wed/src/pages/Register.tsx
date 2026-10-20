@@ -40,9 +40,13 @@ export default function Register() {
         setCargando(true);
 
         try {
-            await registrarUsuario({
+            const resultado = await registrarUsuario({
                 ...formulario,
             });
+            if (resultado === false) {
+                setError('No se pudo registrar el usuario. Revisa los datos e inténtalo de nuevo.');
+                return;
+            }
             navigate('/login', { replace: true, state: location.state });
         } catch (err: unknown) {
             setError(err instanceof Error ? err.message : 'No se pudo registrar el usuario.');

@@ -3,7 +3,8 @@ import { Storage, generarIdUnico } from '../infrastructure/storage.ts';
 import { SEED } from '../data/seed.ts';
 import { crearProyecto } from '../models/Proyecto.ts';
 import type { EntradaProyecto, Proyecto } from '../models/Proyecto.ts';
-import { sincronizarProyectos } from '../infrastructure/supabaseSync.ts';
+import { sincronizarProyectos, eliminarFilaRemota } from '../infrastructure/supabaseSync.ts';
+import { haySupabase } from '../lib/supabaseClient.ts';
 
 const CLAVE = 'proyectos';
 
@@ -36,7 +37,7 @@ sincronizar();
 export const proyectoRepo = {
     listar(): Proyecto[] {
         const proyectos = Storage.obtenerValor<unknown>(CLAVE, []);
-        if (!Array.isArray(proyectos) || proyectos.length === 0) {
+        if (!Array.isArray(proyectos) || !Storage.existeValor(CLAVE)) {
             Storage.guardarValor(CLAVE, obtenerListaInicial());
             return obtenerListaInicial();
         }
@@ -77,6 +78,9 @@ export const proyectoRepo = {
     eliminar(id: number | string): Proyecto[] {
         const proyectos = this.listar().filter((proyecto) => String(proyecto.id) !== String(id));
         Storage.guardarValor(CLAVE, proyectos);
+        if (haySupabase) {
+            eliminarFilaRemota('proyectos', id).catch((error) => console.warn('No se pudo borrar el proyecto en Supabase.', error));
+        }
         return proyectos;
     },
 };

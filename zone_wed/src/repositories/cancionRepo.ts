@@ -3,7 +3,8 @@ import { Storage, generarIdUnico } from '../infrastructure/storage.ts';
 import { SEED } from '../data/seed.ts';
 import { crearCancion } from '../models/Cancion.ts';
 import type { Cancion, EntradaCancion } from '../models/Cancion.ts';
-import { sincronizarCanciones } from '../infrastructure/supabaseSync.ts';
+import { sincronizarCanciones, eliminarFilaRemota } from '../infrastructure/supabaseSync.ts';
+import { haySupabase } from '../lib/supabaseClient.ts';
 import { proyectoRepo } from './proyectoRepo.ts';
 
 const CLAVE = 'canciones';
@@ -39,7 +40,7 @@ sincronizar();
 export const cancionRepo = {
     listar(): Cancion[] {
         const canciones = Storage.obtenerValor<unknown>(CLAVE, []);
-        if (!Array.isArray(canciones) || canciones.length === 0) {
+        if (!Array.isArray(canciones) || !Storage.existeValor(CLAVE)) {
             Storage.guardarValor(CLAVE, obtenerListaInicial());
             return obtenerListaInicial();
         }
@@ -90,6 +91,9 @@ export const cancionRepo = {
     eliminar(id: number | string): Cancion[] {
         const canciones = this.listar().filter((cancion) => String(cancion.id) !== String(id));
         Storage.guardarValor(CLAVE, canciones);
+        if (haySupabase) {
+            eliminarFilaRemota('canciones', id).catch((error) => console.warn('No se pudo borrar la canción en Supabase.', error));
+        }
         return canciones;
     },
 

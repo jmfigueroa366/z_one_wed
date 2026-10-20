@@ -232,11 +232,11 @@ export default function Pagos() {
     const contenedorRef = useRef<HTMLDivElement | null>(null);
     const [heroRef, seguirSpotlight] = useSpotlight<HTMLDivElement>();
 
-    const [pagoAbierto, setPagoAbierto] = useState<number | null>(null);
+    const [pagoAbierto, setPagoAbierto] = useState<number | string | null>(null);
     const [montoPago, setMontoPago] = useState('');
     const [metodoPago, setMetodoPago] = useState<typeof METODOS_PAGO[keyof typeof METODOS_PAGO]>(METODOS_PAGO.EFECTIVO);
 
-    const [cancelarAbierto, setCancelarAbierto] = useState<number | null>(null);
+    const [cancelarAbierto, setCancelarAbierto] = useState<number | string | null>(null);
     const [horasAnticipacion, setHorasAnticipacion] = useState('');
 
     const [filtroEstado, setFiltroEstado] = useState('');
@@ -252,10 +252,10 @@ export default function Pagos() {
     const usuarios = useMemo<Usuario[]>(() => (esAdmin ? usuarioRepo.listar() : []), [esAdmin]);
     const configuracion = useMemo(() => ConfiguracionService.obtener(), []);
 
-    const nombreCliente = (id: number | null | undefined): string => usuarios.find((u: Usuario) => String(u.id) === String(id))?.nombre ?? `Cliente #${id ?? ''}`;
-    const proyectoDe = (id: number | null | undefined): string => proyectos.find((p: Proyecto) => String(p.id) === String(id))?.nombre ?? '';
-    const clienteDe = (id: number | null | undefined): Usuario | null => usuarioRepo.obtenerPorId(id) ?? usuario;
-    const cancionDe = (id: number | null | undefined): string => canciones.find((c: Cancion) => String(c.id) === String(id))?.nombre ?? '';
+    const nombreCliente = (id: number | string | null | undefined): string => usuarios.find((u: Usuario) => String(u.id) === String(id))?.nombre ?? `Cliente #${id ?? ''}`;
+    const proyectoDe = (id: number | string | null | undefined): string => proyectos.find((p: Proyecto) => String(p.id) === String(id))?.nombre ?? '';
+    const clienteDe = (id: number | string | null | undefined): Usuario | null => usuarioRepo.obtenerPorId(id) ?? usuario;
+    const cancionDe = (id: number | string | null | undefined): string => canciones.find((c: Cancion) => String(c.id) === String(id))?.nombre ?? '';
 
     const cancionesDelProyecto = useMemo<Cancion[]>(
         () => canciones.filter((c: Cancion) => String(c.proyecto_id) === String(proyectoEmision)),
