@@ -169,7 +169,7 @@ export default function MisProyectos() {
             setError('Escribe un nombre para la carpeta.');
             return;
         }
-        const usuarioId = esAdmin ? Number(propietarioId) : usuario?.id;
+        const usuarioId = esAdmin ? (propietarioId || usuario?.id) : usuario?.id;
         if (esAdmin && !usuarioId) {
             setError('Selecciona el cliente al que pertenece el proyecto.');
             return;

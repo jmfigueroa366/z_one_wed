@@ -336,8 +336,12 @@ export default function Pagos() {
 
     const confirmarPago = (orden: Orden) => {
         avisar('', '');
+        if (orden.id == null) {
+            setError('No se pudo identificar la factura.');
+            return;
+        }
         try {
-            OrdenService.pagar(orden.id ?? 0, { usuario, rol: usuario?.rol, monto: Number(montoPago), metodo: metodoPago });
+            OrdenService.pagar(orden.id, { usuario, rol: usuario?.rol, monto: Number(montoPago), metodo: metodoPago });
             setPagoAbierto(null);
             setMensaje('Pago registrado correctamente.');
         } catch (errorPago) {
@@ -347,8 +351,12 @@ export default function Pagos() {
 
     const confirmarCancelacion = (orden: Orden) => {
         avisar('', '');
+        if (orden.id == null) {
+            setError('No se pudo identificar la factura.');
+            return;
+        }
         try {
-            OrdenService.cancelar(orden.id ?? 0, {
+            OrdenService.cancelar(orden.id, {
                 usuario,
                 rol: usuario?.rol,
                 horasAnticipacion: Number(horasAnticipacion) || 0,
@@ -367,7 +375,9 @@ export default function Pagos() {
                 setError('Selecciona un proyecto o una canción.');
                 return;
             }
-            const data =             cancionEmision ? { cancion_id: cancionEmision === '' ? undefined : Number(cancionEmision) } : { proyecto_id: proyectoEmision === '' ? undefined : Number(proyectoEmision) };
+            const data = cancionEmision
+                ? { cancion_id: cancionEmision === '' ? undefined : cancionEmision }
+                : { proyecto_id: proyectoEmision === '' ? undefined : proyectoEmision };
             OrdenService.emitir(data, { rol: usuario?.rol });
             setMensaje('Factura emitida.');
             setCancionEmision('');

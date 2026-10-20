@@ -307,7 +307,7 @@ export default function MisSolicitudes() {
         const cancionElegida = canciones.find((item) => String(item.id) === String(form.cancion_id));
         const invitados = colaboradoresElegidos.map((id) => {
             const colaborador = colaboradores.find((item) => String(item.id) === String(id));
-            return { colaborador_id: Number(id), rol: rolDeColaborador(colaborador) };
+            return { colaborador_id: id, rol: rolDeColaborador(colaborador) };
         });
 
         try {
@@ -316,7 +316,7 @@ export default function MisSolicitudes() {
                 solicitante_nombre: usuario?.nombre ?? null,
                 titulo: form.titulo.trim(),
                 descripcion: form.descripcion.trim(),
-                sala_id: Number(form.sala_id),
+                sala_id: form.sala_id,
                 fecha: form.fecha,
                 franja: `${form.hora_inicio}-${form.hora_fin}`,
                 tipo: form.tipo,

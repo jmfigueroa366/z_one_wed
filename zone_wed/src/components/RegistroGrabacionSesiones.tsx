@@ -167,7 +167,7 @@ export default function RegistroGrabacionSesiones({ productor, onCerrar }: Regis
         filas.forEach((fila) => {
             SesionService.crear({
                 titulo: `Grabación ${cancion.nombre}${proyectoDeCancion ? ` · ${proyectoDeCancion.nombre}` : ''} · Sesión ${fila.id}`,
-                sala_id: Number(fila.sala_id),
+                sala_id: fila.sala_id,
                 colaborador_id: productor.id,
                 fecha: fila.fecha,
                 hora_inicio: fila.hora_inicio,
