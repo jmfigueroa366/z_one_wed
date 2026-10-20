@@ -127,7 +127,8 @@ export const Storage = {
         ReactiveStore.notificar();
     },
 
-    reiniciarSiVersionCambio(version: string): boolean {        const claveVersion = getKey('seed_version');
+    reiniciarSiVersionCambio(version: string): boolean {
+        const claveVersion = getKey('seed_version');
         const storage = getStorage('local');
         if (!storage || storage.getItem(claveVersion) === version) {
             return false;

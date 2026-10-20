@@ -1,8 +1,8 @@
 // CAPA: Presentación
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState, type ComponentType } from 'react';
 import anime from 'animejs';
-import { Clock, Mic, SlidersHorizontal, Users } from 'lucide-react';
-import { FondoHero } from '../components/Animados.tsx';
+import { CalendarCheck, CheckCircle2, Clock, Mic, SlidersHorizontal, Sparkles, Users } from 'lucide-react';
+import { FondoHero, Contador } from '../components/Animados.tsx';
 import { useColaboradores } from '../hooks/useColaboradores.ts';
 import { useSalas } from '../hooks/useSalas.ts';
 import { useSesiones } from '../hooks/useSesiones.ts';
@@ -30,6 +30,13 @@ const PUNTO = {
     confirmada: 'bg-exito',
     completada: 'bg-[#5393da]',
     cancelada: 'bg-peligro',
+};
+
+const BORDE_EVENTO = {
+    solicitada: 'from-aviso/70',
+    confirmada: 'from-exito/70',
+    completada: 'from-[#5393da]/70',
+    cancelada: 'from-peligro/70',
 };
 
 const FILTRO_BASE = 'rounded-full border px-3.5 py-2 text-xs font-semibold transition';
@@ -205,19 +212,26 @@ export default function Agenda() {
         return { filas, maxHoras, totalHoras: Math.round(totalHoras * 10) / 10, libres };
     }, [colaboradores, eventosAgenda]);
 
-    const resumen = [
-        { etiqueta: 'Actividades en agenda', valor: eventosAgenda.length, tono: 'from-[#5b418f]/50', texto: 'text-texto-soft' },
-        { etiqueta: 'Confirmadas', valor: eventosAgenda.filter((sesion) => sesion.estado === 'confirmada').length, tono: 'from-exito/25', texto: 'text-exito-soft' },
-        { etiqueta: 'Completadas', valor: sesiones.filter((sesion) => sesion.estado === 'completada').length, tono: 'from-[#5393da]/25', texto: 'text-info' },
+    const resumen: Array<{ etiqueta: string; valor: number; tono: string; texto: string; icono: ComponentType<{ className?: string; 'aria-hidden'?: boolean }> }> = [
+        { etiqueta: 'Actividades en agenda', valor: eventosAgenda.length, tono: 'from-[#5b418f]/50 to-surface/30', texto: 'text-accent-soft', icono: Sparkles },
+        { etiqueta: 'Confirmadas', valor: eventosAgenda.filter((sesion) => sesion.estado === 'confirmada').length, tono: 'from-exito/25 to-surface/30', texto: 'text-exito-soft', icono: CheckCircle2 },
+        { etiqueta: 'Completadas', valor: sesiones.filter((sesion) => sesion.estado === 'completada').length, tono: 'from-[#5393da]/25 to-surface/30', texto: 'text-info', icono: CalendarCheck },
     ];
 
     return (
         <main className="workspace-content" data-page="agenda">
-            <header className="page-heading relative border-l-4 border-accent pl-4">
-                <div aria-hidden="true" className="pointer-events-none absolute -top-20 right-24 h-52 w-52 animate-aurora rounded-full bg-[#9365f2]/18 blur-3xl" />
-                <p className="workspace-eyebrow">PLANIFICACIÓN DEL ESTUDIO</p>
-                <h1>Agenda de sesiones</h1>
-                <p>Consulta los horarios, las salas y el equipo asignado a cada sesión.</p>
+            <header className="relative overflow-hidden rounded-[2rem] border border-border bg-gradient-to-br from-surface-2/80 via-surface/60 to-surface/20 p-6 sm:p-8">
+                <div aria-hidden="true" className="pointer-events-none absolute -top-24 -right-10 h-64 w-64 animate-aurora rounded-full bg-[#9365f2]/25 blur-3xl" />
+                <div aria-hidden="true" className="pointer-events-none absolute -bottom-24 left-8 h-56 w-56 animate-aurora rounded-full bg-magenta/20 blur-3xl" />
+                <div className="relative">
+                    <p className="workspace-eyebrow">PLANIFICACIÓN DEL ESTUDIO</p>
+                    <h1 className="mt-1 text-[clamp(1.8rem,4vw,2.6rem)] font-bold leading-tight tracking-[-0.04em]">
+                        Agenda de <span className="texto-degradado">sesiones</span>
+                    </h1>
+                    <p className="mt-2 max-w-2xl leading-relaxed text-sutil">
+                        Consulta los horarios, las salas y el equipo asignado a cada sesión.
+                    </p>
+                </div>
             </header>
 
             {proximo && (
@@ -227,7 +241,7 @@ export default function Agenda() {
                     className="group/hero relative mt-6 overflow-hidden rounded-[2rem] border border-accent/25 p-6 sm:p-8"
                     style={{
                         background:
-                            'radial-gradient(ellipse at 90% 8%, rgba(240, 79, 166, 0.26), transparent 48%), linear-gradient(120deg, rgba(111, 75, 187, 0.36), rgba(23, 19, 34, 0.97) 72%)',
+                            'radial-gradient(ellipse at 90% 8%, rgba(240, 79, 166, 0.4), transparent 48%), radial-gradient(ellipse at 8% 92%, rgba(147, 101, 242, 0.34), transparent 52%), linear-gradient(120deg, rgba(111, 75, 187, 0.55), rgba(30, 25, 48, 0.96) 72%)',
                     }}
                 >
                     <FondoHero acento="#9365f2" />
@@ -257,18 +271,26 @@ export default function Agenda() {
             )}
 
             <section className="mt-5 grid gap-3 sm:grid-cols-3" aria-label="Resumen de agenda">
-                {resumen.map((item) => (
-                    <article
-                        key={item.etiqueta}
-                        className={`tarjeta-brillo relative flex items-center justify-between gap-3 overflow-hidden rounded-2xl border border-border bg-gradient-to-br ${item.tono} to-surface/40 p-4`}
-                    >
-                        <span className="text-sm text-sutil">{item.etiqueta}</span>
-                        <strong className={`text-3xl font-black ${item.texto}`}>{item.valor}</strong>
-                    </article>
-                ))}
+                {resumen.map((item) => {
+                    const Icono = item.icono;
+                    return (
+                        <article
+                            key={item.etiqueta}
+                            className={`tarjeta-brillo group relative overflow-hidden rounded-2xl border border-border bg-gradient-to-br ${item.tono} p-4`}
+                        >
+                            <div className="flex items-center justify-between gap-3">
+                                <span className="text-sm text-sutil">{item.etiqueta}</span>
+                                <span className={`grid h-9 w-9 shrink-0 place-items-center rounded-xl border border-border/70 bg-black/20 transition group-hover:scale-110 ${item.texto}`} aria-hidden="true">
+                                    <Icono className="h-4 w-4" />
+                                </span>
+                            </div>
+                            <strong className={`mt-2 block text-3xl font-black ${item.texto}`}><Contador valor={item.valor} pad={2} /></strong>
+                        </article>
+                    );
+                })}
             </section>
 
-            <section className="mt-6 rounded-[2rem] border border-border bg-surface/60 p-5 backdrop-blur sm:p-6" aria-labelledby="agenda-staff-title">
+            <section className="mt-6 rounded-[2rem] border border-accent/25 bg-gradient-to-br from-surface-2/70 via-surface/50 to-surface/20 p-5 sm:p-6" aria-labelledby="agenda-staff-title">
                 <div className="flex flex-wrap items-end justify-between gap-4">
                     <div>
                         <p className="workspace-eyebrow">OCUPACIÓN DEL PERSONAL</p>
@@ -277,11 +299,11 @@ export default function Agenda() {
                         </h2>
                     </div>
                     <div className="flex flex-wrap gap-3">
-                        <span className="rounded-full border border-accent/40 bg-accent/10 px-3 py-1.5 text-xs font-bold text-accent-soft">
-                            {ocupacion.totalHoras} h agendadas
+                        <span className="inline-flex items-center gap-1.5 rounded-full border border-accent/40 bg-accent/10 px-3 py-1.5 text-xs font-bold text-accent-soft">
+                            <Clock className="h-3.5 w-3.5" aria-hidden="true" /> <Contador valor={ocupacion.totalHoras} /> h agendadas
                         </span>
-                        <span className="rounded-full border border-exito/40 bg-exito/10 px-3 py-1.5 text-xs font-bold text-exito-soft">
-                            {ocupacion.libres} libres
+                        <span className="inline-flex items-center gap-1.5 rounded-full border border-exito/40 bg-exito/10 px-3 py-1.5 text-xs font-bold text-exito-soft">
+                            <CheckCircle2 className="h-3.5 w-3.5" aria-hidden="true" /> <Contador valor={ocupacion.libres} /> libres
                         </span>
                     </div>
                 </div>
@@ -296,7 +318,7 @@ export default function Agenda() {
                             return (
                                 <article
                                     key={colaborador.id}
-                                    className="tarjeta-brillo relative overflow-hidden rounded-2xl border border-border bg-white/[0.02] p-4 transition hover:-translate-y-0.5 hover:border-accent/50"
+                                    className="tarjeta-brillo relative overflow-hidden rounded-2xl border border-border bg-gradient-to-br from-white/[0.06] to-white/[0.01] p-4 transition hover:-translate-y-0.5 hover:border-accent/50 hover:shadow-lg hover:shadow-accent/10"
                                 >
                                     <div className="flex items-center gap-3">
                                         <span
@@ -336,7 +358,7 @@ export default function Agenda() {
                 )}
             </section>
 
-            <section className="mt-6 rounded-[2rem] border border-border bg-surface/60 p-5 backdrop-blur sm:p-6" aria-labelledby="agenda-list-title">
+            <section className="mt-6 rounded-[2rem] border border-border bg-gradient-to-br from-surface-2/70 via-surface/50 to-surface/20 p-5 sm:p-6" aria-labelledby="agenda-list-title">
                 <div className="flex flex-wrap items-end justify-between gap-4">
                     <div>
                         <p className="workspace-eyebrow">PROGRAMACIÓN</p>
@@ -385,17 +407,20 @@ export default function Agenda() {
                 </div>
 
                 {dias.length ? (
-                    <div ref={boardRef} className="mt-5 flex snap-x gap-4 overflow-x-auto pb-3">
+                    <div ref={boardRef} className="mt-5 flex snap-x gap-4 overflow-x-auto pb-3 [scrollbar-color:theme(colors.accent/40)_transparent]">
                         {dias.map(([fecha, items]) => {
                             const esHoy = fecha === hoy;
                             return (
                                 <div
                                     key={fecha}
-                                    className={`flex w-[280px] shrink-0 snap-start flex-col rounded-3xl border p-3.5 ${
-                                        esHoy ? 'border-accent/50 bg-accent/[0.06]' : 'border-border bg-white/[0.02]'
+                                    className={`relative flex w-[300px] shrink-0 snap-start flex-col overflow-hidden rounded-3xl border pt-1 ${
+                                        esHoy
+                                            ? 'border-accent/50 bg-gradient-to-b from-accent/[0.12] to-transparent shadow-lg shadow-accent/10'
+                                            : 'border-border bg-gradient-to-b from-white/[0.05] to-transparent'
                                     }`}
                                 >
-                                    <div className="mb-3 flex items-center justify-between rounded-2xl bg-black/20 px-3 py-2">
+                                    <span className={`mx-3 h-1 rounded-full bg-gradient-to-r ${esHoy ? 'from-magenta to-accent/0' : 'from-accent/40 to-transparent'}`} aria-hidden="true" />
+                                    <div className={`mx-3 mt-2 flex items-center justify-between rounded-2xl px-3 py-2 ${esHoy ? 'bg-gradient-to-r from-magenta/25 to-accent/15' : 'bg-black/25'}`}>
                                         <div>
                                             <span className={`block text-[0.62rem] font-extrabold uppercase tracking-[0.14em] ${esHoy ? 'text-magenta' : 'text-sutil'}`}>
                                                 {esHoy ? 'Hoy' : formatearFecha(fecha, { weekday: 'long' }) || 'Sin fecha'}
@@ -404,29 +429,32 @@ export default function Agenda() {
                                                 {formatearFecha(fecha, { day: 'numeric', month: 'short' }) || '—'}
                                             </strong>
                                         </div>
-                                        <span className="grid h-8 w-8 place-items-center rounded-xl bg-white/[0.06] text-xs font-bold text-sutil">{items.length}</span>
+                                        <span className={`grid h-8 w-8 place-items-center rounded-xl text-xs font-bold ${esHoy ? 'bg-white/15 text-texto-soft' : 'bg-white/[0.08] text-sutil'}`}>
+                                            <Contador valor={items.length} pad={2} />
+                                        </span>
                                     </div>
 
-                                    <div className="flex flex-1 flex-col gap-3">
+                                    <div className="flex flex-1 flex-col gap-3 p-3.5">
                                         {items.map((evento) => (
                                             <article
                                                 key={evento.eventoId}
                                                 data-evento
-                                                className="tarjeta-brillo rounded-2xl border border-border bg-surface/70 p-3.5 transition hover:-translate-y-0.5 hover:border-accent/50"
+                                                className="tarjeta-brillo relative overflow-hidden rounded-2xl border border-border bg-surface/90 p-3.5 shadow-sm shadow-black/20 transition hover:-translate-y-0.5 hover:border-accent/50 hover:shadow-lg hover:shadow-accent/10"
                                             >
-                                                <div className="flex items-center justify-between gap-2">
+                                                <span className={`absolute inset-y-2 left-0 w-[3px] rounded-r-full bg-gradient-to-b ${BORDE_EVENTO[evento.estado as keyof typeof BORDE_EVENTO] ?? 'from-sutil/70'} to-transparent`} aria-hidden="true" />
+                                                <div className="flex items-center justify-between gap-2 pl-2">
                                                     <span className="text-xs font-bold tabular-nums text-texto-soft">
                                                         {evento.hora_inicio || '--:--'}{evento.hora_fin ? `–${evento.hora_fin}` : ''}
                                                     </span>
                                                     <span className={`h-2 w-2 rounded-full ${PUNTO[evento.estado as keyof typeof PUNTO] ?? 'bg-sutil'}`} aria-hidden="true" />
                                                 </div>
-                                                <p className="mt-2 text-[0.68rem] font-bold uppercase tracking-wider text-accent-soft">{evento.tipo}</p>
-                                                <h3 className="mt-0.5 text-sm font-semibold leading-5 text-texto">{evento.titulo || 'Sesión sin título'}</h3>
-                                                <div className="mt-2 flex flex-wrap gap-x-3 gap-y-1 text-[0.7rem] text-sutil">
+                                                <p className="mt-2 pl-2 text-[0.68rem] font-bold uppercase tracking-wider text-accent-soft">{evento.tipo}</p>
+                                                <h3 className="mt-0.5 pl-2 text-sm font-semibold leading-5 text-texto">{evento.titulo || 'Sesión sin título'}</h3>
+                                                <div className="mt-2 flex flex-wrap gap-x-3 gap-y-1 pl-2 text-[0.7rem] text-sutil">
                                                     <span className="inline-flex items-center gap-1"><SlidersHorizontal className="h-3 w-3" aria-hidden="true" /> {obtenerSala(evento.sala_id)}</span>
                                                     <span className="inline-flex items-center gap-1"><Mic className="h-3 w-3" aria-hidden="true" /> {equipoDe(evento as EventoInv)}</span>
                                                 </div>
-                                                <span className={`${clasePillEstado(evento.estado)} mt-3`}>{ETIQUETAS_ESTADO[evento.estado as keyof typeof ETIQUETAS_ESTADO] ?? evento.estado}</span>
+                                                <span className={`${clasePillEstado(evento.estado)} ml-2 mt-3`}>{ETIQUETAS_ESTADO[evento.estado as keyof typeof ETIQUETAS_ESTADO] ?? evento.estado}</span>
                                             </article>
                                         ))}
                                     </div>
