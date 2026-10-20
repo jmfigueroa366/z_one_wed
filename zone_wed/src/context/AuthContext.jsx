@@ -2,6 +2,7 @@
 import { createContext, useContext, useEffect, useMemo, useState } from 'react';
 import { AuthService } from '../services/authService.js';
 import { refrescarDatosUsuario } from '../infrastructure/supabaseSync.js';
+import { Storage } from '../infrastructure/storage.js';
 
 export const AuthContext = createContext(null);
 
@@ -13,12 +14,24 @@ export function AuthProvider({ children }) {
         let activo = true;
 
         //Al abrir la app, recupera la sesión del usuario guardada por Supabase
-        AuthService.obtenerSesion().then((sesion) => {
-            if (activo) {
+        AuthService.obtenerSesion()
+            .then(async (sesion) => {
+                if (!activo) {
+                    return;
+                }
                 setUsuario(sesion);
-                setCargando(false);
-            }
-        });
+                if (sesion) {
+                    await refrescarDatosUsuario();
+                }
+            })
+            .catch(() => {
+                //Sin sesión guardada o falló la red: seguimos en la pantalla de login.
+            })
+            .finally(() => {
+                if (activo) {
+                    setCargando(false);
+                }
+            });        
 
         //Si Supabase cierra la sesión, actualiza el estado del usuario
         const desuscribir = AuthService.escucharSesion((evento) => {
@@ -42,9 +55,13 @@ export function AuthProvider({ children }) {
         isAuthenticated: Boolean(usuario),
         iniciarSesion: async (...args) => {
             const usuarioAutenticado = await AuthService.iniciarSesion(...args);
-            if(usuarioAutenticado) {
+            if (usuarioAutenticado) {
                 setUsuario(usuarioAutenticado);
-                refrescarDatosUsuario();
+                try {
+                    await refrescarDatosUsuario();
+                } catch (error) {
+                    console.warn('No se pudieron refrescar los datos tras iniciar sesión.', error);
+                }
             }
             return usuarioAutenticado;
         },
@@ -56,8 +73,9 @@ export function AuthProvider({ children }) {
         cerrarSesion: async () => {
             const resultado = await AuthService.cerrarSesion();
             setUsuario(null);
+            Storage.limpiarTodo();
             return resultado;
-        },
+        },        
     }), [usuario, cargando]);
 
     return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

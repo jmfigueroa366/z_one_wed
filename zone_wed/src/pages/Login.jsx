@@ -5,10 +5,10 @@ import { useAuth } from '../context/AuthContext.jsx';
 import AuthLayout, { authBoton, authCampo, authEtiqueta } from '../components/AuthLayout.jsx';
 
 const CUENTAS_DEMO = [
-    { email: 'admin@z-one.com', clave: 'admin123', rol: 'Administrador' },
-    { email: 'lua@z-one.com', clave: 'colab123', rol: 'Colaborador' },
-    { email: 'cliente@z-one.com', clave: 'cliente123', rol: 'Cliente' },
-];
+    { email: 'admin@z-one.com', clave: import.meta.env.VITE_DEMO_ADMIN_CLAVE ?? '', rol: 'Administrador' },
+    { email: 'lua@z-one.com', clave: import.meta.env.VITE_DEMO_COLAB_CLAVE ?? '', rol: 'Colaborador' },
+    { email: 'cliente@z-one.com', clave: import.meta.env.VITE_DEMO_CLIENTE_CLAVE ?? '', rol: 'Cliente' },
+].filter((cuenta) => cuenta.clave);
 
 export default function Login() {
     const navigate = useNavigate();
@@ -82,7 +82,7 @@ export default function Login() {
                         name="email"
                         value={formulario.email}
                         onChange={manejarCambio}
-                        placeholder="admin@z-one.com"
+                        placeholder="Email"
                         autoComplete="email"
                         className={authCampo}
                         required
@@ -114,23 +114,25 @@ export default function Login() {
                 </button>
             </form>
 
-            <div className="mt-6 rounded-xl border border-border/70 bg-surface/40 p-4">
-                <p className="mb-2 text-[0.68rem] font-bold uppercase tracking-[0.18em] text-sutil">Acceso de demostración</p>
-                <ul className="grid gap-1.5">
-                    {CUENTAS_DEMO.map((cuenta) => (
-                        <li key={cuenta.email}>
-                            <button
-                                type="button"
-                                onClick={() => completarDemo(cuenta)}
-                                className="flex w-full items-center justify-between gap-2 rounded-lg px-2 py-1.5 text-left text-xs text-sutil transition hover:bg-accent/10 hover:text-texto"
-                            >
-                                <span className="font-semibold text-texto">{cuenta.email}</span>
-                                <span>{cuenta.rol}</span>
-                            </button>
-                        </li>
-                    ))}
-                </ul>
-            </div>
+            {import.meta.env.DEV ? (
+                <div className="mt-6 rounded-xl border border-border/70 bg-surface/40 p-4">
+                    <p className="mb-2 text-[0.68rem] font-bold uppercase tracking-[0.18em] text-sutil">Acceso de demostración</p>
+                    <ul className="grid gap-1.5">
+                        {CUENTAS_DEMO.map((cuenta) => (
+                            <li key={cuenta.email}>
+                                <button
+                                    type="button"
+                                    onClick={() => completarDemo(cuenta)}
+                                    className="flex w-full items-center justify-between gap-2 rounded-lg px-2 py-1.5 text-left text-xs text-sutil transition hover:bg-accent/10 hover:text-texto"
+                                >
+                                    <span className="font-semibold text-texto">{cuenta.email}</span>
+                                    <span>{cuenta.rol}</span>
+                                </button>
+                            </li>
+                        ))}
+                    </ul>
+                </div>
+            ) : null}            
 
             <p className="mt-6 text-center text-sm text-sutil">
                 ¿No tienes cuenta?{' '}

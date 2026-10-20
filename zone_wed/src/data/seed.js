@@ -21,10 +21,10 @@ function enDias(offset) {
 
 export const SEED = {
     usuarios: [
-        { nombre: 'Dirección Z-ONE', email: 'admin@z-one.com', password: 'admin123', rol: 'administrador', activo: true },
-        { nombre: 'Lúa Ferreira', email: 'lua@z-one.com', password: 'colab123', rol: 'colaborador', perfil: 'artista', activo: true },
-        { nombre: 'Cliente Zeta', email: 'cliente@z-one.com', password: 'cliente123', rol: 'cliente', activo: true },
-        { nombre: 'Mario', email: 'mario@z-one.com', password: 'colab123', rol: 'colaborador', perfil: 'ingeniero', activo: true },
+        { nombre: 'Dirección Z-ONE', email: 'admin@z-one.com', rol: 'administrador', activo: true },
+        { nombre: 'Lúa Ferreira', email: 'lua@z-one.com', rol: 'colaborador', perfil: 'artista', activo: true },
+        { nombre: 'Cliente Zeta', email: 'cliente@z-one.com', rol: 'cliente', activo: true },
+        { nombre: 'Mario', email: 'mario@z-one.com', rol: 'colaborador', perfil: 'ingeniero', activo: true },
     ],
 
     salas: [

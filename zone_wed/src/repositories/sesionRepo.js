@@ -59,6 +59,7 @@ export const sesionRepo = {
         const sesion = crearSesion({ ...data, id: siguienteId });
         sesiones.push(sesion);
         Storage.guardarValor(CLAVE, sesiones);
+        guardarEnSupabase(sesion);
         return sesion;
     },
 
