@@ -1,7 +1,7 @@
 // CAPA: Presentación
 import { Fragment, useEffect, useLayoutEffect, useRef, useState } from 'react';
 import anime from 'animejs';
-import { Disc3, Mic, Pause, Play, SlidersHorizontal } from 'lucide-react';
+import { ArrowUp, Disc3, Menu, MessageCircle, Mic, Pause, Play, Quote, SlidersHorizontal, Star, X } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { RUTAS } from '../config/rutas.ts';
 import { cancionesArtistas } from '../data/cancionesArtistas.ts';
@@ -29,15 +29,15 @@ const ARTISTA_DESTACADO = cancionesArtistas[0];
 const CANCION_DESTACADA = ARTISTA_DESTACADO.canciones[0];
 
 const SERVICIOS = [
-    { n: '01', icono: Mic, t: 'Grabación', d: 'Cabinas tratadas acústicamente para voces, instrumentos y ensayos, con ingeniero de sonido.' },
-    { n: '02', icono: SlidersHorizontal, t: 'Producción y mezcla', d: 'Sesiones de producción y mezcla con fecha, duración y responsable definidos desde la agenda.' },
-    { n: '03', icono: Disc3, t: 'Masterización', d: 'El cierre de tu proyecto: nivel, tono y consistencia finales para su publicación.' },
+    { n: '01', icono: Mic, t: 'Grabación', d: 'Cabinas tratadas acústicamente para voces, instrumentos y ensayos, con ingeniero de sonido.', tono: '#9365f2', glifo: 'from-[#9365f2]/25 via-[#9365f2]/5 to-transparent' },
+    { n: '02', icono: SlidersHorizontal, t: 'Producción y mezcla', d: 'Sesiones de producción y mezcla con fecha, duración y responsable definidos desde la agenda.', tono: '#e34ba6', glifo: 'from-[#e34ba6]/25 via-[#e34ba6]/5 to-transparent' },
+    { n: '03', icono: Disc3, t: 'Masterización', d: 'El cierre de tu proyecto: nivel, tono y consistencia finales para su publicación.', tono: '#5393da', glifo: 'from-[#5393da]/25 via-[#5393da]/5 to-transparent' },
 ];
 
 const PASOS = [
-    { n: '01', t: 'Elige el espacio', d: 'Revisa las cabinas y salas disponibles y selecciona la que necesitas.' },
-    { n: '02', t: 'Envía tu solicitud', d: 'Define fecha, hora y tipo de trabajo en pocos pasos.' },
-    { n: '03', t: 'Haz que suceda', d: 'Sigue tus reservas y el avance de tu proyecto desde un solo lugar.' },
+    { n: '01', icono: SlidersHorizontal, t: 'Elige el espacio', d: 'Revisa las cabinas y salas disponibles y selecciona la que necesitas.' },
+    { n: '02', icono: Mic, t: 'Envía tu solicitud', d: 'Define fecha, hora y tipo de trabajo en pocos pasos.' },
+    { n: '03', icono: Disc3, t: 'Haz que suceda', d: 'Sigue tus reservas y el avance de tu proyecto desde un solo lugar.' },
 ];
 
 const FAQ = [
@@ -46,6 +46,40 @@ const FAQ = [
     { p: '¿Necesito iniciar sesión?', r: 'Sí. Al elegir «Reservar una sesión» te llevamos al acceso y luego continúas con el formulario.' },
     { p: '¿Cómo se confirma mi reserva?', r: 'Envías una solicitud y los artistas o productores invitados la responden. La sesión se crea automáticamente solo cuando todos aceptan.' },
     { p: '¿Puedo cambiar o cancelar mi solicitud?', r: 'Mientras siga en estado «Solicitada» puedes cancelarla desde tu área de solicitudes. Cuando se confirma, aparece en tu agenda.' },
+];
+
+const ENLACES_NAV = [
+    { etiqueta: 'Servicios', href: '#servicios' },
+    { etiqueta: 'Espacios', href: '#espacios' },
+    { etiqueta: 'Cómo funciona', href: '#proceso' },
+    { etiqueta: 'Testimonios', href: '#testimonios' },
+    { etiqueta: 'Preguntas', href: '#preguntas' },
+    { etiqueta: 'Contacto', href: '#contacto' },
+];
+
+const METRICAS = [
+    { valor: 320, sufijo: '+', etiqueta: 'Proyectos producidos' },
+    { valor: 12, sufijo: 'k+', etiqueta: 'Horas de cabina' },
+    { valor: 98, sufijo: '%', etiqueta: 'Clientes satisfechos' },
+    { valor: 8, sufijo: ' años', etiqueta: 'De experiencia sonora' },
+];
+
+const TESTIMONIOS = [
+    {
+        nombre: 'Valentina Ríos',
+        rol: 'Artista independiente',
+        texto: 'Grabar en Z-ONE cambió por completo el resultado de mi EP. El equipo entiende la música y te acompaña en cada toma.',
+    },
+    {
+        nombre: 'Andrés Beltrán',
+        rol: 'Productor musical',
+        texto: 'La agenda en línea y las salas impecables hacen que cada sesión rinda al máximo. Es mi estudio de confianza.',
+    },
+    {
+        nombre: 'Mariana Cifuentes',
+        rol: 'Cantautora',
+        texto: 'Desde la reserva hasta el máster, todo se siente profesional y cercano. Mi sonido nunca sonó tan bien.',
+    },
 ];
 
 const modificadorReveal = (indice: number) => ({ 'data-revelar-delay': String(indice * 90) });
@@ -130,10 +164,19 @@ export default function LandingPage() {
     const landingRef = useRef<HTMLElement | null>(null);
     const [compacto, setCompacto] = useState(false);
     const [reproduciendo, setReproduciendo] = useState(true);
+    const [menuAbierto, setMenuAbierto] = useState(false);
+    const [mostrarArriba, setMostrarArriba] = useState(false);
     const [spotRef, seguirSpotlight] = useSpotlight<HTMLElement>();
     const { usuario } = useAuth();
     const esStaff = esAdministrador(usuario) || esColaborador(usuario);
     const destinoReserva = esStaff ? `${RUTAS.SESIONES}#crear` : `${RUTAS.SOLICITUDES}#nueva-reserva`;
+    const inicialesUsuario = (usuario?.nombre ?? '')
+        .trim()
+        .split(/\s+/)
+        .slice(0, 2)
+        .map((parte) => parte[0] ?? '')
+        .join('')
+        .toLocaleUpperCase() || 'Z';
     const salas = salaRepo.listar().filter((sala) => sala.activo !== false);
     const animar = !MENOS_MOVIMIENTO();
     const oculto = animar ? { opacity: 0 } : undefined;
@@ -144,6 +187,13 @@ export default function LandingPage() {
     }, []);
 
     useEffect(() => {
+        if (!menuAbierto) return undefined;
+        const cerrar = () => setMenuAbierto(false);
+        window.addEventListener('resize', cerrar);
+        return () => window.removeEventListener('resize', cerrar);
+    }, [menuAbierto]);
+
+    useEffect(() => {
         const landing = landingRef.current;
         if (!landing) return;
 
@@ -152,6 +202,7 @@ export default function LandingPage() {
             raf = 0;
             const y = window.scrollY || 0;
             setCompacto(y > 12);
+            setMostrarArriba(y > 600);
             const barra = landing.querySelector('[data-progreso]') as HTMLElement | null;
             const alcance = document.documentElement.scrollHeight - window.innerHeight;
             if (barra) {
@@ -253,23 +304,64 @@ export default function LandingPage() {
                         <span className="text-base font-bold tracking-tight text-texto-soft" style={FUENTE_TITULO}>Z-ONE</span>
                     </Link>
                     <nav className="hidden items-center gap-8 text-sm font-medium text-sutil lg:flex" aria-label="Navegación principal">
-                        {[
-                            { etiqueta: 'Servicios', href: '#servicios' },
-                            { etiqueta: 'Espacios', href: '#espacios' },
-                            { etiqueta: 'Cómo funciona', href: '#proceso' },
-                            { etiqueta: 'Preguntas', href: '#preguntas' },
-                            { etiqueta: 'Contacto', href: '#contacto' },
-                        ].map((enlace) => (
+                        {ENLACES_NAV.map((enlace) => (
                             <a key={enlace.href} className="group relative transition hover:text-texto-soft" href={enlace.href}>
                                 {enlace.etiqueta}
                                 <span aria-hidden="true" className="absolute -bottom-1.5 left-0 h-px w-0 bg-magenta transition-all duration-300 group-hover:w-full" />
                             </a>
                         ))}
                     </nav>
-                    <Link className="rounded-md border border-border px-4 py-2 text-sm font-semibold transition duration-300 hover:border-magenta/60 hover:bg-magenta/10 hover:text-magenta" to={RUTAS.LOGIN}>
-                        Acceder
-                    </Link>
+                    <div className="hidden items-center gap-3 lg:flex">
+                        {usuario ? (
+                            <Link className="group inline-flex items-center gap-2.5 rounded-full border border-border bg-surface/60 py-1.5 pl-1.5 pr-4 text-sm font-semibold text-texto-soft transition duration-300 hover:border-magenta/60 hover:bg-magenta/10" to={RUTAS.MENU_PRINCIPAL}>
+                                <span className="grid h-7 w-7 place-items-center rounded-full bg-gradient-to-br from-[#9365f2] to-[#e34ba6] text-xs font-black text-white">{inicialesUsuario}</span>
+                                Ir al panel
+                            </Link>
+                        ) : (
+                            <Link className="rounded-md border border-border px-4 py-2 text-sm font-semibold transition duration-300 hover:border-magenta/60 hover:bg-magenta/10 hover:text-magenta" to={RUTAS.LOGIN}>
+                                Acceder
+                            </Link>
+                        )}
+                    </div>
+                    <button
+                        type="button"
+                        onClick={() => setMenuAbierto((v) => !v)}
+                        aria-label={menuAbierto ? 'Cerrar menú' : 'Abrir menú'}
+                        aria-expanded={menuAbierto}
+                        className="grid h-10 w-10 place-items-center rounded-md border border-border text-texto-soft transition hover:border-magenta/60 hover:text-magenta lg:hidden"
+                    >
+                        {menuAbierto ? <X className="h-5 w-5" aria-hidden="true" /> : <Menu className="h-5 w-5" aria-hidden="true" />}
+                    </button>
                 </div>
+
+                {menuAbierto && (
+                    <div className="animate-rise border-t border-border bg-bg/98 px-6 py-5 backdrop-blur lg:hidden">
+                        <nav className="flex flex-col gap-1" aria-label="Navegación móvil">
+                            {ENLACES_NAV.map((enlace) => (
+                                <a
+                                    key={enlace.href}
+                                    className="rounded-lg px-3 py-2.5 text-sm font-medium text-sutil transition hover:bg-magenta/10 hover:text-texto-soft"
+                                    href={enlace.href}
+                                    onClick={() => setMenuAbierto(false)}
+                                >
+                                    {enlace.etiqueta}
+                                </a>
+                            ))}
+                        </nav>
+                        <div className="mt-3 border-t border-border pt-4">
+                            {usuario ? (
+                                <Link className="flex items-center gap-2.5 rounded-lg border border-border bg-surface/60 px-3 py-2.5 text-sm font-semibold text-texto-soft" to={RUTAS.MENU_PRINCIPAL} onClick={() => setMenuAbierto(false)}>
+                                    <span className="grid h-7 w-7 place-items-center rounded-full bg-gradient-to-br from-[#9365f2] to-[#e34ba6] text-xs font-black text-white">{inicialesUsuario}</span>
+                                    Ir al panel
+                                </Link>
+                            ) : (
+                                <Link className="block rounded-lg border border-border px-3 py-2.5 text-center text-sm font-semibold text-texto-soft transition hover:border-magenta/60 hover:text-magenta" to={RUTAS.LOGIN} onClick={() => setMenuAbierto(false)}>
+                                    Acceder
+                                </Link>
+                            )}
+                        </div>
+                    </div>
+                )}
             </header>
 
             <section ref={spotRef} onMouseMove={seguirSpotlight} className="relative border-b border-border/60">
@@ -374,32 +466,40 @@ export default function LandingPage() {
             </div>
 
             <section className="mx-auto max-w-[1280px] scroll-mt-24 px-6 py-24 lg:px-10" id="servicios">
-                <div className="grid gap-12 lg:grid-cols-[0.9fr_1.1fr]">
-                    <div data-revelar {...modificadorReveal(0)}>
-                        <Etiqueta>Qué hacemos</Etiqueta>
-                        <h2 style={FUENTE_TITULO} className="mt-5 max-w-[20ch] text-[clamp(2rem,4vw,3rem)] font-bold leading-tight tracking-[-0.03em] text-texto-soft">
-                            Todo lo que tu música necesita.
-                        </h2>
-                        <p className="mt-5 max-w-[42ch] text-base leading-7 text-sutil">
-                            Desde una primera toma hasta el máster final, cada etapa del estudio está pensada para tu proyecto.
-                        </p>
-                    </div>
-                    <div className="divide-y divide-border border-t border-border">
-                        {SERVICIOS.map((servicio, indice) => (
-                            <article key={servicio.n} data-revelar {...modificadorReveal(indice)} className="group relative grid gap-4 py-7 transition-colors sm:grid-cols-[auto_1fr] sm:gap-8">
-                                <div className="flex items-start gap-4">
-                                    <span className="font-mono text-sm text-magenta">{servicio.n}</span>
-                                    <span className="grid h-10 w-10 shrink-0 place-items-center rounded-md border border-border bg-surface text-magenta transition-colors duration-300 group-hover:border-magenta/50 group-hover:text-texto-soft">
-                                        <servicio.icono aria-hidden="true" className="h-[18px] w-[18px]" />
-                                    </span>
-                                </div>
-                                <div>
-                                    <h3 style={FUENTE_TITULO} className="text-xl font-bold tracking-tight text-texto-soft">{servicio.t}</h3>
-                                    <p className="mt-2 max-w-[52ch] text-sm leading-7 text-sutil">{servicio.d}</p>
-                                </div>
-                            </article>
-                        ))}
-                    </div>
+                <div data-revelar {...modificadorReveal(0)} className="max-w-[46ch]">
+                    <Etiqueta>Qué hacemos</Etiqueta>
+                    <h2 style={FUENTE_TITULO} className="mt-5 max-w-[20ch] text-[clamp(2rem,4vw,3rem)] font-bold leading-tight tracking-[-0.03em] text-texto-soft">
+                        Del primer ensayo al máster final.
+                    </h2>
+                    <p className="mt-5 max-w-[42ch] text-base leading-7 text-sutil">
+                        Desde una primera toma hasta el máster final, cada etapa del estudio está pensada para tu proyecto.
+                    </p>
+                </div>
+                <div className="mt-12 grid gap-5 sm:grid-cols-3">
+                    {SERVICIOS.map((servicio, indice) => (
+                        <article
+                            key={servicio.n}
+                            data-revelar
+                            {...modificadorReveal(indice)}
+                            className="group relative flex flex-col overflow-hidden rounded-2xl border border-white/10 p-6 transition duration-500 hover:-translate-y-1.5"
+                            style={{ background: `radial-gradient(120% 90% at 100% 0%, ${servicio.tono}22, transparent 55%), linear-gradient(160deg, rgba(33,28,54,0.95), rgba(18,14,28,0.98))` }}
+                        >
+                            <span aria-hidden="true" className="absolute inset-x-0 top-0 h-[2px] origin-left scale-x-0 transition-transform duration-500 group-hover:scale-x-100" style={{ background: `linear-gradient(to right, ${servicio.tono}, transparent)` }} />
+                            <span aria-hidden="true" className="pointer-events-none absolute -right-6 -top-8 h-40 w-40 rounded-full opacity-60 blur-3xl transition-opacity duration-500 group-hover:opacity-100" style={{ background: `${servicio.tono}40` }} />
+                            <span aria-hidden="true" className="pointer-events-none absolute -right-3 -bottom-8 opacity-[0.07] transition-opacity duration-500 group-hover:opacity-[0.16]">
+                                <servicio.icono className="h-40 w-40" style={{ color: servicio.tono }} strokeWidth={1} />
+                            </span>
+                            <div className="relative flex items-center justify-between">
+                                <span className="grid h-14 w-14 shrink-0 place-items-center rounded-xl border transition-transform duration-500 group-hover:scale-105" style={{ borderColor: `${servicio.tono}55`, background: `linear-gradient(135deg, ${servicio.tono}26, ${servicio.tono}0a)`, color: servicio.tono }}>
+                                    <servicio.icono aria-hidden="true" className="h-6 w-6" />
+                                </span>
+                                <span className="font-mono text-2xl font-black leading-none" style={{ ...FUENTE_TITULO, color: servicio.tono }}>{servicio.n}</span>
+                            </div>
+                            <h3 style={FUENTE_TITULO} className="relative mt-5 text-2xl font-bold leading-tight tracking-tight text-texto-soft">{servicio.t}</h3>
+                            <p className="relative mt-2 flex-1 text-sm leading-6 text-sutil">{servicio.d}</p>
+                            <span className="relative mt-5 h-px w-full origin-left scale-x-0 transition-transform duration-500 group-hover:scale-x-100" style={{ background: `linear-gradient(to right, ${servicio.tono}80, transparent)` }} aria-hidden="true" />
+                        </article>
+                    ))}
                 </div>
             </section>
 
@@ -462,14 +562,62 @@ export default function LandingPage() {
                     <Etiqueta>Cómo funciona</Etiqueta>
                     <h2 style={FUENTE_TITULO} className="mt-5 text-[clamp(2rem,4vw,3rem)] font-bold leading-tight tracking-[-0.03em] text-texto-soft">Reservar toma tres pasos.</h2>
                 </div>
-                <div className="mt-12 grid gap-px overflow-hidden rounded-lg border border-border bg-border sm:grid-cols-3">
+                <div className="mt-12 grid gap-5 sm:grid-cols-3">
                     {PASOS.map((paso, indice) => (
-                        <div key={paso.n} data-revelar {...modificadorReveal(indice)} className="group relative bg-bg p-7 transition-colors duration-500 hover:bg-[#140f23]">
-                            <span style={FUENTE_TITULO} className="inline-block text-4xl font-bold text-magenta transition-transform duration-500 group-hover:-translate-y-1">{paso.n}</span>
+                        <div key={paso.n} data-revelar {...modificadorReveal(indice)} className="group relative overflow-hidden rounded-xl border border-border bg-gradient-to-b from-[#161022] to-bg p-7 transition-colors duration-500 hover:border-magenta/40">
+                            <span aria-hidden="true" className="pointer-events-none absolute right-5 top-4 text-6xl font-black leading-none text-white/[0.04] transition-colors duration-500 group-hover:text-magenta/10" style={FUENTE_TITULO}>{paso.n}</span>
+                            <span className="grid h-12 w-12 place-items-center rounded-xl border border-border bg-surface text-magenta transition-transform duration-500 group-hover:-translate-y-1">
+                                <paso.icono aria-hidden="true" className="h-5 w-5" />
+                            </span>
                             <h3 style={FUENTE_TITULO} className="mt-6 text-lg font-bold tracking-tight text-texto-soft">{paso.t}</h3>
                             <p className="mt-2 text-sm leading-7 text-sutil">{paso.d}</p>
                         </div>
                     ))}
+                </div>
+            </section>
+
+            <section className="scroll-mt-24 border-y border-border/60 bg-[#140f23]" id="testimonios">
+                <div className="mx-auto max-w-[1280px] px-6 py-24 lg:px-10">
+                    <div data-revelar {...modificadorReveal(0)} className="max-w-[40ch]">
+                        <Etiqueta>Lo que dicen</Etiqueta>
+                        <h2 style={FUENTE_TITULO} className="mt-5 text-[clamp(2rem,4vw,3rem)] font-bold leading-tight tracking-[-0.03em] text-texto-soft">Voces que confían en Z-ONE.</h2>
+                    </div>
+
+                    <div data-revelar {...modificadorReveal(1)} className="mt-12 grid gap-px overflow-hidden rounded-xl border border-border bg-border sm:grid-cols-2 lg:grid-cols-4">
+                        {METRICAS.map((metrica) => (
+                            <div key={metrica.etiqueta} className="bg-bg p-6 text-center">
+                                <p style={FUENTE_TITULO} className="text-4xl font-black tracking-tight text-texto-soft">
+                                    <Numero valor={metrica.valor} />
+                                    <span className="text-magenta">{metrica.sufijo}</span>
+                                </p>
+                                <p className="mt-2 text-xs uppercase tracking-[0.18em] text-sutil">{metrica.etiqueta}</p>
+                            </div>
+                        ))}
+                    </div>
+
+                    <div className="mt-6 grid gap-5 lg:grid-cols-3">
+                        {TESTIMONIOS.map((testimonio, indice) => (
+                            <article key={testimonio.nombre} data-revelar {...modificadorReveal(indice)} className="group relative flex flex-col overflow-hidden rounded-xl border border-border bg-surface p-7 transition duration-500 hover:-translate-y-1.5 hover:border-magenta/50 hover:shadow-[0_36px_70px_-28px_rgba(0,0,0,0.95)]">
+                                <span aria-hidden="true" className="absolute inset-x-0 top-0 h-px origin-left scale-x-0 bg-gradient-to-r from-[#8b5cf6] to-[#ec4899] transition-transform duration-500 group-hover:scale-x-100" />
+                                <Quote className="h-7 w-7 text-magenta/60" aria-hidden="true" />
+                                <div className="mt-4 flex gap-0.5" aria-label="5 de 5 estrellas">
+                                    {Array.from({ length: 5 }).map((_, i) => (
+                                        <Star key={i} className="h-3.5 w-3.5 fill-magenta text-magenta" aria-hidden="true" />
+                                    ))}
+                                </div>
+                                <p className="mt-4 flex-1 text-sm leading-7 text-sutil">{testimonio.texto}</p>
+                                <div className="mt-6 flex items-center gap-3 border-t border-border pt-5">
+                                    <span className="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-gradient-to-br from-[#9365f2] to-[#e34ba6] text-sm font-black text-white">
+                                        {testimonio.nombre.trim().split(/\s+/).slice(0, 2).map((parte) => parte[0] ?? '').join('').toLocaleUpperCase()}
+                                    </span>
+                                    <div>
+                                        <p className="text-sm font-semibold text-texto-soft">{testimonio.nombre}</p>
+                                        <p className="text-xs text-sutil">{testimonio.rol}</p>
+                                    </div>
+                                </div>
+                            </article>
+                        ))}
+                    </div>
                 </div>
             </section>
 
@@ -507,6 +655,27 @@ export default function LandingPage() {
                     </Link>
                 </div>
             </section>
+
+            <div className="fixed bottom-6 right-6 z-40 flex flex-col items-end gap-3">
+                {mostrarArriba && (
+                    <button
+                        type="button"
+                        onClick={() => window.scrollTo({ top: 0, behavior: MENOS_MOVIMIENTO() ? 'auto' : 'smooth' })}
+                        aria-label="Volver arriba"
+                        className="grid h-11 w-11 animate-rise place-items-center rounded-full border border-border bg-bg/90 text-texto-soft shadow-lg shadow-black/40 backdrop-blur transition duration-300 hover:-translate-y-0.5 hover:border-magenta/60 hover:text-magenta"
+                    >
+                        <ArrowUp className="h-4 w-4" aria-hidden="true" />
+                    </button>
+                )}
+                <a
+                    href="#contacto"
+                    aria-label="Contactar con Z-ONE"
+                    className="group inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-[#9365f2] to-[#e34ba6] px-5 py-3 text-sm font-bold text-white shadow-lg shadow-accent/30 transition duration-300 hover:-translate-y-0.5 hover:brightness-110"
+                >
+                    <MessageCircle className="h-4 w-4 transition group-hover:scale-110" aria-hidden="true" />
+                    <span className="hidden sm:inline">Hablemos</span>
+                </a>
+            </div>
 
             <footer className="bg-bg">
                 <div className="mx-auto flex max-w-[1280px] flex-col items-start justify-between gap-5 px-6 py-10 sm:flex-row sm:items-center lg:px-10">
