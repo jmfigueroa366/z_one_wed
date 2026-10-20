@@ -1,5 +1,5 @@
 // CAPA: Infraestructura
-import { Storage } from '../infrastructure/storage.ts';
+import { Storage, generarIdUnico } from '../infrastructure/storage.ts';
 import { SEED } from '../data/seed.ts';
 import { crearSesion } from '../models/Sesion.ts';
 import type { EntradaSesion, Sesion } from '../models/Sesion.ts';
@@ -56,7 +56,7 @@ export const sesionRepo = {
 
     crear(data: EntradaSesion): Sesion {
         const sesiones = this.listar();
-        const siguienteId = sesiones.reduce((max, sesion) => Math.max(max, Number(sesion.id) || 0), 0) + 1;
+        const siguienteId = generarIdUnico(sesiones);
         const sesion = crearSesion({ ...data, id: siguienteId });
         sesiones.push(sesion);
         Storage.guardarValor(CLAVE, sesiones);

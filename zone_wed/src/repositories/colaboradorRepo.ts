@@ -1,5 +1,5 @@
 // CAPA: Infraestructura
-import { Storage } from '../infrastructure/storage.ts';
+import { Storage, generarIdUnico } from '../infrastructure/storage.ts';
 import { SEED } from '../data/seed.ts';
 import { crearColaborador } from '../models/Colaborador.ts';
 import type { Colaborador, EntradaColaborador } from '../models/Colaborador.ts';
@@ -52,7 +52,7 @@ export const colaboradorRepo = {
 
     crear(data: EntradaColaborador): Colaborador {
         const colaboradores = this.listar();
-        const siguienteId = colaboradores.reduce((max, colaborador) => Math.max(max, Number(colaborador.id) || 0), 0) + 1;
+        const siguienteId = generarIdUnico(colaboradores);
         const colaborador = crearColaborador({ ...data, id: siguienteId });
         colaboradores.push(colaborador);
         Storage.guardarValor(CLAVE, colaboradores);

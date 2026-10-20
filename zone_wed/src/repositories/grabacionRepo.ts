@@ -1,5 +1,5 @@
 // CAPA: Infraestructura
-import { Storage } from '../infrastructure/storage.ts';
+import { Storage, generarIdUnico } from '../infrastructure/storage.ts';
 
 export interface Grabacion {
     id: number;
@@ -51,7 +51,7 @@ export const grabacionRepo = {
         );
         const previa = indice >= 0 ? grabaciones[indice] : null;
         const registro: Grabacion = {
-            id: previa?.id ?? grabaciones.reduce((max, item) => Math.max(max, Number(item.id) || 0), 0) + 1,
+            id: previa?.id ?? generarIdUnico(grabaciones),
             cancion_id: data.cancion_id,
             parte,
             dataUrl: data.dataUrl,

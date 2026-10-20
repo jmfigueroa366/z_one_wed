@@ -21,6 +21,18 @@ function getKey(clave: string): string {
     return `${STORAGE_PREFIX}${clave}`;
 }
 
+// Genera un id local unico para una entidad que aun no tiene id.
+// Los ids que llegan de Supabase son UUID (texto), asi que solo se toman
+// en cuenta los ids numericos (datos locales/seed) para calcular el siguiente.
+export function generarIdUnico<T extends { id?: number | string | null }>(items: T[]): number {
+    return (
+        items.reduce((max, item) => {
+            const numero = typeof item?.id === 'number' ? item.id : Number(item?.id);
+            return Number.isFinite(numero) ? Math.max(max, numero) : max;
+        }, 0) + 1
+    );
+}
+
 export const Storage = {
     guardarValor<T>(clave: string, valor: T): T | null {
         const storage = getStorage('local');
@@ -100,8 +112,22 @@ export const Storage = {
         return true;
     },
 
-    reiniciarSiVersionCambio(version: string): boolean {
-        const claveVersion = getKey('seed_version');
+    // Borra todas las claves locales de la app (se usa al cerrar sesion).
+    limpiarTodo(): void {
+        const storage = getStorage('local');
+        if (!storage) {
+            return;
+        }
+        for (let i = storage.length - 1; i >= 0; i--) {
+            const claveItem = storage.key(i);
+            if (claveItem && claveItem.startsWith(STORAGE_PREFIX)) {
+                storage.removeItem(claveItem);
+            }
+        }
+        ReactiveStore.notificar();
+    },
+
+    reiniciarSiVersionCambio(version: string): boolean {        const claveVersion = getKey('seed_version');
         const storage = getStorage('local');
         if (!storage || storage.getItem(claveVersion) === version) {
             return false;

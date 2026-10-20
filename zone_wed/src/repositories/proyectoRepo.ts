@@ -1,5 +1,5 @@
 // CAPA: Infraestructura
-import { Storage } from '../infrastructure/storage.ts';
+import { Storage, generarIdUnico } from '../infrastructure/storage.ts';
 import { SEED } from '../data/seed.ts';
 import { crearProyecto } from '../models/Proyecto.ts';
 import type { EntradaProyecto, Proyecto } from '../models/Proyecto.ts';
@@ -56,7 +56,7 @@ export const proyectoRepo = {
 
     crear(data: EntradaProyecto): Proyecto {
         const proyectos = this.listar();
-        const siguienteId = proyectos.reduce((max, proyecto) => Math.max(max, Number(proyecto.id) || 0), 0) + 1;
+        const siguienteId = generarIdUnico(proyectos);
         const proyecto = crearProyecto({ ...data, id: siguienteId });
         proyectos.push(proyecto);
         Storage.guardarValor(CLAVE, proyectos);

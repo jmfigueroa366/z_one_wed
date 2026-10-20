@@ -1,5 +1,5 @@
 // CAPA: Infraestructura
-import { Storage } from '../infrastructure/storage.ts';
+import { Storage, generarIdUnico } from '../infrastructure/storage.ts';
 import { SEED } from '../data/seed.ts';
 import { crearOrden } from '../models/Orden.ts';
 import type { EntradaOrden, Orden } from '../models/Orden.ts';
@@ -50,7 +50,7 @@ export const ordenRepo = {
 
     crear(data: EntradaOrden): Orden {
         const ordenes = this.listar();
-        const siguienteId = ordenes.reduce((max, orden) => Math.max(max, Number(orden.id) || 0), 0) + 1;
+        const siguienteId = generarIdUnico(ordenes);
         const numero = data.numero ?? siguienteNumero(ordenes);
         const orden = crearOrden({ ...data, id: siguienteId, numero });
         ordenes.push(orden);
