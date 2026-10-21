@@ -3,8 +3,8 @@ import { Storage, generarIdUnico } from '../infrastructure/storage.ts';
 import { SEED } from '../data/seed.ts';
 import { crearProyecto } from '../models/Proyecto.ts';
 import type { EntradaProyecto, Proyecto } from '../models/Proyecto.ts';
-import { sincronizarProyectos, eliminarFilaRemota } from '../infrastructure/supabaseSync.ts';
-import { haySupabase } from '../lib/supabaseClient.ts';
+import { sincronizarProyectos, eliminarFilaRemota, idRemoto, hayConexionSupabase } from '../infrastructure/supabaseSync.ts';
+
 
 const CLAVE = 'proyectos';
 
@@ -76,12 +76,19 @@ export const proyectoRepo = {
     },
 
     eliminar(id: number | string): Proyecto[] {
-        const proyectos = this.listar().filter((proyecto) => String(proyecto.id) !== String(id));
-        Storage.guardarValor(CLAVE, proyectos);
-        if (haySupabase) {
-            eliminarFilaRemota('proyectos', id).catch((error) => console.warn('No se pudo borrar el proyecto en Supabase.', error));
+        const proyectos = this.listar();
+        const proyecto = proyectos.find((item) => String(item.id) === String(id)) ?? null;
+        const proyectosRestantes = proyectos.filter((item) => String(item.id) !== String(id));
+        Storage.guardarValor(CLAVE, proyectosRestantes);
+        if (hayConexionSupabase() && proyecto) {
+            // Solo se borra en Supabase la fila que existe alli: el id local
+            // puede coincidir con el de otro proyecto y se borraria por error.
+            const idRemotoProyecto = idRemoto(proyecto);
+            if (idRemotoProyecto != null) {
+                eliminarFilaRemota('proyectos', idRemotoProyecto).catch((error) => console.warn('No se pudo borrar el proyecto en Supabase.', error));
+            }
         }
-        return proyectos;
+        return proyectosRestantes;
     },
 };
 

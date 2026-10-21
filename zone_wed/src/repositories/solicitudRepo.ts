@@ -55,6 +55,21 @@ export const solicitudRepo = {
         return solicitud;
     },
 
+    // Guarda el id que Supabase asignó a la solicitud para que las
+    // actualizaciones y borrados remotos apunten a la fila correcta.
+    async registrarIdRemoto(id: number | string | null | undefined, idRemoto: unknown): Promise<void> {
+        if (id == null || idRemoto == null) {
+            return;
+        }
+        const solicitudes = this.listar();
+        const indice = solicitudes.findIndex((solicitud) => String(solicitud.id) === String(id));
+        if (indice === -1) {
+            return;
+        }
+        solicitudes[indice] = crearSolicitud({ ...solicitudes[indice], id_remoto: idRemoto as number | string });
+        Storage.guardarValor(CLAVE, solicitudes);
+    },
+
     actualizar(id: number | string | null | undefined, data: EntradaSolicitud): Solicitud | null {
         if (id == null) return null;
         const solicitudes = this.listar();

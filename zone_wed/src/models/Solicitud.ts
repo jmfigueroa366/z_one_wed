@@ -16,6 +16,10 @@ export type EntradaInvitacion = Entrada<Invitacion>;
 
 export interface Solicitud {
     id: number | string | null;
+    // Id que la fila tiene en Supabase. El id local puede ser un numero
+    // generado en el navegador, asi que solo este id sirve para escribir
+    // o borrar la fila remota.
+    id_remoto: number | string | null;
     usuario_id: number | string | null;
     solicitante_nombre: string | null;
     titulo: string;
@@ -55,6 +59,7 @@ export function crearSolicitud(data: EntradaSolicitud = {}): Solicitud {
     return {
         ...data,
         id: data.id ?? null,
+        id_remoto: data.id_remoto ?? null,
         usuario_id: data.usuario_id ?? null,
         solicitante_nombre: data.solicitante_nombre ?? null,
         titulo: data.titulo ?? '',

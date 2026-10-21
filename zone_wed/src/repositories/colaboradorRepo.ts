@@ -3,8 +3,8 @@ import { Storage, generarIdUnico } from '../infrastructure/storage.ts';
 import { SEED } from '../data/seed.ts';
 import { crearColaborador } from '../models/Colaborador.ts';
 import type { Colaborador, EntradaColaborador } from '../models/Colaborador.ts';
-import { sincronizarColaboradores, eliminarFilaRemota } from '../infrastructure/supabaseSync.ts';
-import { haySupabase } from '../lib/supabaseClient.ts';
+import { sincronizarColaboradores, eliminarFilaRemota, idRemoto, hayConexionSupabase } from '../infrastructure/supabaseSync.ts';
+
 
 const CLAVE = 'colaboradores';
 
@@ -72,12 +72,19 @@ export const colaboradorRepo = {
     },
 
     eliminar(id: number | string): Colaborador[] {
-        const colaboradores = this.listar().filter((colaborador) => String(colaborador.id) !== String(id));
-        Storage.guardarValor(CLAVE, colaboradores);
-        if (haySupabase) {
-            eliminarFilaRemota('colaboradores', id).catch((error) => console.warn('No se pudo borrar el colaborador en Supabase.', error));
+        const colaboradores = this.listar();
+        const colaborador = colaboradores.find((item) => String(item.id) === String(id)) ?? null;
+        const colaboradoresRestantes = colaboradores.filter((item) => String(item.id) !== String(id));
+        Storage.guardarValor(CLAVE, colaboradoresRestantes);
+        if (hayConexionSupabase() && colaborador) {
+            // Solo se borra en Supabase la fila que existe alli: el id local
+            // puede coincidir con el de otro colaborador y se borraria por error.
+            const idRemotoColaborador = idRemoto(colaborador);
+            if (idRemotoColaborador != null) {
+                eliminarFilaRemota('colaboradores', idRemotoColaborador).catch((error) => console.warn('No se pudo borrar el colaborador en Supabase.', error));
+            }
         }
-        return colaboradores;
+        return colaboradoresRestantes;
     },
 };
 

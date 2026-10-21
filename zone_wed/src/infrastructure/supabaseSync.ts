@@ -1,13 +1,29 @@
 // CAPA: Infraestructura
-import { supabase } from '../lib/supabaseClient.ts';
+import { supabase, haySupabase } from '../lib/supabaseClient.ts';
 import { Storage } from './storage.ts';
 
 type FilaSupabase = Record<string, unknown>;
 
+const clientePorDefecto = supabase;
+
+// Cliente con el que se habla con Supabase. Se puede sustituir (por ejemplo
+// en las pruebas) para comprobar que se escriben las filas correctas.
+let cliente: typeof supabase = clientePorDefecto;
+
+export function configurarClienteSupabase(nuevo: unknown): void {
+    cliente = nuevo as typeof supabase;
+}
+
+// ¿Se puede escribir en Supabase? Si hay credenciales reales o se ha
+// configurado un cliente, la respuesta es si.
+export function hayConexionSupabase(): boolean {
+    return haySupabase || cliente !== clientePorDefecto;
+}
+
 // Trae una tabla de Supabase y la deja en el almacenamiento local
 // que la app ya usa (as� los hooks y componentes no cambian).
 export async function sincronizarTabla(tabla: string, clave: string) {
-    const { data, error } = await supabase.from(tabla).select('*');
+    const { data, error } = await cliente.from(tabla).select('*');
 
     if (error) {
         throw new Error(error.message);
@@ -15,6 +31,73 @@ export async function sincronizarTabla(tabla: string, clave: string) {
 
     Storage.guardarValor(clave, data ?? []);
     return data ?? [];
+}
+
+// El id que una entidad tiene en Supabase. El id local puede ser un numero
+// generado en el navegador, asi que solo el id remoto sirve para escribir
+// o borrar la fila. Si la entidad nunca se subio, no hay id remoto.
+export function idRemoto(entidad: { id_remoto?: unknown } | null | undefined): number | string | null {
+    if (!entidad) {
+        return null;
+    }
+    const remoto = entidad.id_remoto;
+    if (remoto == null) {
+        return null;
+    }
+    return typeof remoto === 'number' || typeof remoto === 'string' ? remoto : null;
+}
+
+// Igual que idRemoto, pero acepta el id local como alternativa para las
+// entidades que se leen directamente de Supabase (su id ya es el remoto).
+export function idRemotoOPropio(entidad: { id_remoto?: unknown; id?: unknown } | null | undefined): number | string | null {
+    const remoto = idRemoto(entidad);
+    if (remoto != null) {
+        return remoto;
+    }
+    const propio = entidad?.id;
+    if (typeof propio === 'number' || typeof propio === 'string') {
+        return propio;
+    }
+    return null;
+}
+
+// --- Escrituras encadenadas por entidad -------------------------------------
+// El alta en Supabase y los cambios de estado posteriores se ejecutan en orden
+// para cada entidad. Asi un "autorizar" que llega antes de que termine el
+// insert no se pierde ni se aplica sobre la fila equivocada.
+const cadenas = new Map<string, Promise<unknown>>();
+const idsRemotos = new Map<string, number | string>();
+
+// Guarda en memoria el id que Supabase asigno a una entidad, para poder
+// usarlo aunque la lista local ya se haya reemplazado por la de Supabase.
+export function recordarIdRemoto(clave: string, id: unknown): void {
+    if (id == null) {
+        return;
+    }
+    if (typeof id === 'number' || typeof id === 'string') {
+        idsRemotos.set(clave, id);
+    }
+}
+
+// El id remoto recordado para la entidad, o null si todavia no se conoce.
+export function idRemotoRecordado(clave: string): number | string | null {
+    return idsRemotos.get(clave) ?? null;
+}
+
+// Encola una escritura. Las escrituras de la misma clave se ejecutan una
+// detras de otra; un fallo no impide que siga la siguiente.
+export function encadenarEscritura(clave: string, operacion: () => Promise<unknown>): Promise<unknown> {
+    const anterior = cadenas.get(clave) ?? Promise.resolve();
+    const siguiente = anterior.then(operacion, operacion);
+    cadenas.set(clave, siguiente);
+    void siguiente
+        .catch(() => undefined)
+        .then(() => {
+            if (cadenas.get(clave) === siguiente) {
+                cadenas.delete(clave);
+            }
+        });
+    return siguiente;
 }
 
 // Mapea un colaborador de Supabase al formato que espera la app (seed/modelo).
@@ -32,14 +115,15 @@ export function mapearColaborador(row: unknown): FilaSupabase {
         especialidad: fila.especialidad ?? fila.perfil ?? '',
         perfil: fila.perfil ?? '',
         rol: 'colaborador',
+        id_remoto: fila.id ?? null,
     };
 }
 
 export async function sincronizarColaboradores() {
     // La vista p�blica la pueden leer todos (clientes e invitados).
     const [privados, publicos] = await Promise.all([
-        supabase.from('colaboradores').select('*'),
-        supabase.from('colaboradores_publicos').select('*'),
+        cliente.from('colaboradores').select('*'),
+        cliente.from('colaboradores_publicos').select('*'),
     ]);
     if (privados.error) {
         throw new Error(privados.error.message);
@@ -72,11 +156,12 @@ export function mapearProyecto(row: unknown): FilaSupabase {
         ...fila,
         usuario_id: fila.usuario_id ?? fila.cliente_id ?? null,
         cliente_id: fila.cliente_id ?? fila.usuario_id ?? null,
+        id_remoto: fila.id ?? null,
     };
 }
 
 export async function sincronizarProyectos() {
-    const { data, error } = await supabase.from('proyectos').select('*');
+    const { data, error } = await cliente.from('proyectos').select('*');
     if (error) {
         throw new Error(error.message);
     }
@@ -95,11 +180,12 @@ export function mapearCancion(row: unknown): FilaSupabase {
         ...fila,
         duracion: fila.duracion ?? fila.duracion_seg ?? null,
         duracion_seg: fila.duracion_seg ?? fila.duracion ?? null,
+        id_remoto: fila.id ?? null,
     };
 }
 
 export async function sincronizarCanciones() {
-    const { data, error } = await supabase.from('canciones').select('*');
+    const { data, error } = await cliente.from('canciones').select('*');
     if (error) {
         throw new Error(error.message);
     }
@@ -117,6 +203,7 @@ export function mapearSolicitud(row: unknown): FilaSupabase {
     const invitaciones = Array.isArray(fila.solicitud_colaboradores) ? fila.solicitud_colaboradores : [];
     return {
         id: fila.id,
+        id_remoto: fila.id ?? null,
         usuario_id: cliente?.usuario_id ?? null,
         solicitante_nombre: cliente?.nombre ?? null,
         titulo: fila.titulo ?? '',
@@ -156,7 +243,7 @@ export async function sincronizarSolicitudes() {
 
 // Devuelve el id de la fila "clientes" del usuario que tiene la sesi�n.
 export async function obtenerMiClienteId() {
-    const { data, error } = await supabase.rpc('mi_cliente_id');
+    const { data, error } = await cliente.rpc('mi_cliente_id');
     if (error) {
         throw new Error(error.message);
     }
@@ -215,7 +302,7 @@ export async function insertarSolicitud(solicitud: FilaSupabase): Promise<{ id: 
 }
 
 export async function actualizarEstadoSolicitud(id: unknown, estado: unknown): Promise<void> {
-    const { error } = await supabase.from('solicitudes').update({ estado }).eq('id', id);
+    const { error } = await cliente.from('solicitudes').update({ estado }).eq('id', id);
     if (error) {
         throw new Error(error.message);
     }
@@ -241,6 +328,7 @@ export function mapearSesion(row: unknown): FilaSupabase {
     const estadosValidos = ['solicitada', 'confirmada', 'completada', 'cancelada'];
     return {
         id: fila.id,
+        id_remoto: fila.id ?? null,
         solicitud_id: fila.solicitud_id ?? null,
         titulo: fila.titulo ?? '',
         sala_id: fila.sala_id ?? null,
@@ -256,7 +344,7 @@ export function mapearSesion(row: unknown): FilaSupabase {
 }
 
 export async function sincronizarSesiones() {
-    const { data, error } = await supabase.from('sesiones').select('*').order('id');
+    const { data, error } = await cliente.from('sesiones').select('*').order('id');
     if (error) {
         throw new Error(error.message);
     }
@@ -312,7 +400,7 @@ export async function insertarSesion(sesion: FilaSupabase): Promise<{ id: unknow
 }
 
 export async function actualizarEstadoSesion(id: unknown, estado: unknown): Promise<void> {
-    const { error } = await supabase.from('sesiones').update({ estado }).eq('id', id);
+    const { error } = await cliente.from('sesiones').update({ estado }).eq('id', id);
     if (error) {
         throw new Error(error.message);
     }
@@ -321,7 +409,32 @@ export async function actualizarEstadoSesion(id: unknown, estado: unknown): Prom
 // Borra una fila remota para que una eliminación local no la resucite en la
 // siguiente sincronización. Best-effort: los errores se avisan, no rompen.
 export async function eliminarFilaRemota(tabla: string, id: unknown): Promise<void> {
-    const { error } = await supabase.from(tabla).delete().eq('id', id);
+    if (id == null) {
+        return;
+    }
+    const { error } = await cliente.from(tabla).delete().eq('id', id);
+    if (error) {
+        throw new Error(error.message);
+    }
+}
+
+// Actualiza los campos editables de una solicitud remota.
+export async function actualizarSolicitud(id: unknown, cambios: FilaSupabase): Promise<void> {
+    if (id == null) {
+        return;
+    }
+    const { error } = await cliente.from('solicitudes').update(cambios).eq('id', id);
+    if (error) {
+        throw new Error(error.message);
+    }
+}
+
+// Actualiza los campos editables de una sesión remota.
+export async function actualizarSesion(id: unknown, cambios: FilaSupabase): Promise<void> {
+    if (id == null) {
+        return;
+    }
+    const { error } = await cliente.from('sesiones').update(cambios).eq('id', id);
     if (error) {
         throw new Error(error.message);
     }

@@ -3,6 +3,8 @@ import { TIPOS_PROYECTO } from '../config/facturacion.ts';
 
 export interface Proyecto {
     id: number | string | null;
+    // Id que la fila tiene en Supabase (null si el proyecto solo existe en local).
+    id_remoto: number | string | null;
     nombre: string;
     usuario_id: number | string | null;
     tipo: string;
@@ -18,12 +20,13 @@ export function crearProyecto(data: EntradaProyecto = {}): Proyecto {
         throw new Error(`Tipo de proyecto inválido: "${tipo}".`);
     }
     return {
+        ...data,
         id: data.id ?? null,
+        id_remoto: data.id_remoto ?? null,
         nombre: data.nombre ?? '',
         usuario_id: data.usuario_id ?? null,
         tipo,
         creado_en: data.creado_en ?? new Date().toISOString(),
-        ...data,
     };
 }
 

@@ -5,6 +5,8 @@ const ESTADOS_SESION = ESTADOS.sesion;
 
 export interface Sesion {
     id: number | string | null;
+    // Id que la fila tiene en Supabase (null si la sesion solo existe en local).
+    id_remoto: number | string | null;
     solicitud_id: number | string | null;
     titulo: string;
     tipo: string | null;
@@ -29,7 +31,9 @@ export function crearSesion(data: EntradaSesion = {}): Sesion {
         throw new Error(`Estado inválido para sesión: "${estado}".`);
     }
     return {
+        ...data,
         id: data.id ?? null,
+        id_remoto: data.id_remoto ?? null,
         solicitud_id: data.solicitud_id ?? null,
         titulo: data.titulo ?? '',
         tipo: data.tipo ?? null,
@@ -41,8 +45,7 @@ export function crearSesion(data: EntradaSesion = {}): Sesion {
         estado,
         cancion_id: data.cancion_id ?? null,
         proyecto_id: data.proyecto_id ?? null,
-        partes: data.partes ?? [],
-        ...data,
+        partes: Array.isArray(data.partes) ? data.partes : [],
     };
 }
 

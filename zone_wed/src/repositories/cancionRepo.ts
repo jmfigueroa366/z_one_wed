@@ -3,8 +3,8 @@ import { Storage, generarIdUnico } from '../infrastructure/storage.ts';
 import { SEED } from '../data/seed.ts';
 import { crearCancion } from '../models/Cancion.ts';
 import type { Cancion, EntradaCancion } from '../models/Cancion.ts';
-import { sincronizarCanciones, eliminarFilaRemota } from '../infrastructure/supabaseSync.ts';
-import { haySupabase } from '../lib/supabaseClient.ts';
+import { sincronizarCanciones, eliminarFilaRemota, idRemoto, hayConexionSupabase } from '../infrastructure/supabaseSync.ts';
+
 import { proyectoRepo } from './proyectoRepo.ts';
 
 const CLAVE = 'canciones';
@@ -89,12 +89,19 @@ export const cancionRepo = {
     },
 
     eliminar(id: number | string): Cancion[] {
-        const canciones = this.listar().filter((cancion) => String(cancion.id) !== String(id));
-        Storage.guardarValor(CLAVE, canciones);
-        if (haySupabase) {
-            eliminarFilaRemota('canciones', id).catch((error) => console.warn('No se pudo borrar la canción en Supabase.', error));
+        const canciones = this.listar();
+        const cancion = canciones.find((item) => String(item.id) === String(id)) ?? null;
+        const cancionesRestantes = canciones.filter((item) => String(item.id) !== String(id));
+        Storage.guardarValor(CLAVE, cancionesRestantes);
+        if (hayConexionSupabase() && cancion) {
+            // Solo se borra en Supabase la fila que existe alli: el id local
+            // puede coincidir con el de otra cancion y se borraria por error.
+            const idRemotoCancion = idRemoto(cancion);
+            if (idRemotoCancion != null) {
+                eliminarFilaRemota('canciones', idRemotoCancion).catch((error) => console.warn('No se pudo borrar la canción en Supabase.', error));
+            }
         }
-        return canciones;
+        return cancionesRestantes;
     },
 
     eliminarPorProyecto(proyectoId: number | string | null | undefined): Cancion[] {

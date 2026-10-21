@@ -2,6 +2,8 @@
 
 export interface Colaborador {
     id: number | string | null;
+    // Id que la fila tiene en Supabase (null si el colaborador solo existe en local).
+    id_remoto: number | string | null;
     nombre: string;
     especialidad: string;
     usuario_id: number | string | null;
@@ -15,12 +17,13 @@ export type EntradaColaborador = Partial<Colaborador>;
 
 export function crearColaborador(data: EntradaColaborador = {}): Colaborador {
     return {
+        ...data,
         id: data.id ?? null,
+        id_remoto: data.id_remoto ?? null,
         nombre: data.nombre ?? '',
         especialidad: data.especialidad ?? '',
         usuario_id: data.usuario_id ?? null,
         activo: data.activo ?? true,
-        ...data,
     };
 }
 

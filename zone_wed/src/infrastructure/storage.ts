@@ -24,13 +24,17 @@ function getKey(clave: string): string {
 // Genera un id local unico para una entidad que aun no tiene id.
 // Los ids que llegan de Supabase son UUID (texto), asi que solo se toman
 // en cuenta los ids numericos (datos locales/seed) para calcular el siguiente.
-export function generarIdUnico<T extends { id?: number | string | null }>(items: T[]): number {
-    return (
-        items.reduce((max, item) => {
-            const numero = typeof item?.id === 'number' ? item.id : Number(item?.id);
-            return Number.isFinite(numero) ? Math.max(max, numero) : max;
-        }, 0) + 1
-    );
+// Tambien se consideran los ids remotos ya conocidos para no repetir uno
+// que pertenezca a una fila de Supabase.
+export function generarIdUnico<T extends { id?: number | string | null; id_remoto?: number | string | null }>(items: T[]): number {
+    const mayor = items.reduce((max: number, item: T) => {
+        const candidatos: Array<number | string | null | undefined> = [item?.id, item?.id_remoto];
+        return candidatos.reduce((mayor: number, candidato) => {
+            const numero = typeof candidato === 'number' ? candidato : Number(candidato);
+            return Number.isFinite(numero) ? Math.max(mayor, numero) : mayor;
+        }, max);
+    }, 0);
+    return mayor + 1;
 }
 
 export const Storage = {

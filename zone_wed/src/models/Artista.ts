@@ -7,12 +7,13 @@ export type EntradaArtista = Partial<Artista>;
 
 export function crearArtista(data: EntradaArtista = {}): Artista {
     return {
+        ...data,
         id: data.id ?? null,
+        id_remoto: data.id_remoto ?? null,
         nombre: data.nombre ?? '',
         especialidad: data.especialidad ?? '',
         usuario_id: data.usuario_id ?? null,
         activo: data.activo ?? true,
-        ...data,
     };
 }
 

@@ -12,23 +12,61 @@ import { ROLES } from '../config/roles.ts';
 import { TIPOS_ORDEN } from '../config/facturacion.ts';
 import { OrdenService } from './ordenService.ts';
 import { cancelarSesionesDeSolicitud } from './sesionService.ts';
-import { haySupabase } from '../lib/supabaseClient.ts';
+
 import {
     insertarSolicitud,
     actualizarEstadoSolicitud,
     actualizarInvitacionSolicitud,
     sincronizarSolicitudes,
+    encadenarEscritura,
+    recordarIdRemoto,
+    idRemotoRecordado,
+    idRemoto,
+    hayConexionSupabase,
 } from '../infrastructure/supabaseSync.ts';
 import type { Solicitud as SolicitudEntidad, EntradaSolicitud } from '../models/Solicitud.ts';
 import type { Sesion } from '../models/Sesion.ts';
 import type { Usuario } from '../models/Usuario.ts';
 
-// Escribe en Supabase sin romper la app si falla: la app ya guardó en local.
-function escribirEnSupabase(operacion: () => Promise<unknown>, textoDeError: string): void {
-    if (!haySupabase) {
+// Clave de la cadena de escrituras de una solicitud.
+function claveSolicitud(id: number | string | null | undefined): string {
+    return `solicitud:${String(id)}`;
+}
+
+// El id de la solicitud en Supabase. Nunca se usa el id local: si no se
+// conoce el remoto, la escritura se omite para no tocar otra fila.
+function idRemotoDeSolicitud(solicitud: SolicitudEntidad | null | undefined): number | string | null {
+    if (!solicitud) {
+        return null;
+    }
+    const recordado = idRemotoRecordado(claveSolicitud(solicitud.id));
+    if (recordado != null) {
+        return recordado;
+    }
+    return idRemoto(solicitud);
+}
+
+// Escribe en Supabase sobre la solicitud, encadenado con su alta para que
+// un cambio de estado que llega antes del insert se aplique igual, y solo
+// si se conoce el id remoto de la fila.
+function escribirSolicitud(
+    solicitud: SolicitudEntidad | null | undefined,
+    operacion: (idRemoto: number | string) => Promise<unknown>,
+    textoDeError: string
+): void {
+    if (!hayConexionSupabase() || !solicitud) {
         return;
     }
-    operacion().catch((error) => console.warn(textoDeError, error));
+    encadenarEscritura(claveSolicitud(solicitud.id), async () => {
+        const remoto = idRemotoDeSolicitud(solicitudRepo.obtenerPorId(solicitud.id)) ?? idRemotoDeSolicitud(solicitud);
+        if (remoto == null) {
+            // La solicitud todavia no existe en Supabase: no se toca ninguna fila.
+            return;
+        }
+        await operacion(remoto);
+        // Se refresca la lista para que el estado local coincida con el remoto.
+        await sincronizarSolicitudes();
+    }).catch((error) => console.warn(textoDeError, error));
 }
 
 function franjaAHoras(franja: string | null | undefined): { hora_inicio: string | null; hora_fin: string | null } {
@@ -165,10 +203,17 @@ export const SolicitudService = {
         });
         const creada = solicitudRepo.crear(solicitud);
 
-        escribirEnSupabase(async () => {
-            await insertarSolicitud(creada);
-            await sincronizarSolicitudes();
-        }, 'No se pudo guardar la solicitud en Supabase.');
+        // El alta y los cambios de estado posteriores van encadenados: si el
+        // administrador autoriza antes de que termine el insert, el cambio
+        // se aplica sobre la fila correcta y no se pierde.
+        if (hayConexionSupabase()) {
+            encadenarEscritura(claveSolicitud(creada.id), async () => {
+                const { id } = await insertarSolicitud(creada);
+                recordarIdRemoto(claveSolicitud(creada.id), id);
+                await solicitudRepo.registrarIdRemoto(creada.id, id);
+                await sincronizarSolicitudes();
+            }).catch((error) => console.warn('No se pudo guardar la solicitud en Supabase.', error));
+        }
 
         return creada;
     },
@@ -200,8 +245,10 @@ export const SolicitudService = {
                 : item
         );
 
-        escribirEnSupabase(
-            () => actualizarInvitacionSolicitud(solicitud.id, colaboradorId, decision),
+        // En Supabase se actualiza la fila por su id remoto, no por el local.
+        escribirSolicitud(
+            solicitud,
+            (idRemotoSolicitud) => actualizarInvitacionSolicitud(idRemotoSolicitud, colaboradorId, decision),
             'No se pudo registrar tu respuesta en Supabase.'
         );
 
@@ -211,14 +258,16 @@ export const SolicitudService = {
             if (Solicitud.todosAceptaron(actualizada)) {
                 // El equipo aceptó: queda en manos del administrador autorizar.
                 actualizada = solicitudRepo.actualizar(solicitud.id, { estado: 'por_autorizar' });
-                escribirEnSupabase(
-                    () => actualizarEstadoSolicitud(solicitud.id, 'por_autorizar'),
+                escribirSolicitud(
+                    actualizada,
+                    (idRemotoSolicitud) => actualizarEstadoSolicitud(idRemotoSolicitud, 'por_autorizar'),
                     'No se pudo actualizar el estado de la solicitud en Supabase.'
                 );
             } else {
                 actualizada = solicitudRepo.actualizar(solicitud.id, { estado: 'rechazada' });
-                escribirEnSupabase(
-                    () => actualizarEstadoSolicitud(solicitud.id, 'rechazada'),
+                escribirSolicitud(
+                    actualizada,
+                    (idRemotoSolicitud) => actualizarEstadoSolicitud(idRemotoSolicitud, 'rechazada'),
                     'No se pudo actualizar el estado de la solicitud en Supabase.'
                 );
             }
@@ -247,6 +296,11 @@ export const SolicitudService = {
         if (solicitante?.rol !== ROLES.CLIENTE) {
             const confirmada = solicitudRepo.actualizar(solicitud.id, { estado: 'confirmada' });
             if (confirmada) {
+                escribirSolicitud(
+                    confirmada,
+                    (idRemotoSolicitud) => actualizarEstadoSolicitud(idRemotoSolicitud, 'confirmada'),
+                    'No se pudo confirmar la solicitud en Supabase.'
+                );
                 crearSesionDesdeSolicitud(confirmada);
             }
             return confirmada;
@@ -254,6 +308,11 @@ export const SolicitudService = {
 
         const autorizada = solicitudRepo.actualizar(solicitud.id, { estado: 'por_pagar' });
         if (autorizada) {
+            escribirSolicitud(
+                autorizada,
+                (idRemotoSolicitud) => actualizarEstadoSolicitud(idRemotoSolicitud, 'por_pagar'),
+                'No se pudo autorizar la solicitud en Supabase.'
+            );
             emitirAnticipoDeSolicitud(autorizada, solicitante);
         }
         return autorizada;
@@ -271,7 +330,15 @@ export const SolicitudService = {
         if (!Solicitud.puedeTransicionar(solicitud, 'rechazada')) {
             throw new Error('La solicitud no se puede rechazar en su estado actual.');
         }
-        return solicitudRepo.actualizar(solicitud.id, { estado: 'rechazada' });
+        const rechazada = solicitudRepo.actualizar(solicitud.id, { estado: 'rechazada' });
+        if (rechazada) {
+            escribirSolicitud(
+                rechazada,
+                (idRemotoSolicitud) => actualizarEstadoSolicitud(idRemotoSolicitud, 'rechazada'),
+                'No se pudo rechazar la solicitud en Supabase.'
+            );
+        }
+        return rechazada;
     },
 
     // La dispara la facturación cuando el cliente paga el anticipo de la reserva.
@@ -282,6 +349,11 @@ export const SolicitudService = {
         }
         const confirmada = solicitudRepo.actualizar(solicitud.id, { estado: 'confirmada' });
         if (confirmada) {
+            escribirSolicitud(
+                confirmada,
+                (idRemotoSolicitud) => actualizarEstadoSolicitud(idRemotoSolicitud, 'confirmada'),
+                'No se pudo confirmar la solicitud en Supabase.'
+            );
             crearSesionDesdeSolicitud(confirmada);
         }
         return confirmada;
@@ -319,8 +391,9 @@ export const SolicitudService = {
             cancelarSesionesDeSolicitud(solicitud.id);
         }
 
-        escribirEnSupabase(
-            () => actualizarEstadoSolicitud(id, 'cancelada'),
+        escribirSolicitud(
+            solicitud,
+            (idRemotoSolicitud) => actualizarEstadoSolicitud(idRemotoSolicitud, 'cancelada'),
             'No se pudo cancelar la solicitud en Supabase.'
         );
 
