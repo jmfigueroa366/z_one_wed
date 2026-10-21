@@ -1,5 +1,5 @@
 // CAPA: Infraestructura
-import { Storage } from '../infrastructure/storage.ts';
+import { Storage, generarIdUnico } from '../infrastructure/storage.ts';
 import { SEED } from '../data/seed.ts';
 import { crearSolicitud } from '../models/Solicitud.ts';
 import type { EntradaSolicitud, Solicitud } from '../models/Solicitud.ts';
@@ -48,7 +48,7 @@ export const solicitudRepo = {
 
     crear(data: EntradaSolicitud): Solicitud {
         const solicitudes = this.listar();
-        const siguienteId = solicitudes.reduce((max, solicitud) => Math.max(max, Number(solicitud.id) || 0), 0) + 1;
+        const siguienteId = generarIdUnico(solicitudes);
         const solicitud = crearSolicitud({ ...data, id: siguienteId });
         solicitudes.push(solicitud);
         Storage.guardarValor(CLAVE, solicitudes);
