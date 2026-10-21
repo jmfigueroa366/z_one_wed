@@ -9,6 +9,8 @@ export interface Proyecto {
     usuario_id: number | string | null;
     tipo: string;
     creado_en: string;
+    // 'seed' para los datos de ejemplo, 'usuario' para los reales.
+    origen?: 'seed' | 'usuario';
     [key: string]: unknown;
 }
 
@@ -27,6 +29,7 @@ export function crearProyecto(data: EntradaProyecto = {}): Proyecto {
         usuario_id: data.usuario_id ?? null,
         tipo,
         creado_en: data.creado_en ?? new Date().toISOString(),
+        origen: data.origen ?? 'usuario',
     };
 }
 

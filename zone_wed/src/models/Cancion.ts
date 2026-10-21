@@ -9,6 +9,8 @@ export interface Cancion {
     duracion: number | null;
     partes: string[];
     requiere_ensayo: boolean;
+    // 'seed' para los datos de ejemplo, 'usuario' para los reales.
+    origen?: 'seed' | 'usuario';
     [key: string]: unknown;
 }
 
@@ -24,6 +26,7 @@ export function crearCancion(data: EntradaCancion = {}): Cancion {
         duracion: data.duracion ?? null,
         partes: data.partes ?? [],
         requiere_ensayo: data.requiere_ensayo ?? false,
+        origen: data.origen ?? 'usuario',
     };
 }
 

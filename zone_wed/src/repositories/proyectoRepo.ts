@@ -3,13 +3,26 @@ import { Storage, generarIdUnico } from '../infrastructure/storage.ts';
 import { SEED } from '../data/seed.ts';
 import { crearProyecto } from '../models/Proyecto.ts';
 import type { EntradaProyecto, Proyecto } from '../models/Proyecto.ts';
-import { sincronizarProyectos, eliminarFilaRemota, idRemoto, hayConexionSupabase } from '../infrastructure/supabaseSync.ts';
+import {
+    sincronizarProyectos,
+    eliminarFilaRemota,
+    idRemoto,
+    hayConexionSupabase,
+    claveProyecto,
+    insertarProyecto,
+    actualizarProyecto,
+    cambiosDeProyecto,
+    resolverClienteId,
+} from '../infrastructure/supabaseSync.ts';
+import { subirAlta, subirCambio } from '../infrastructure/colaRemota.ts';
 
 
 const CLAVE = 'proyectos';
 
 function obtenerListaInicial(): Proyecto[] {
-    return SEED.proyectos.map((proyecto, indice) => crearProyecto({ ...proyecto, id: proyecto.id ?? indice + 1 }));
+    return SEED.proyectos.map((proyecto, indice) =>
+        crearProyecto({ ...proyecto, id: proyecto.id ?? indice + 1, origen: 'seed' })
+    );
 }
 
 function normalizarLista(proyectos: EntradaProyecto[]): Proyecto[] {
@@ -58,9 +71,10 @@ export const proyectoRepo = {
     crear(data: EntradaProyecto): Proyecto {
         const proyectos = this.listar();
         const siguienteId = generarIdUnico(proyectos);
-        const proyecto = crearProyecto({ ...data, id: siguienteId });
+        const proyecto = crearProyecto({ ...data, id: siguienteId, origen: 'usuario' });
         proyectos.push(proyecto);
         Storage.guardarValor(CLAVE, proyectos);
+        this.subir(proyecto);
         return proyecto;
     },
 
@@ -72,6 +86,7 @@ export const proyectoRepo = {
         }
         proyectos[indice] = crearProyecto({ ...proyectos[indice], ...data, id: proyectos[indice].id });
         Storage.guardarValor(CLAVE, proyectos);
+        this.subirCambios(proyectos[indice]);
         return proyectos[indice];
     },
 
@@ -89,6 +104,35 @@ export const proyectoRepo = {
             }
         }
         return proyectosRestantes;
+    },
+
+    // Sube el proyecto a Supabase. El proyecto necesita un cliente: si el
+    // propietario no tiene cliente en la base de datos, no se sube.
+    subir(proyecto: Proyecto): void {
+        subirAlta({
+            tipo: 'proyectos',
+            clave: claveProyecto(proyecto.id),
+            idLocal: proyecto.id,
+            insertar: async () => {
+                const clienteId = await resolverClienteId(proyecto.usuario_id);
+                if (!clienteId) {
+                    throw new Error('El propietario del proyecto no tiene un cliente en Supabase.');
+                }
+                return insertarProyecto(proyecto, clienteId);
+            },
+            sincronizar: sincronizarProyectos,
+        });
+    },
+
+    // Sube los cambios del proyecto (nombre y tipo) a la fila de Supabase.
+    subirCambios(proyecto: Proyecto): void {
+        subirCambio({
+            clave: claveProyecto(proyecto.id),
+            obtenerIdRemoto: () => idRemoto(this.obtenerPorId(proyecto.id)) ?? idRemoto(proyecto),
+            cambios: () => cambiosDeProyecto(proyecto),
+            aplicar: (idRemotoProyecto, cambios) => actualizarProyecto(idRemotoProyecto, cambios),
+            sincronizar: sincronizarProyectos,
+        });
     },
 };
 

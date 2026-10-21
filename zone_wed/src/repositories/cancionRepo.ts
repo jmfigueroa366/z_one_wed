@@ -3,7 +3,20 @@ import { Storage, generarIdUnico } from '../infrastructure/storage.ts';
 import { SEED } from '../data/seed.ts';
 import { crearCancion } from '../models/Cancion.ts';
 import type { Cancion, EntradaCancion } from '../models/Cancion.ts';
-import { sincronizarCanciones, eliminarFilaRemota, idRemoto, hayConexionSupabase } from '../infrastructure/supabaseSync.ts';
+import {
+    sincronizarCanciones,
+    eliminarFilaRemota,
+    idRemoto,
+    hayConexionSupabase,
+    claveCancion,
+    claveProyecto,
+    insertarCancion,
+    actualizarCancion,
+    cambiosDeCancion,
+    esperarEscritura,
+} from '../infrastructure/supabaseSync.ts';
+import { idRemotoDe } from '../infrastructure/identificadores.ts';
+import { subirAlta, subirCambio } from '../infrastructure/colaRemota.ts';
 
 import { proyectoRepo } from './proyectoRepo.ts';
 
@@ -11,7 +24,7 @@ const CLAVE = 'canciones';
 
 function obtenerListaInicial(): Cancion[] {
     return SEED.canciones.map((cancion, indice) =>
-        crearCancion({ ...cancion, id: cancion.id ?? indice + 1 })
+        crearCancion({ ...cancion, id: cancion.id ?? indice + 1, origen: 'seed' })
     );
 }
 
@@ -63,7 +76,7 @@ export const cancionRepo = {
         return this.listar().filter((cancion) => idsProyectos.has(String(cancion.proyecto_id)));
     },
 
-    obtenerPorId(id: number | string): Cancion | null {
+    obtenerPorId(id: number | string | null | undefined): Cancion | null {
         if (id == null) return null;
         return this.listar().find((cancion) => String(cancion.id) === String(id)) ?? null;
     },
@@ -71,9 +84,10 @@ export const cancionRepo = {
     crear(data: EntradaCancion): Cancion {
         const canciones = this.listar();
         const siguienteId = generarIdUnico(canciones);
-        const cancion = crearCancion({ ...data, id: siguienteId });
+        const cancion = crearCancion({ ...data, id: siguienteId, origen: 'usuario' });
         canciones.push(cancion);
         Storage.guardarValor(CLAVE, canciones);
+        this.subir(cancion);
         return cancion;
     },
 
@@ -85,6 +99,7 @@ export const cancionRepo = {
         }
         canciones[indice] = crearCancion({ ...canciones[indice], ...data, id: canciones[indice].id });
         Storage.guardarValor(CLAVE, canciones);
+        this.subirCambios(canciones[indice]);
         return canciones[indice];
     },
 
@@ -109,6 +124,36 @@ export const cancionRepo = {
         const canciones = this.listar().filter((cancion) => String(cancion.proyecto_id) !== String(proyectoId));
         Storage.guardarValor(CLAVE, canciones);
         return canciones;
+    },
+
+    // Sube la cancion a Supabase. La cancion pertenece a un proyecto: se
+    // espera a que el proyecto se suba para poder apuntar a su id remoto.
+    subir(cancion: Cancion): void {
+        subirAlta({
+            tipo: 'canciones',
+            clave: claveCancion(cancion.id),
+            idLocal: cancion.id,
+            insertar: async () => {
+                await esperarEscritura(claveProyecto(cancion.proyecto_id)).catch(() => undefined);
+                const proyectoRemoto = idRemotoDe('proyectos', cancion.proyecto_id);
+                if (proyectoRemoto == null) {
+                    throw new Error('La canción no se pudo subir: su proyecto todavía no existe en Supabase.');
+                }
+                return insertarCancion(cancion, proyectoRemoto);
+            },
+            sincronizar: sincronizarCanciones,
+        });
+    },
+
+    // Sube los cambios de la cancion (titulo, duracion y partes).
+    subirCambios(cancion: Cancion): void {
+        subirCambio({
+            clave: claveCancion(cancion.id),
+            obtenerIdRemoto: () => idRemoto(this.obtenerPorId(cancion.id)) ?? idRemoto(cancion),
+            cambios: () => cambiosDeCancion(cancion),
+            aplicar: (idRemotoCancion, cambios) => actualizarCancion(idRemotoCancion, cambios),
+            sincronizar: sincronizarCanciones,
+        });
     },
 };
 

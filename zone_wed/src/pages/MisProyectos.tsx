@@ -10,6 +10,8 @@ import { RUTAS } from '../config/rutas.ts';
 import { ROLES, esAdministrador } from '../config/roles.ts';
 import { TIPOS_PROYECTO, ETIQUETAS_PROYECTO } from '../config/facturacion.ts';
 import { usuarioRepo } from '../repositories/usuarioRepo.ts';
+import { clienteRepo } from '../repositories/clienteRepo.ts';
+import { useClientes } from '../hooks/useClientes.ts';
 import { useProyectos } from '../hooks/useProyectos.ts';
 import { useCanciones } from '../hooks/useCanciones.ts';
 import { useSpotlight } from '../hooks/useSpotlight.ts';
@@ -114,7 +116,11 @@ export default function MisProyectos() {
     const [mensaje, setMensaje] = useState('');
     const [error, setError] = useState('');
     const [propietarioId, setPropietarioId] = useState('');
+    const [clientes] = useClientes();
 
+    // Los propietarios son los usuarios que tienen cliente en Supabase (sin
+    // cliente el proyecto no se puede subir). Si no hay ninguno todavia, se
+    // ofrecen los clientes del seed para que la app siga funcionando.
     const propietarios = useMemo<Usuario[]>(
         () =>
             usuarioRepo.listar().filter(
@@ -122,8 +128,24 @@ export default function MisProyectos() {
             ),
         []
     );
+
+    const opcionesPropietario = useMemo(() => {
+        if (!clientes.length) {
+            return propietarios.map((propietario) => ({
+                id: String(propietario.id ?? ''),
+                nombre: String(propietario.nombre ?? ''),
+            }));
+        }
+        return clientes.map((cliente) => ({
+            id: String(cliente.usuario_id ?? ''),
+            nombre: cliente.nombre || cliente.email,
+        }));
+    }, [clientes, propietarios]);
+
     const nombrePropietario = (proyecto: Proyecto) =>
-        ProyectoService.propietarioDe(proyecto)?.nombre ?? 'Sin cliente';
+        clienteRepo.obtenerPorUsuario(proyecto.usuario_id)?.nombre
+        ?? ProyectoService.propietarioDe(proyecto)?.nombre
+        ?? 'Sin cliente';
 
     const conteoCanciones = useMemo(() => {
         const grupo = new Map<string, number>();
@@ -171,6 +193,10 @@ export default function MisProyectos() {
         }
         const usuarioId = esAdmin ? (propietarioId || usuario?.id) : usuario?.id;
         if (esAdmin && !usuarioId) {
+            setError('Selecciona el cliente al que pertenece el proyecto.');
+            return;
+        }
+        if (esAdmin && !propietarioId && opcionesPropietario.length) {
             setError('Selecciona el cliente al que pertenece el proyecto.');
             return;
         }
@@ -320,9 +346,9 @@ export default function MisProyectos() {
                                         onChange={(evento) => setPropietarioId(evento.target.value)}
                                     >
                                         <option value="">Cliente…</option>
-                                        {propietarios.map((propietario) => (
-                                            <option key={propietario.id} value={propietario.id ?? ''}>
-                                                {propietario.nombre}{propietario.rol === ROLES.CLIENTE ? '' : ` · ${propietario.rol}`}
+                                        {opcionesPropietario.map((propietario) => (
+                                            <option key={propietario.id} value={propietario.id}>
+                                                {propietario.nombre}
                                             </option>
                                         ))}
                                     </select>

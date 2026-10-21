@@ -10,6 +10,8 @@ export interface Colaborador {
     activo: boolean;
     perfil?: string;
     imagen?: string;
+    // 'seed' para los datos de ejemplo, 'usuario' para los reales.
+    origen?: 'seed' | 'usuario';
     [key: string]: unknown;
 }
 
@@ -24,6 +26,7 @@ export function crearColaborador(data: EntradaColaborador = {}): Colaborador {
         especialidad: data.especialidad ?? '',
         usuario_id: data.usuario_id ?? null,
         activo: data.activo ?? true,
+        origen: data.origen ?? 'usuario',
     };
 }
 

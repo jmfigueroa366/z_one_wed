@@ -3,14 +3,24 @@ import { Storage, generarIdUnico } from '../infrastructure/storage.ts';
 import { SEED } from '../data/seed.ts';
 import { crearColaborador } from '../models/Colaborador.ts';
 import type { Colaborador, EntradaColaborador } from '../models/Colaborador.ts';
-import { sincronizarColaboradores, eliminarFilaRemota, idRemoto, hayConexionSupabase } from '../infrastructure/supabaseSync.ts';
+import {
+    sincronizarColaboradores,
+    eliminarFilaRemota,
+    idRemoto,
+    hayConexionSupabase,
+    claveColaborador,
+    insertarColaborador,
+    actualizarColaborador,
+    cambiosDeColaborador,
+} from '../infrastructure/supabaseSync.ts';
+import { subirAlta, subirCambio } from '../infrastructure/colaRemota.ts';
 
 
 const CLAVE = 'colaboradores';
 
 function obtenerListaInicial(): Colaborador[] {
     return SEED.colaboradores.map((colaborador, indice) =>
-        crearColaborador({ ...colaborador, id: colaborador.id ?? indice + 1 })
+        crearColaborador({ ...colaborador, id: colaborador.id ?? indice + 1, origen: 'seed' })
     );
 }
 
@@ -54,9 +64,10 @@ export const colaboradorRepo = {
     crear(data: EntradaColaborador): Colaborador {
         const colaboradores = this.listar();
         const siguienteId = generarIdUnico(colaboradores);
-        const colaborador = crearColaborador({ ...data, id: siguienteId });
+        const colaborador = crearColaborador({ ...data, id: siguienteId, origen: 'usuario' });
         colaboradores.push(colaborador);
         Storage.guardarValor(CLAVE, colaboradores);
+        this.subir(colaborador);
         return colaborador;
     },
 
@@ -68,6 +79,7 @@ export const colaboradorRepo = {
         }
         colaboradores[indice] = crearColaborador({ ...colaboradores[indice], ...data, id: colaboradores[indice].id });
         Storage.guardarValor(CLAVE, colaboradores);
+        this.subirCambios(colaboradores[indice]);
         return colaboradores[indice];
     },
 
@@ -85,6 +97,28 @@ export const colaboradorRepo = {
             }
         }
         return colaboradoresRestantes;
+    },
+
+    // Sube el colaborador a Supabase.
+    subir(colaborador: Colaborador): void {
+        subirAlta({
+            tipo: 'colaboradores',
+            clave: claveColaborador(colaborador.id),
+            idLocal: colaborador.id,
+            insertar: () => insertarColaborador(colaborador),
+            sincronizar: sincronizarColaboradores,
+        });
+    },
+
+    // Sube los cambios del colaborador (nombre, perfil y especialidad).
+    subirCambios(colaborador: Colaborador): void {
+        subirCambio({
+            clave: claveColaborador(colaborador.id),
+            obtenerIdRemoto: () => idRemoto(this.obtenerPorId(colaborador.id)) ?? idRemoto(colaborador),
+            cambios: () => cambiosDeColaborador(colaborador),
+            aplicar: (idRemotoColaborador, cambios) => actualizarColaborador(idRemotoColaborador, cambios),
+            sincronizar: sincronizarColaboradores,
+        });
     },
 };
 
