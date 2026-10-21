@@ -6,7 +6,7 @@ const ESTADOS_SOLICITUD = ESTADOS.solicitud;
 const ESTADOS_INVITACION = ESTADOS.invitacion;
 
 export interface Invitacion {
-    colaborador_id: number | null;
+    colaborador_id: number | string | null;
     rol: string | null;
     estado: string;
     [key: string]: unknown;
@@ -15,15 +15,15 @@ export interface Invitacion {
 export type EntradaInvitacion = Entrada<Invitacion>;
 
 export interface Solicitud {
-    id: number | null;
-    usuario_id: number | null;
+    id: number | string | null;
+    usuario_id: number | string | null;
     solicitante_nombre: string | null;
     titulo: string;
     descripcion: string;
     tipo: string;
-    sala_id: number | null;
-    cancion_id: number | null;
-    proyecto_id: number | null;
+    sala_id: number | string | null;
+    cancion_id: number | string | null;
+    proyecto_id: number | string | null;
     partes: string[];
     fecha: string | null;
     franja: string;

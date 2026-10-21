@@ -19,7 +19,7 @@ function normalizarLista(items: unknown): Usuario[] {
 export const usuarioRepo = {
     listar(): Usuario[] {
         const usuarios = Storage.obtenerValor<unknown>(CLAVE, []);
-        if (!Array.isArray(usuarios) || usuarios.length === 0) {
+        if (!Array.isArray(usuarios) || !Storage.existeValor(CLAVE)) {
             const inicial = obtenerListaInicial();
             Storage.guardarValor(CLAVE, inicial);
             return inicial;

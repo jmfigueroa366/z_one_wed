@@ -7,10 +7,11 @@ export function useProyectos(usuarioId: number | string | null | undefined) {
     const listar = () => (usuarioId == null ? proyectoRepo.listar() : proyectoRepo.listarPorUsuario(usuarioId));
     const [proyectos, setProyectos] = useState(listar);
 
-    useEffect(
-        () => ReactiveStore.suscribirse(() => setProyectos(listar())),
-        [usuarioId]
-    );
+    useEffect(() => {
+        const refrescar = () => setProyectos(listar());
+        refrescar();
+        return ReactiveStore.suscribirse(refrescar);
+    }, [usuarioId]);
 
     return [proyectos, setProyectos] as const;
 }

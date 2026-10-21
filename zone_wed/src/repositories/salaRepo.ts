@@ -31,7 +31,7 @@ sincronizarSalas();
 export const salaRepo = {
     listar(): Sala[] {
         const salas = Storage.obtenerValor<unknown>(CLAVE, []);
-        if (!Array.isArray(salas) || salas.length === 0) {
+        if (!Array.isArray(salas) || !Storage.existeValor(CLAVE)) {
             Storage.guardarValor(CLAVE, obtenerListaInicial());
             return obtenerListaInicial();
         }

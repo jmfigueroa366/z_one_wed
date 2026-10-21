@@ -28,7 +28,7 @@ function obtenerListaInicial(): Orden[] {
 export const ordenRepo = {
     listar(): Orden[] {
         const ordenes = Storage.obtenerValor<unknown>(CLAVE, []);
-        if (!Array.isArray(ordenes) || ordenes.length === 0) {
+        if (!Array.isArray(ordenes) || !Storage.existeValor(CLAVE)) {
             Storage.guardarValor(CLAVE, obtenerListaInicial());
             return obtenerListaInicial();
         }

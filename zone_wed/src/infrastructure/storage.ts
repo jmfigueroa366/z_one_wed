@@ -63,6 +63,15 @@ export const Storage = {
         }
     },
 
+    // Distingue "clave nunca inicializada" de "clave con valor" (p. ej. []).
+    existeValor(clave: string): boolean {
+        const storage = getStorage('local');
+        if (!storage) {
+            return false;
+        }
+        return storage.getItem(getKey(clave)) !== null;
+    },
+
     eliminarValor(clave: string): boolean {
         const storage = getStorage('local');
         if (!storage) {

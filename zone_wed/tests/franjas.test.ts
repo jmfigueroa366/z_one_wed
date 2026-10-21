@@ -23,11 +23,31 @@ test('franjaEnMinutos devuelve inicio y fin en minutos', () => {
     assert.equal(franjaEnMinutos('mal'), null);
 });
 
+test('franjaEnMinutos normaliza franjas que cruzan la medianoche', () => {
+    assert.deepEqual(franjaEnMinutos('23:00-01:00'), [1380, 1500]);
+});
+
+test('franjaEnMinutos rechaza horas fuera del día', () => {
+    assert.equal(franjaEnMinutos('25:00-26:00'), null);
+    assert.equal(franjaEnMinutos('10:00-10:75'), null);
+});
+
 test('seSolapan detecta choques y respeta franjas pegadas', () => {
     assert.equal(seSolapan('10:00-12:00', '11:00-13:00'), true);
     assert.equal(seSolapan('10:00-12:00', '10:00-12:00'), true);
     assert.equal(seSolapan('10:00-12:00', '12:00-14:00'), false);
     assert.equal(seSolapan('10:00-12:00', '09:00-10:00'), false);
+});
+
+test('seSolapan detecta choques de franjas que cruzan la medianoche', () => {
+    assert.equal(seSolapan('23:00-01:00', '00:30-01:30'), true);
+    assert.equal(seSolapan('23:00-01:00', '23:00-01:00'), true);
+    assert.equal(seSolapan('23:00-01:00', '01:00-02:00'), false);
+});
+
+test('seSolapan no considera solape una franja malformada', () => {
+    assert.equal(seSolapan('', '10:00-12:00'), false);
+    assert.equal(seSolapan('10:00', '10:00-12:00'), false);
 });
 
 test('franjasOcupadas combina solicitudes y sesiones activas de sala y fecha', () => {

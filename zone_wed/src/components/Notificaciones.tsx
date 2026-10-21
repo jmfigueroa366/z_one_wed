@@ -64,18 +64,22 @@ const ICONOS: Record<ItemNotificacion['icono'], typeof Music> = {
     equipo: Users,
 };
 
+function fechaLocal(fecha: Date) {
+    return `${fecha.getFullYear()}-${String(fecha.getMonth() + 1).padStart(2, '0')}-${String(fecha.getDate()).padStart(2, '0')}`;
+}
+
 function hoyISO() {
-    return new Date().toISOString().slice(0, 10);
+    return fechaLocal(new Date());
 }
 
 function clasificarFecha(fecha: string): GrupoNotificacion {
     const valor = String(fecha ?? '').slice(0, 10);
     if (!valor) return 'Anteriores';
-    const dia = valor >= hoyISO();
-    if (dia) return valor === hoyISO() ? 'Hoy' : 'Esta semana';
+    const hoy = hoyISO();
+    if (valor >= hoy) return valor === hoy ? 'Hoy' : 'Esta semana';
     const limite = new Date();
     limite.setDate(limite.getDate() - 7);
-    return valor >= limite.toISOString().slice(0, 10) ? 'Esta semana' : 'Anteriores';
+    return valor >= fechaLocal(limite) ? 'Esta semana' : 'Anteriores';
 }
 
 function leerLeidas(): string[] {

@@ -17,7 +17,7 @@ export function minutosDeFranja(
     const inicio = aMinutos(horaInicio);
     let fin = aMinutos(horaFin);
     if (!Number.isFinite(inicio) || !Number.isFinite(fin)) return 0;
-    if (fin <= inicio) fin += 24 * 60;
+    if (fin < inicio) fin += 24 * 60;
     return Math.max(0, fin - inicio);
 }
 

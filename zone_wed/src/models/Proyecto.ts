@@ -2,9 +2,9 @@
 import { TIPOS_PROYECTO } from '../config/facturacion.ts';
 
 export interface Proyecto {
-    id: number | null;
+    id: number | string | null;
     nombre: string;
-    usuario_id: number | null;
+    usuario_id: number | string | null;
     tipo: string;
     creado_en: string;
     [key: string]: unknown;

@@ -10,10 +10,10 @@ export function useCanciones(proyectoId: number | string | null | undefined) {
     );
 
     useEffect(() => {
-        if (proyectoId === null || proyectoId === undefined) {
-            return undefined;
-        }
-        return ReactiveStore.suscribirse(() => setCanciones(cancionRepo.listarPorProyecto(proyectoId)));
+        const refrescar = () =>
+            setCanciones(proyectoId === null || proyectoId === undefined ? [] : cancionRepo.listarPorProyecto(proyectoId));
+        refrescar();
+        return ReactiveStore.suscribirse(refrescar);
     }, [proyectoId]);
 
     return [canciones, setCanciones] as const;
@@ -27,10 +27,11 @@ function cancionesDeUsuario(usuarioId: number | string | null | undefined) {
 export function useCancionesDeUsuario(usuarioId: number | string | null | undefined) {
     const [canciones, setCanciones] = useState(() => cancionesDeUsuario(usuarioId));
 
-    useEffect(
-        () => ReactiveStore.suscribirse(() => setCanciones(cancionesDeUsuario(usuarioId))),
-        [usuarioId]
-    );
+    useEffect(() => {
+        const refrescar = () => setCanciones(cancionesDeUsuario(usuarioId));
+        refrescar();
+        return ReactiveStore.suscribirse(refrescar);
+    }, [usuarioId]);
 
     return [canciones, setCanciones] as const;
 }

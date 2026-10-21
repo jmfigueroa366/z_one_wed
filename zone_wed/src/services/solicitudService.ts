@@ -6,11 +6,12 @@ import { salaRepo } from '../repositories/salaRepo.ts';
 import { sesionRepo } from '../repositories/sesionRepo.ts';
 import { usuarioRepo } from '../repositories/usuarioRepo.ts';
 import { ordenRepo } from '../repositories/ordenRepo.ts';
-import { seSolapan } from '../utils/solicitudes.ts';
-import { ESTADOS_SOLICITUD_ACTIVOS } from '../config/estados.ts';
+import { Orden } from '../models/Orden.ts';
+import { esFranjaValida, hayConflicto } from '../utils/solicitudes.ts';
 import { ROLES } from '../config/roles.ts';
 import { TIPOS_ORDEN } from '../config/facturacion.ts';
 import { OrdenService } from './ordenService.ts';
+import { cancelarSesionesDeSolicitud } from './sesionService.ts';
 import { haySupabase } from '../lib/supabaseClient.ts';
 import {
     insertarSolicitud,
@@ -20,7 +21,6 @@ import {
 } from '../infrastructure/supabaseSync.ts';
 import type { Solicitud as SolicitudEntidad, EntradaSolicitud } from '../models/Solicitud.ts';
 import type { Sesion } from '../models/Sesion.ts';
-import type { Orden } from '../models/Orden.ts';
 import type { Usuario } from '../models/Usuario.ts';
 
 // Escribe en Supabase sin romper la app si falla: la app ya guardó en local.
@@ -31,33 +31,19 @@ function escribirEnSupabase(operacion: () => Promise<unknown>, textoDeError: str
     operacion().catch((error) => console.warn(textoDeError, error));
 }
 
-function franjaDe(sesion: Sesion): string | null {
-    if (!sesion?.hora_inicio || !sesion?.hora_fin) return null;
-    return `${sesion.hora_inicio}-${sesion.hora_fin}`;
-}
-
 function franjaAHoras(franja: string | null | undefined): { hora_inicio: string | null; hora_fin: string | null } {
     const [inicio, fin] = String(franja ?? '').split('-').map((hora) => hora.trim());
     return { hora_inicio: inicio || null, hora_fin: fin || null };
 }
 
-function hayConflicto({ salaId, fecha, franja }: { salaId: number | string | null; fecha: string | null | undefined; franja: string | null | undefined }): boolean {
-    const chocaConSolicitud = solicitudRepo.listar().some((solicitud) =>
-        ESTADOS_SOLICITUD_ACTIVOS.includes(solicitud.estado) &&
-        String(solicitud.sala_id) === String(salaId) &&
-        solicitud.fecha === fecha &&
-        seSolapan(solicitud.franja, franja)
-    );
-    if (chocaConSolicitud) {
-        return true;
-    }
-
-    return sesionRepo.listar().some((sesion) =>
-        sesion.estado !== 'cancelada' &&
-        String(sesion.sala_id) === String(salaId) &&
-        sesion.fecha === fecha &&
-        seSolapan(franjaDe(sesion), franja)
-    );
+function hayConflictoSala({ salaId, fecha, franja }: { salaId: number | string | null; fecha: string | null | undefined; franja: string | null | undefined }): boolean {
+    return hayConflicto({
+        salaId,
+        fecha,
+        franja,
+        solicitudes: solicitudRepo.listar(),
+        sesiones: sesionRepo.listar(),
+    });
 }
 
 function crearSesionDesdeSolicitud(solicitud: SolicitudEntidad): Sesion | null {
@@ -160,7 +146,13 @@ export const SolicitudService = {
             });
         });
 
-        if (hayConflicto({ salaId: sala.id, fecha: data.fecha, franja: data.franja })) {
+        if (!data.fecha) {
+            throw new Error('Indica la fecha de la reserva.');
+        }
+        if (!esFranjaValida(data.franja)) {
+            throw new Error('La franja de horas de la reserva no es válida.');
+        }
+        if (hayConflictoSala({ salaId: sala.id, fecha: data.fecha, franja: data.franja })) {
             throw new Error('La sala ya está reservada en ese rango de hora.');
         }
 
@@ -295,10 +287,14 @@ export const SolicitudService = {
         return confirmada;
     },
 
-    cancelar(id: number | string): SolicitudEntidad | null {
+    cancelar(id: number | string, { usuario, rol }: { usuario?: Usuario | null; rol?: string | null } = {}): SolicitudEntidad | null {
         const solicitud = solicitudRepo.obtenerPorId(id);
         if (!solicitud) {
             return null;
+        }
+        // Solo el dueño o un administrador pueden cancelar la solicitud.
+        if (usuario != null && rol !== ROLES.ADMINISTRADOR && String(solicitud.usuario_id) !== String(usuario.id)) {
+            throw new Error('No puedes cancelar una solicitud que no es tuya.');
         }
         if (!Solicitud.puedeTransicionar(solicitud, 'cancelada')) {
             throw new Error('La solicitud ya no se puede cancelar.');
@@ -310,10 +306,17 @@ export const SolicitudService = {
             ['facturada', 'parcial'].includes(orden.estado)
         );
         if (pendiente) {
-            ordenRepo.actualizar(pendiente.id, {
-                estado: 'cancelada',
-                fecha_cancelacion: new Date().toISOString().slice(0, 10),
-            });
+            if (Orden.puedeTransicionar(pendiente, 'cancelada')) {
+                ordenRepo.actualizar(pendiente.id, {
+                    estado: 'cancelada',
+                    fecha_cancelacion: new Date().toISOString().slice(0, 10),
+                });
+            }
+        }
+
+        // Libera la cabina: cancela las sesiones creadas por esta solicitud.
+        if (solicitud.id != null) {
+            cancelarSesionesDeSolicitud(solicitud.id);
         }
 
         escribirEnSupabase(

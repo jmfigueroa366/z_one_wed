@@ -4,18 +4,18 @@ import { ESTADOS } from '../config/estados.ts';
 const ESTADOS_SESION = ESTADOS.sesion;
 
 export interface Sesion {
-    id: number | null;
-    solicitud_id: number | null;
+    id: number | string | null;
+    solicitud_id: number | string | null;
     titulo: string;
     tipo: string | null;
-    sala_id: number | null;
-    colaborador_id: number | null;
+    sala_id: number | string | null;
+    colaborador_id: number | string | null;
     fecha: string | null;
     hora_inicio: string | null;
     hora_fin: string | null;
     estado: string;
-    cancion_id: number | null;
-    proyecto_id: number | null;
+    cancion_id: number | string | null;
+    proyecto_id: number | string | null;
     partes: string[];
     duracion?: number | null;
     [key: string]: unknown;

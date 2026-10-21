@@ -115,6 +115,11 @@ export default function RegistroGrabacionSesiones({ productor, onCerrar }: Regis
             return;
         }
 
+        if (filas.length === 0) {
+            setError('No hay sesiones por crear.');
+            return;
+        }
+
         const partes = cancion.partes ?? [];
         if (partes.length === 0) {
             setError('La canción no tiene partes. Agrégales partes en "Mis proyectos" antes de dividir la grabación.');

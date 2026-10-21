@@ -20,10 +20,11 @@ function listarSegunRol(usuario: Usuario | null | undefined): Orden[] {
 export function useOrdenes(usuario: Usuario | null | undefined) {
     const [ordenes, setOrdenes] = useState<Orden[]>(() => listarSegunRol(usuario));
 
-    useEffect(
-        () => ReactiveStore.suscribirse(() => setOrdenes(listarSegunRol(usuario))),
-        [usuario?.id, usuario?.rol]
-    );
+    useEffect(() => {
+        const refrescar = () => setOrdenes(listarSegunRol(usuario));
+        refrescar();
+        return ReactiveStore.suscribirse(refrescar);
+    }, [usuario?.id, usuario?.rol]);
 
     return [ordenes, setOrdenes] as const;
 }

@@ -1,10 +1,10 @@
 // CAPA: Dominio
 
 export interface Colaborador {
-    id: number | null;
+    id: number | string | null;
     nombre: string;
     especialidad: string;
-    usuario_id: number | null;
+    usuario_id: number | string | null;
     activo: boolean;
     perfil?: string;
     imagen?: string;

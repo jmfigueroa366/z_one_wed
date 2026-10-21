@@ -4,6 +4,33 @@ import type { EntradaSesion, Sesion as SesionEntidad } from '../models/Sesion.ts
 import { sesionRepo } from '../repositories/sesionRepo.ts';
 import { colaboradorRepo } from '../repositories/colaboradorRepo.ts';
 import { salaRepo } from '../repositories/salaRepo.ts';
+import { solicitudRepo } from '../repositories/solicitudRepo.ts';
+import { haySupabase } from '../lib/supabaseClient.ts';
+import { actualizarEstadoSesion } from '../infrastructure/supabaseSync.ts';
+import { esFranjaValida, hayConflicto } from '../utils/solicitudes.ts';
+
+function escribirEnSupabase(operacion: () => Promise<unknown>, textoDeError: string): void {
+    if (!haySupabase) {
+        return;
+    }
+    operacion().catch((error) => console.warn(textoDeError, error));
+}
+
+export function cancelarSesionesDeSolicitud(solicitudId: number | string): void {
+    sesionRepo.listar()
+        .filter((sesion) =>
+            String(sesion.solicitud_id) === String(solicitudId)
+            && sesion.estado !== 'cancelada'
+            && Sesion.puedeTransicionar(sesion, 'cancelada')
+        )
+        .forEach((sesion) => {
+            sesionRepo.cancelar(sesion.id);
+            escribirEnSupabase(
+                () => actualizarEstadoSesion(sesion.id, 'cancelada'),
+                'No se pudo cancelar la sesión en Supabase.'
+            );
+        });
+}
 
 export const SesionService = {
     listar(): SesionEntidad[] {
@@ -23,6 +50,23 @@ export const SesionService = {
         if (!sala) {
             throw new Error('La sala no existe.');
         }
+        if (!data.fecha) {
+            throw new Error('Indica la fecha de la sesión.');
+        }
+        const franja = `${data.hora_inicio ?? ''}-${data.hora_fin ?? ''}`;
+        if (!esFranjaValida(franja)) {
+            throw new Error('La franja de horas de la sesión no es válida.');
+        }
+        if (hayConflicto({
+            salaId: sala.id,
+            fecha: data.fecha,
+            franja,
+            solicitudes: solicitudRepo.listar(),
+            sesiones: sesionRepo.listar(),
+        })) {
+            throw new Error('La sala ya está reservada en ese rango de hora.');
+        }
+
         const sesion = crearSesion({
             ...data,
             estado: data.estado ?? 'solicitada',
@@ -46,6 +90,8 @@ export const SesionService = {
     cancelar(id: number | string | null | undefined): SesionEntidad | null {
         return sesionRepo.cancelar(id);
     },
+
+    cancelarSesionesDeSolicitud,
 };
 
 export default SesionService;

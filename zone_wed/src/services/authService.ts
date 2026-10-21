@@ -114,7 +114,7 @@ async function iniciarSesionLocal(email: string, password: string, rol: string |
         (item) => String(item.email).toLowerCase() === String(email).trim().toLowerCase()
     );
 
-    if (!usuario || !usuario.password || (rol && usuario.rol !== rol)) {
+    if (!usuario || !usuario.password || usuario.activo === false || (rol && usuario.rol !== rol)) {
         return null;
     }
 
@@ -202,7 +202,16 @@ export const AuthService = {
             }
             return usuario;
         }
-        return Session.obtener();
+        const sesion = Session.obtener();
+        if (!sesion) return null;
+        // Revalida contra el repositorio: un usuario desactivado no debe seguir
+        // con la sesión abierta tras recargar.
+        const actual = sesion.id != null ? usuarioRepo.obtenerPorId(sesion.id) : null;
+        if (actual && actual.activo === false) {
+            Session.cerrar();
+            return null;
+        }
+        return sesion;
     },
 
     async cerrarSesion(): Promise<boolean> {

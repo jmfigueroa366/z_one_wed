@@ -339,7 +339,7 @@ export default function MisSolicitudes() {
         setMensaje('');
         setOcupado(id);
         try {
-            await SolicitudService.cancelar(id);
+            await SolicitudService.cancelar(id, { usuario, rol: usuario?.rol });
             setMensaje('Solicitud cancelada.');
         } catch (errorCancelar) {
             setError(errorCancelar instanceof Error ? errorCancelar.message : 'No se pudo cancelar la solicitud.');
@@ -588,8 +588,8 @@ export default function MisSolicitudes() {
                                             {canciones.map((cancion) => {
                                                 const proyecto = proyectoDe(cancion.id);
                                                 return (
-                                                    <option key={cancion.id} value={cancion.id ?? undefined}>
-                                                        {cancion.nombre}{proyecto ? ` ÔÇö ${proyecto.nombre}` : ''}
+                                                    <option key={cancion.id} value={String(cancion.id ?? '')}>
+                                                        {cancion.nombre}{proyecto ? ` — ${proyecto.nombre}` : ''}
                                                     </option>
                                                 );
                                             })}
@@ -741,7 +741,7 @@ export default function MisSolicitudes() {
 
                                         {ESTADOS_CANCELABLES.includes(solicitud.estado) && (
                                             <div className="relative mt-4 flex flex-wrap items-center justify-end gap-2">
-                                                {solicitud.estado === 'por_pagar' && (
+                                                {solicitud.estado === 'por_pagar' && esClienteActual && (
                                                     <Link to={RUTAS.PAGOS} className={BOTON_PRIMARIO}>
                                                         <Coins className="mr-2 h-4 w-4" aria-hidden="true" /> Pagar anticipo
                                                     </Link>

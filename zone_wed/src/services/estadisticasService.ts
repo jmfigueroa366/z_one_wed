@@ -4,6 +4,7 @@ import { solicitudRepo } from '../repositories/solicitudRepo.ts';
 import { salaRepo } from '../repositories/salaRepo.ts';
 import { ordenRepo } from '../repositories/ordenRepo.ts';
 import { colaboradorRepo } from '../repositories/colaboradorRepo.ts';
+import { ESTADOS_SOLICITUD_ACTIVOS } from '../config/estados.ts';
 import type { Sesion } from '../models/Sesion.ts';
 
 const ETIQUETAS_ESTADO: Record<string, string> = {
@@ -57,7 +58,7 @@ export const EstadisticasService = {
             totalSesiones: sesiones.length,
             totalSolicitudes: solicitudes.length,
             sesionesCompletadas: sesiones.filter((sesion) => sesion.estado === 'completada').length,
-            solicitudesAbiertas: solicitudes.filter((solicitud) => solicitud.estado === 'solicitada').length,
+            solicitudesAbiertas: solicitudes.filter((solicitud) => ESTADOS_SOLICITUD_ACTIVOS.includes(solicitud.estado)).length,
         };
     },
 
@@ -87,9 +88,18 @@ export const EstadisticasService = {
         });
 
         const sesionPorId = new Map<string, Sesion>(sesiones.map((sesion) => [String(sesion.id), sesion]));
+        const sesionPorSolicitud = new Map<string, Sesion>(
+            sesiones
+                .filter((sesion) => sesion.solicitud_id != null)
+                .map((sesion) => [String(sesion.solicitud_id), sesion])
+        );
         const ingresosPorSala = new Map<string, number>();
         ordenes.forEach((orden) => {
-            const sesion = sesionPorId.get(String(orden.sesion_id));
+            const detalle = (orden.detalle ?? {}) as Record<string, unknown>;
+            const refSesion = detalle.sesion_id ?? orden.sesion_id ?? null;
+            const sesion = refSesion != null
+                ? sesionPorId.get(String(refSesion))
+                : sesionPorSolicitud.get(String(orden.solicitud_id ?? ''));
             if (!sesion) return;
             const clave = String(sesion.sala_id);
             ingresosPorSala.set(clave, (ingresosPorSala.get(clave) ?? 0) + Number(orden.total || 0));
@@ -110,7 +120,20 @@ export const EstadisticasService = {
             })
             .sort((a, b) => b.sesiones - a.sesiones);
 
-        const totalHoras = sesiones.reduce((suma, sesion) => suma + horasDeSesion(sesion), 0);
+        // Ocupación de la semana en curso: solo sesiones activas dentro de los
+        // últimos 7 días, comparadas con la capacidad semanal de las cabinas.
+        const hoy = new Date();
+        const hoyISO = `${hoy.getFullYear()}-${String(hoy.getMonth() + 1).padStart(2, '0')}-${String(hoy.getDate()).padStart(2, '0')}`;
+        const hace7 = new Date(hoy);
+        hace7.setDate(hace7.getDate() - 6);
+        const desdeISO = `${hace7.getFullYear()}-${String(hace7.getMonth() + 1).padStart(2, '0')}-${String(hace7.getDate()).padStart(2, '0')}`;
+        const sesionesSemana = sesiones.filter((sesion) =>
+            sesion.estado !== 'cancelada'
+            && sesion.fecha != null
+            && sesion.fecha >= desdeISO
+            && sesion.fecha <= hoyISO
+        );
+        const totalHoras = sesionesSemana.reduce((suma, sesion) => suma + horasDeSesion(sesion), 0);
         const capacidadHoras = Math.max(salas.length, 1) * 8 * 5;
         const ocupacion = Math.min(100, redondear((totalHoras / capacidadHoras) * 100));
 
@@ -161,6 +184,8 @@ export const EstadisticasService = {
         const ingresos = { total: 0, cobrado: 0, porCobrar: 0, borrador: 0 };
         const ingresosPorEstadoMapa = new Map<string, number>();
         ordenes.forEach((orden) => {
+            // Las órdenes canceladas no son dinero: ni cobrado ni por cobrar.
+            if (orden.estado === 'cancelada') return;
             const valor = Number(orden.total || 0);
             ingresos.total += valor;
             if (orden.estado === 'pagada') ingresos.cobrado += valor;
@@ -171,7 +196,7 @@ export const EstadisticasService = {
 
         const completadas = sesiones.filter((sesion) => sesion.estado === 'completada').length;
         const confirmadas = sesiones.filter((sesion) => sesion.estado === 'confirmada').length;
-        const solicitudesAbiertas = solicitudes.filter((solicitud) => solicitud.estado === 'solicitada').length;
+        const solicitudesAbiertas = solicitudes.filter((solicitud) => ESTADOS_SOLICITUD_ACTIVOS.includes(solicitud.estado)).length;
 
         const intensidad = Math.min(100, sesiones.length * 12);
         const comercial = Math.min(100, solicitudes.length * 9);

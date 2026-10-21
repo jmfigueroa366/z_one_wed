@@ -135,7 +135,7 @@ function BandejaSolicitudes() {
     const [colaboradores] = useColaboradores();
     const [salas] = useSalas();
     const boardRef = useRef<HTMLDivElement>(null);
-    const [ocupado, setOcupado] = useState<number | null>(null);
+    const [ocupado, setOcupado] = useState<number | string | null>(null);
     const [mensaje, setMensaje] = useState('');
     const [error, setError] = useState('');
     const [filtro, setFiltro] = useState<string>('todas');
@@ -176,7 +176,7 @@ function BandejaSolicitudes() {
     const nombreSolicitante = (solicitud: Solicitud): string => solicitud.solicitante_nombre ?? 'Cliente';
     const nombreColaborador = (id: number | string | null): string =>
         colaboradores.find((colaborador) => String(colaborador.id) === String(id))?.nombre ?? `Colaborador #${id}`;
-    const obtenerSala = (id: number | null): string => salas.find((sala) => String(sala.id) === String(id))?.nombre ?? 'Sala no disponible';
+    const obtenerSala = (id: number | string | null): string => salas.find((sala) => String(sala.id) === String(id))?.nombre ?? 'Sala no disponible';
     const nombreCancionDe = (solicitud: Solicitud): string | null => {
         if (!solicitud.cancion_id) return null;
         return canciones.find((cancion) => String(cancion.id) === String(solicitud.cancion_id))?.nombre ?? 'Canción no encontrada';

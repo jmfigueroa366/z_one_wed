@@ -5,6 +5,7 @@ import { FACTURACION } from '../src/config/facturacion.ts';
 import {
     redondearHaciaArribaBloque,
     horasDesdeSesiones,
+    minutosDeFranja,
     calcularTotalCancion,
     aplicarDescuentoAlbum,
     calcularTotalAlbum,
@@ -165,4 +166,12 @@ test('política de cancelación: gratis con 24 h o más, 50% si es tarde', () =>
     const tarde = aplicarPoliticaCancelacion({ estimado: 100000, horasAnticipacion: 10 }, FACTURACION);
     assert.equal(tarde.cargo, 50000);
     assert.equal(tarde.aplica, true);
+});
+
+test('minutosDeFranja: una franja con inicio igual a fin dura 0, no 24 h', () => {
+    assert.equal(minutosDeFranja('10:00', '10:00'), 0);
+});
+
+test('minutosDeFranja: una franja que cruza la medianoche suma el día completo', () => {
+    assert.equal(minutosDeFranja('23:00', '01:00'), 120);
 });

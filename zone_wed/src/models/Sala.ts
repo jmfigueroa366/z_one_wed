@@ -1,7 +1,7 @@
 // CAPA: Dominio
 
 export interface Sala {
-    id: number | null;
+    id: number | string | null;
     nombre: string;
     precio_hora: number;
     activo: boolean;

@@ -3,7 +3,8 @@ import { Storage, generarIdUnico } from '../infrastructure/storage.ts';
 import { SEED } from '../data/seed.ts';
 import { crearColaborador } from '../models/Colaborador.ts';
 import type { Colaborador, EntradaColaborador } from '../models/Colaborador.ts';
-import { sincronizarColaboradores } from '../infrastructure/supabaseSync.ts';
+import { sincronizarColaboradores, eliminarFilaRemota } from '../infrastructure/supabaseSync.ts';
+import { haySupabase } from '../lib/supabaseClient.ts';
 
 const CLAVE = 'colaboradores';
 
@@ -38,7 +39,7 @@ sincronizar();
 export const colaboradorRepo = {
     listar(): Colaborador[] {
         const colaboradores = Storage.obtenerValor<unknown>(CLAVE, []);
-        if (!Array.isArray(colaboradores) || colaboradores.length === 0) {
+        if (!Array.isArray(colaboradores) || !Storage.existeValor(CLAVE)) {
             Storage.guardarValor(CLAVE, obtenerListaInicial());
             return obtenerListaInicial();
         }
@@ -73,6 +74,9 @@ export const colaboradorRepo = {
     eliminar(id: number | string): Colaborador[] {
         const colaboradores = this.listar().filter((colaborador) => String(colaborador.id) !== String(id));
         Storage.guardarValor(CLAVE, colaboradores);
+        if (haySupabase) {
+            eliminarFilaRemota('colaboradores', id).catch((error) => console.warn('No se pudo borrar el colaborador en Supabase.', error));
+        }
         return colaboradores;
     },
 };

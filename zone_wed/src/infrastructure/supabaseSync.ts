@@ -311,6 +311,22 @@ export async function insertarSesion(sesion: FilaSupabase): Promise<{ id: unknow
     return { id: (data as FilaSupabase | null)?.id ?? null };
 }
 
+export async function actualizarEstadoSesion(id: unknown, estado: unknown): Promise<void> {
+    const { error } = await supabase.from('sesiones').update({ estado }).eq('id', id);
+    if (error) {
+        throw new Error(error.message);
+    }
+}
+
+// Borra una fila remota para que una eliminación local no la resucite en la
+// siguiente sincronización. Best-effort: los errores se avisan, no rompen.
+export async function eliminarFilaRemota(tabla: string, id: unknown): Promise<void> {
+    const { error } = await supabase.from(tabla).delete().eq('id', id);
+    if (error) {
+        throw new Error(error.message);
+    }
+}
+
 // Recarga los datos que dependen del usuario logueado.
 export async function refrescarDatosUsuario() {
     await Promise.allSettled([
