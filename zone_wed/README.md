@@ -13,6 +13,17 @@ npm run dev
 
 Abre la URL que muestra Vite; la ruta inicial redirige a `/login`. También puedes generar la versión de producción con `npm run build` y probarla con `npm run preview`.
 
+## Conexión a Supabase
+
+La aplicación usa un proyecto de Supabase compartido por todo el equipo (no cada quien el suyo).
+
+1. Copia `zone_wed/.env.example` a `zone_wed/.env`.
+2. Solicita al responsable del proyecto los valores reales de `VITE_SUPABASE_URL` y `VITE_SUPABASE_ANON_KEY` por un canal privado (nunca por git).
+3. Rellena tu `.env`. Ese archivo está en `.gitignore` y no se sube al repositorio.
+4. Los scripts de `zone_wed/supabase/*.sql` (tablas, RLS, funciones y arreglos) ya están aplicados en el proyecto compartido. No los ejecutes con DROP/DELETE sin coordinar, porque afectarían los datos de todos.
+
+Variables requeridas: `VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY`, `VITE_DEMO_ADMIN_CLAVE`, `VITE_DEMO_COLAB_CLAVE`, `VITE_DEMO_CLIENTE_CLAVE`.
+
 ## Estructura React
 
 - `src/pages/`, `src/components/`, `src/hooks/` y `src/context/` contienen la capa de presentación.
@@ -32,15 +43,14 @@ Se eliminaron los CSS e imágenes duplicados de la versión vanilla; toda la pre
 
 | Perfil | Usuario | Contraseña |
 | --- | --- | --- |
-| Administrador | `admin@z-one.com` | `admin123` |
-| Colaborador | `lua@z-one.com` | `colab123` |
-| Colaborador | `mario@z-one.com` | `colab123` |
-| Cliente | `cliente@z-one.com` | `cliente123` |
+| Administrador | `admin@z-one.com` | (definida en Supabase Auth) |
+| Colaborador | `lua@z-one.com` | (definida en Supabase Auth) |
+| Cliente | `carolina@z-one.com` | (definida en Supabase Auth) |
 
-Las cuentas semilla se crean si no existen. El registro público permite Cliente y Colaborador; el Administrador es un perfil de demostración, no seleccionable durante el registro.
+Las cuentas se gestionan en Supabase Authentication. No se guardan contraseñas en el código ni en la semilla (`seed.ts`). El registro público permite Cliente y Colaborador; el Administrador es de demostración y no es seleccionable durante el registro.
 
 ## Alcance y seguridad
 
-Los datos se guardan en `localStorage` y solo existen en ese navegador. La matriz y los guards controlan la navegación del prototipo, pero no proporcionan seguridad real: un usuario puede editar datos locales. Antes de producción, la autenticación, permisos, límites de tarifas, transiciones de estado, notificaciones y auditoría deben validarse en una API; Oracle debe quedar detrás de esa API.
+Los datos de autenticación, solicitudes y sesiones se guardan en Supabase (proyecto compartido). El resto de módulos (salas, canciones, proyectos, órdenes, colaboradores) sigue con una estrategia de caché local en localStorage sincronizada por fases. La matriz y los guards controlan la navegación del prototipo, pero no proporcionan seguridad real: un usuario puede editar datos locales. Antes de producción, la autenticación, permisos, límites de tarifas, transiciones de estado, notificaciones y auditoría deben validarse por completo en una API; Oracle debe quedar detrás de esa API.
 
 La primera fase no incluye aún entregables, hilos, liquidaciones/facturas, aprobaciones reales de colaboradores, splits ni recordatorios automáticos. Las pantallas anteriores de Catálogo, Sesiones, Agenda, Estadísticas y Chatbot conservan comportamiento de demostración y no están conectadas al nuevo modelo de solicitudes.

@@ -13,6 +13,7 @@ Desktop.ini
 # Entorno / secretos
 .env
 .env.*
+!.env.example
 
 # Copias temporales
 *.bak
