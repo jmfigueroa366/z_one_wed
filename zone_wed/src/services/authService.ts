@@ -89,16 +89,21 @@ async function registrarUsuarioSupabase(datos: EntradaUsuario): Promise<Usuario 
     const email = String(datos?.email ?? '').trim().toLowerCase();
     const password = String(datos?.password ?? '');
     const nombre = String(datos?.nombre ?? '').trim();
+    const rol = String(datos?.rol ?? 'cliente');
 
     const errores = validarRegistro({ nombre, email, password });
     if (Object.keys(errores).length > 0) {
         throw new Error(Object.values(errores)[0]);
     }
 
+    if (!['cliente'].includes(rol)) {
+        throw new Error('Solo se permite registro como cliente.');
+    }
+
     const { error } = await supabase.auth.signUp({
         email,
         password,
-        options: { data: { nombre } },
+        options: { data: { nombre, rol } },
     });
     if (error) {
         throw new Error(error.message);

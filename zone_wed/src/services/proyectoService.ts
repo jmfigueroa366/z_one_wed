@@ -25,21 +25,21 @@ export const ProyectoService = {
         return usuarioRepo.obtenerPorId(proyecto.usuario_id);
     },
 
-    crear(data: EntradaProyecto = {}): Proyecto {
+    async crear(data: EntradaProyecto = {}): Promise<Proyecto> {
         const usuarioId = data?.usuario_id ?? null;
         if (usuarioId == null) {
             throw new Error('Asigna el proyecto a un cliente.');
         }
-        return proyectoRepo.crear(crearProyecto({ ...data, usuario_id: usuarioId }));
+        return await proyectoRepo.crear(crearProyecto({ ...data, usuario_id: usuarioId }));
     },
 
-    actualizar(id: number | string, data: EntradaProyecto): Proyecto | null {
-        return proyectoRepo.actualizar(id, data);
+    async actualizar(id: number | string, data: EntradaProyecto): Promise<Proyecto | null> {
+        return await proyectoRepo.actualizar(id, data);
     },
 
-    eliminar(id: number | string): Proyecto[] {
+    async eliminar(id: number | string): Promise<Proyecto[]> {
         cancionRepo.eliminarPorProyecto(id);
-        return proyectoRepo.eliminar(id);
+        return await proyectoRepo.eliminar(id);
     },
 };
 

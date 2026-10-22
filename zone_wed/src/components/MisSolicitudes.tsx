@@ -191,14 +191,7 @@ export default function MisSolicitudes() {
         .sort((a, b) => String(b.fecha_solicitud ?? b.fecha ?? '').localeCompare(String(a.fecha_solicitud ?? a.fecha ?? ''))),
     [solicitudes, usuario]);
 
-    const invitacionesPorResponder = useMemo(() => {
-        if (!colaboradorActual) return [];
-        return solicitudes.filter((solicitud) =>
-            solicitud.estado === 'solicitada'
-            && (solicitud.colaboradores ?? []).some((invitacion) =>
-                String(invitacion.colaborador_id) === String(colaboradorActual.id)
-                && invitacion.estado === 'pendiente'));
-    }, [solicitudes, colaboradorActual]);
+    const invitacionesPorResponder: typeof solicitudes = [];
 
     const resumen = useMemo(() => ({
         total: misSolicitudes.length,
@@ -433,42 +426,6 @@ export default function MisSolicitudes() {
                     </p>
                     <Link to={RUTAS.PAGOS} className={BOTON_PRIMARIO}>Ir a pagar el anticipo</Link>
                 </div>
-            )}
-
-            {/* INVITACIONES (colaborador) */}
-            {invitacionesPorResponder.length > 0 && (
-                <section className="mt-6" aria-labelledby="invitaciones-title">
-                    <div className="mb-5">
-                        <p className="workspace-eyebrow">TE INVITARON</p>
-                        <h2 id="invitaciones-title" className="mt-1 text-2xl font-bold tracking-tight text-texto-soft">Invitaciones por responder</h2>
-                    </div>
-                    <div className="grid gap-4 lg:grid-cols-2">
-                        {invitacionesPorResponder.map((solicitud) => (
-                            <article key={solicitud.id} className="rounded-2xl border border-aviso/30 bg-aviso/[0.06] p-5">
-                                <p className="text-[0.66rem] font-bold uppercase tracking-wider text-sutil">
-                                    {formatearFecha(solicitud.fecha, { weekday: 'short', day: 'numeric' }) || 'Fecha pendiente'} ┬À {solicitud.franja}
-                                </p>
-                                <h3 className="mt-1 text-lg font-bold text-texto-soft">{solicitud.titulo || etiquetaTipo(solicitud.tipo)}</h3>
-                                <p className="mt-1 text-sm text-sutil">{obtenerSala(solicitud.sala_id)} ┬À {etiquetaTipo(solicitud.tipo)}</p>
-                                <div className="mt-3 flex flex-wrap gap-2 text-xs text-sutil">
-                                    {(solicitud.colaboradores ?? []).map((invitacion) => (
-                                        <span key={invitacion.colaborador_id} className={clasePillEstado(invitacion.estado)}>
-                                            {nombreColaborador(invitacion.colaborador_id)} ┬À {etiquetaInvitacion(invitacion.estado)}
-                                        </span>
-                                    ))}
-                                </div>
-                                <div className="mt-4 flex gap-2">
-                                    <button className={`${BOTON_PRIMARIO} flex-1`} onClick={() => responder(solicitud.id!, colaboradorActual!.id!, 'aceptada')} type="button">
-                                        <Check className="mr-2 h-4 w-4" aria-hidden="true" /> Aceptar
-                                    </button>
-                                    <button className={BOTON_PELIGRO} onClick={() => responder(solicitud.id!, colaboradorActual!.id!, 'rechazada')} type="button">
-                                        <XCircle className="mr-2 h-4 w-4" aria-hidden="true" /> Rechazar
-                                    </button>
-                                </div>
-                            </article>
-                        ))}
-                    </div>
-                </section>
             )}
 
             {/* FORMULARIO (cliente) */}

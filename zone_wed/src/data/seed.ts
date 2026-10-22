@@ -23,7 +23,7 @@ import type { EntradaOrden } from '../models/Orden.ts';
 
 // Incrementa este valor cuando cambie SEED para que los navegadores
 // con datos antiguos se repueblen automáticamente.
-export const SEED_VERSION = '2026-10-15-1';
+export const SEED_VERSION = '2026-10-21-1';
 
 function fechaLocalISO(fecha: Date): string {
     return (
@@ -285,7 +285,6 @@ export const SEED = {
         { nombre: 'Dirección Z-ONE', email: 'admin@z-one.com', rol: 'administrador', activo: true },
         { nombre: 'Lúa Ferreira', email: 'lua@z-one.com', rol: 'colaborador', perfil: 'artista', activo: true },
         { nombre: 'Cliente Zeta', email: 'cliente@z-one.com', rol: 'cliente', activo: true },
-        { nombre: 'Mario', email: 'mario@z-one.com', rol: 'colaborador', perfil: 'ingeniero', activo: true },
     ] as EntradaUsuario[],
 
     salas: [
@@ -301,7 +300,6 @@ export const SEED = {
         { nombre: 'Leo Norte', especialidad: 'Producción', activo: true },
         { nombre: 'Alma Beats', especialidad: 'Composición', activo: true },
         { nombre: 'Ecos del Sur', especialidad: 'Instrumental', activo: false },
-        { nombre: 'Mario', especialidad: 'Ingeniero de sonido', usuario_id: 4, activo: true },
     ] as EntradaColaborador[],
 
     solicitudes: SOLICITUDES,

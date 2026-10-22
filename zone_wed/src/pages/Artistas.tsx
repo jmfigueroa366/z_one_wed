@@ -6,8 +6,9 @@ import FormularioArtista from '../components/FormularioArtista.tsx';
 import TarjetaArtista, { iniciales } from '../components/TarjetaArtista.tsx';
 import { Contador, Ecualizador, FondoHero } from '../components/Animados.tsx';
 import { useArtistas } from '../hooks/useArtistas.ts';
+import { useAuth } from '../context/AuthContext.tsx';
 import { useSpotlight } from '../hooks/useSpotlight.ts';
-import { CAMPO, ETIQUETA } from '../styles/clases.ts';
+import { BOTON_PRIMARIO, CAMPO, ETIQUETA } from '../styles/clases.ts';
 import '../styles/tailwind.css';
 
 const MENOS_MOVIMIENTO = () =>
@@ -17,9 +18,11 @@ const ACENTOS = ['#f04fa6', '#a477ff', '#9ecbff', '#7be0b0', '#ffd166', '#f2a4b1
 const colorDeGenero = (genero: string, generos: string[]) => ACENTOS[Math.max(0, generos.indexOf(genero)) % ACENTOS.length];
 
 export default function Artistas() {
+    const { usuario } = useAuth();
     const [artistas] = useArtistas();
     const [busqueda, setBusqueda] = useState('');
     const [filtroGenero, setFiltroGenero] = useState('Todos');
+    const [mostrarFormulario, setMostrarFormulario] = useState(false);
     const gridRef = useRef<HTMLDivElement | null>(null);
     const [heroRef, seguirSpotlight] = useSpotlight<HTMLDivElement>();
 
@@ -56,9 +59,18 @@ export default function Artistas() {
     return (
         <main className="workspace-content" data-page="artistas">
             <header className="page-heading border-l-4 border-magenta pl-4">
-                <p className="workspace-eyebrow">TALENTO Z-ONE</p>
-                <h1>Artistas</h1>
-                <p>Conoce a las voces vinculadas al estudio y organiza sus perfiles para próximas sesiones.</p>
+                <div className="flex flex-wrap items-center justify-between gap-3">
+                    <div>
+                        <p className="workspace-eyebrow">GESTIÓN DE ARTISTAS</p>
+                        <h1>Artistas</h1>
+                        <p>Gestiona el equipo de artistas del estudio.</p>
+                    </div>
+                    {usuario?.rol === 'administrador' && (
+                        <button type="button" onClick={() => setMostrarFormulario(true)} className={`${BOTON_PRIMARIO} w-fit`}>
+                            Registrar artista
+                        </button>
+                    )}
+                </div>
             </header>
 
             <section
@@ -198,14 +210,17 @@ export default function Artistas() {
                 )}
             </section>
 
-            <div className="mt-6">
-                <FormularioArtista
-                    onRegistrado={() => {
-                        setFiltroGenero('Todos');
-                        setBusqueda('');
-                    }}
-                />
-            </div>
+            {mostrarFormulario && usuario?.rol === 'administrador' && (
+                <section className="mt-6">
+                    <FormularioArtista
+                        onRegistrado={() => {
+                            setFiltroGenero('Todos');
+                            setBusqueda('');
+                            setMostrarFormulario(false);
+                        }}
+                    />
+                </section>
+            )}
         </main>
     );
 }

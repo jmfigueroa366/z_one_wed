@@ -16,6 +16,8 @@ export default function FormularioArtista({ onRegistrado: _onRegistrado }: Formu
         nombre: '',
         especialidad: ESPECIALIDADES[0],
         imagen: '',
+        email: '',
+        password: '',
     });
     const [error, setError] = useState('');
     const [mensaje, setMensaje] = useState('');
@@ -67,17 +69,18 @@ export default function FormularioArtista({ onRegistrado: _onRegistrado }: Formu
         lector.readAsDataURL(archivo);
     };
 
-    const registrarArtista = (event: FormEvent<HTMLFormElement>) => {
+    const registrarArtista = async (event: FormEvent<HTMLFormElement>) => {
         event.preventDefault();
         setError('');
         setMensaje('');
 
         try {
-            const nuevoArtista = ArtistaService.crear(formulario);
-            setFormulario({ nombre: '', especialidad: ESPECIALIDADES[0], imagen: '' });
+            const nuevoArtista = await ArtistaService.crear(formulario);
+            const correoCreado = formulario.email;
+            setFormulario({ nombre: '', especialidad: ESPECIALIDADES[0], imagen: '', email: '', password: '' });
             const campoImagen = document.getElementById('artist-image') as HTMLInputElement | null;
             if (campoImagen) campoImagen.value = '';
-            setMensaje(`${nuevoArtista.nombre} se agreg�� al equipo de artistas.`);
+            setMensaje(`${nuevoArtista.nombre} se agregó al equipo de artistas. Cuenta: ${correoCreado}`);
         } catch (errorRegistro) {
             setError(errorRegistro instanceof Error ? errorRegistro.message : 'No se pudo registrar el artista.');
         }
@@ -94,7 +97,7 @@ export default function FormularioArtista({ onRegistrado: _onRegistrado }: Formu
 
             <form className="mt-5 grid max-w-2xl gap-4" onSubmit={registrarArtista}>
                 <label>
-                    <span className={ETIQUETA}>Nombre art��stico</span>
+                    <span className={ETIQUETA}>Nombre artístico</span>
                     <input
                         className={CAMPO}
                         name="nombre"
@@ -107,7 +110,31 @@ export default function FormularioArtista({ onRegistrado: _onRegistrado }: Formu
                     />
                 </label>
                 <label>
-                    <span className={ETIQUETA}>GǸnero o estilo</span>
+                    <span className={ETIQUETA}>Correo electrónico (para login)</span>
+                    <input
+                        className={CAMPO}
+                        name="email"
+                        type="email"
+                        value={formulario.email}
+                        onChange={cambiarCampo}
+                        placeholder="artista@correo.com"
+                        required
+                    />
+                </label>
+                <label>
+                    <span className={ETIQUETA}>Contraseña (para login)</span>
+                    <input
+                        className={CAMPO}
+                        name="password"
+                        type="password"
+                        value={formulario.password}
+                        onChange={cambiarCampo}
+                        placeholder="Mínimo 6 caracteres"
+                        required
+                    />
+                </label>
+                <label>
+                    <span className={ETIQUETA}>Género o estilo</span>
                     <select className={CAMPO} name="especialidad" value={formulario.especialidad} onChange={cambiarCampo}>
                         {ESPECIALIDADES.map((especialidad) => (
                             <option key={especialidad} value={especialidad}>{especialidad}</option>

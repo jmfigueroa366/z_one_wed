@@ -1,5 +1,5 @@
-// CAPA: Infraestructura
-import { Storage, generarIdUnico } from '../infrastructure/storage.ts';
+﻿// CAPA: Infraestructura
+import { Storage } from '../infrastructure/storage.ts';
 import { SEED } from '../data/seed.ts';
 import { crearSala } from '../models/Sala.ts';
 import type { EntradaSala, Sala } from '../models/Sala.ts';
@@ -12,8 +12,9 @@ import {
     insertarSala,
     actualizarSala,
     cambiosDeSala,
+    registrarIdRemoto,
+    recordarIdRemoto,
 } from '../infrastructure/supabaseSync.ts';
-import { subirAlta, subirCambio } from '../infrastructure/colaRemota.ts';
 
 const CLAVE = 'salas';
 
@@ -27,7 +28,7 @@ function normalizarLista(salas: EntradaSala[]): Sala[] {
     return salas.map((sala, indice) => crearSala({ ...sala, id: sala.id ?? indice + 1 }));
 }
 
-// Trae las salas reales de Supabase una vez y las guarda en la caché local.
+// Trae las salas reales de Supabase una vez y las guarda en la cachÃ© local.
 let sincronizado = false;
 export async function sincronizarSalas() {
     if (sincronizado) {
@@ -41,8 +42,12 @@ export async function sincronizarSalas() {
     }
 }
 
-// Se ejecuta al cargar el módulo.
+// Se ejecuta al cargar el mÃ³dulo.
 sincronizarSalas();
+
+function actualizarCache(salas: Sala[]): void {
+    Storage.guardarValor(CLAVE, salas);
+}
 
 export const salaRepo = {
     listar(): Sala[] {
@@ -59,65 +64,114 @@ export const salaRepo = {
         return this.listar().find((sala) => String(sala.id) === String(id)) ?? null;
     },
 
-    crear(data: EntradaSala): Sala {
+    async crear(data: EntradaSala): Promise<Sala> {
+        if (!hayConexionSupabase()) {
+            throw new Error('No hay conexiÃ³n con Supabase. No se puede guardar la sala.');
+        }
+
+        const salaBase = crearSala({ ...data, origen: 'usuario', activo: data?.activo !== false });
+        const { id: idRemotoSala } = await insertarSala(salaBase);
+
         const salas = this.listar();
-        const siguienteId = generarIdUnico(salas);
-        const sala = crearSala({ ...data, id: siguienteId, origen: 'usuario' });
+        const sala = crearSala({
+            ...salaBase,
+            id: (idRemotoSala as number | string | null) ?? salaBase.id,
+            id_remoto: (idRemotoSala as number | string | null) ?? null,
+        });
         salas.push(sala);
-        Storage.guardarValor(CLAVE, salas);
-        this.subir(sala);
+        actualizarCache(salas);
+
+        if (typeof idRemotoSala === 'number' || typeof idRemotoSala === 'string') {
+            recordarIdRemoto(claveSala(sala.id), idRemotoSala);
+            registrarIdRemoto('salas', sala.id, idRemotoSala);
+        }
+
+        await sincronizarSalasRemotas().catch((error) => console.warn('No se pudo refrescar salas tras guardar en Supabase.', error));
         return sala;
     },
 
-    actualizar(id: number | string, data: EntradaSala): Sala | null {
+    async actualizar(id: number | string, data: EntradaSala): Promise<Sala | null> {
+        if (!hayConexionSupabase()) {
+            throw new Error('No hay conexiÃ³n con Supabase. No se puede actualizar la sala.');
+        }
+
         const salas = this.listar();
         const indice = salas.findIndex((sala) => String(sala.id) === String(id));
         if (indice === -1) {
             return null;
         }
-        salas[indice] = crearSala({ ...salas[indice], ...data, id: salas[indice].id });
-        Storage.guardarValor(CLAVE, salas);
-        this.subirCambios(salas[indice]);
+
+        const salaActual = salas[indice];
+        const salaActualizada = crearSala({ ...salaActual, ...data, id: salaActual.id, origen: salaActual.origen ?? 'usuario' });
+        const idRemotoSala = idRemoto(salaActualizada) ?? idRemoto(salaActual);
+
+        if (idRemotoSala == null) {
+            throw new Error('La sala no tiene id remoto en Supabase. Sincroniza los datos e intÃ©ntalo de nuevo.');
+        }
+
+        const cambios = cambiosDeSala(salaActualizada);
+            await actualizarSala(idRemotoSala as number | string, cambios);
+
+        salas[indice] = crearSala({ ...salaActualizada, id_remoto: idRemotoSala as number | string | null });
+        actualizarCache(salas);
+
+        await sincronizarSalasRemotas().catch((error) => console.warn('No se pudo refrescar salas tras actualizar en Supabase.', error));
         return salas[indice];
     },
 
-    eliminar(id: number | string): Sala[] {
+    async eliminar(id: number | string): Promise<Sala[]> {
+        if (!hayConexionSupabase()) {
+            throw new Error('No hay conexiÃ³n con Supabase. No se puede eliminar la sala.');
+        }
+
         const salas = this.listar();
         const sala = salas.find((item) => String(item.id) === String(id)) ?? null;
         const salasRestantes = salas.filter((item) => String(item.id) !== String(id));
-        Storage.guardarValor(CLAVE, salasRestantes);
-        if (hayConexionSupabase() && sala) {
-            // Solo se borra en Supabase la fila que existe alli: el id local
-            // puede coincidir con el de otra sala y se borraria por error.
+
+        if (sala) {
             const idRemotoSala = idRemoto(sala);
             if (idRemotoSala != null) {
-                eliminarFilaRemota('salas', idRemotoSala).catch((error) => console.warn('No se pudo borrar la sala en Supabase.', error));
+                await eliminarFilaRemota('salas', idRemotoSala as number | string);
+            } else {
+                throw new Error('La sala no tiene id remoto en Supabase. No se puede eliminar desde la base de datos.');
             }
         }
+
+        Storage.guardarValor(CLAVE, salasRestantes);
+        await sincronizarSalasRemotas().catch((error) => console.warn('No se pudo refrescar salas tras eliminar en Supabase.', error));
         return salasRestantes;
     },
 
-    // Sube la sala a Supabase.
     subir(sala: Sala): void {
-        subirAlta({
-            tipo: 'salas',
-            clave: claveSala(sala.id),
-            idLocal: sala.id,
-            insertar: () => insertarSala(sala),
-            sincronizar: sincronizarSalasRemotas,
-        });
+        void (async () => {
+            try {
+                if (!hayConexionSupabase()) return;
+                const { id: idRemotoSala } = await insertarSala(sala);
+                if (typeof idRemotoSala === 'number' || typeof idRemotoSala === 'string') {
+                    recordarIdRemoto(claveSala(sala.id), idRemotoSala);
+                    registrarIdRemoto('salas', sala.id, idRemotoSala);
+                }
+                await sincronizarSalasRemotas();
+            } catch (error) {
+                console.warn('No se pudo guardar la sala en Supabase.', error);
+            }
+        })();
     },
 
-    // Sube los cambios de la sala (nombre, precio y si esta activa).
     subirCambios(sala: Sala): void {
-        subirCambio({
-            clave: claveSala(sala.id),
-            obtenerIdRemoto: () => idRemoto(this.obtenerPorId(sala.id)) ?? idRemoto(sala),
-            cambios: () => cambiosDeSala(sala),
-            aplicar: (idRemotoSala, cambios) => actualizarSala(idRemotoSala, cambios),
-            sincronizar: sincronizarSalasRemotas,
-        });
+        void (async () => {
+            try {
+                if (!hayConexionSupabase()) return;
+                const idRemotoSala = idRemoto(sala);
+                if (idRemotoSala == null) return;
+                const cambios = cambiosDeSala(sala);
+                if (!cambios) return;
+                await actualizarSala(idRemotoSala as number | string, cambios as Record<string, unknown>);
+                await sincronizarSalasRemotas();
+            } catch (error) {
+                console.warn('No se pudo actualizar la sala en Supabase.', error);
+            }
+        })();
     },
-};
 
-export default salaRepo;
+};

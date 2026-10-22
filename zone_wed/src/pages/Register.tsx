@@ -92,7 +92,6 @@ export default function Register() {
                     <span className={authEtiqueta}>Tipo de cuenta</span>
                     <select name="rol" value={formulario.rol} onChange={manejarCambio} className={authCampo} required>
                         <option value="cliente">Cliente</option>
-                        <option value="colaborador">Colaborador</option>
                     </select>
                 </label>
 

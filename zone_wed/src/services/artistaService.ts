@@ -17,14 +17,28 @@ export const ArtistaService = {
         return artista ?? null;
     },
 
-    crear(data: EntradaArtista = {}): Artista {
+    async crear(data: EntradaArtista = {}): Promise<Artista> {
         const nombre = String(data?.nombre ?? '').trim();
         const especialidad = String(data?.especialidad ?? '').trim();
         const especialidadesPermitidas = ['Pop', 'Vallenato', 'Urbano', 'Rock', 'Salsa', 'Canto', 'Otro'];
         const imagen = String(data?.imagen ?? '');
+        const email = String(data?.email ?? '').trim().toLowerCase();
+        const password = String(data?.password ?? '');
 
         if (!nombre) {
             throw new Error('El nombre del artista es obligatorio.');
+        }
+
+        if (!email) {
+            throw new Error('El correo electrónico es obligatorio para crear la cuenta.');
+        }
+
+        if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+            throw new Error('Ingresa un correo electrónico válido.');
+        }
+
+        if (password.length < 6) {
+            throw new Error('La contraseña debe tener al menos 6 caracteres.');
         }
 
         if (!especialidadesPermitidas.includes(especialidad)) {
@@ -39,13 +53,16 @@ export const ArtistaService = {
             throw new Error('La foto debe pesar 1.5 MB o menos.');
         }
 
-        return crearArtista(colaboradorRepo.crear({
+        const colaborador = await colaboradorRepo.crear({
             nombre,
             especialidad,
             perfil: 'artista',
             ...(imagen ? { imagen } : {}),
             activo: true,
-        }));
+            email,
+            password,
+        });
+        return crearArtista(colaborador);
     },
 };
 

@@ -12,20 +12,24 @@ export const CancionService = {
         return cancionRepo.listarPorProyecto(proyectoId);
     },
 
+    listarPorUsuario(usuarioId: number | string | null | undefined): Cancion[] {
+        return cancionRepo.listarPorUsuario(usuarioId);
+    },
+
     obtenerPorId(id: number | string): Cancion | null {
         return cancionRepo.obtenerPorId(id);
     },
 
-    crear(data: EntradaCancion): Cancion {
-        return cancionRepo.crear(crearCancion(data));
+    async crear(data: EntradaCancion): Promise<Cancion> {
+        return await cancionRepo.crear(crearCancion(data));
     },
 
-    actualizar(id: number | string, data: EntradaCancion): Cancion | null {
-        return cancionRepo.actualizar(id, data);
+    async actualizar(id: number | string, data: EntradaCancion): Promise<Cancion | null> {
+        return await cancionRepo.actualizar(id, data);
     },
 
-    eliminar(id: number | string): Cancion[] {
-        return cancionRepo.eliminar(id);
+    async eliminar(id: number | string): Promise<Cancion[]> {
+        return await cancionRepo.eliminar(id);
     },
 };
 

@@ -18,20 +18,34 @@ export const ProductorService = {
         return productor ? crearProductor(productor) : null;
     },
 
-    crear(data: EntradaProductor = {}): Productor {
+    async crear(data: EntradaProductor = {}): Promise<Productor> {
         const nombre = String(data?.nombre ?? '').trim();
         const especialidad = String(data?.especialidad ?? '').trim();
-        const especialidadesPermitidas = ['Grabación', 'Mezcla', 'Masterización', 'Producción musical'];
+        const especialidadesPermitidas = ['Producción', 'Mezcla', 'Masterización', 'Producción musical', 'Otro'];
+        const imagen = String(data?.imagen ?? '');
+        const email = String(data?.email ?? '').trim().toLowerCase();
+        const password = String(data?.password ?? '');
 
         if (!nombre) {
             throw new Error('El nombre del productor es obligatorio.');
+        }
+
+        if (!email) {
+            throw new Error('El correo electrónico es obligatorio para crear la cuenta.');
+        }
+
+        if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+            throw new Error('Ingresa un correo electrónico válido.');
+        }
+
+        if (password.length < 6) {
+            throw new Error('La contraseña debe tener al menos 6 caracteres.');
         }
 
         if (!especialidadesPermitidas.includes(especialidad)) {
             throw new Error('Selecciona una especialidad válida.');
         }
 
-        const imagen = String(data?.imagen ?? '');
         if (imagen && !/^data:image\/(?:jpeg|png|webp);base64,[a-z\d+/]+=*$/i.test(imagen)) {
             throw new Error('La foto debe ser una imagen JPG, PNG o WebP válida.');
         }
@@ -40,13 +54,16 @@ export const ProductorService = {
             throw new Error('La foto debe pesar 1.5 MB o menos.');
         }
 
-        return crearProductor(colaboradorRepo.crear({
+        const colaborador = await colaboradorRepo.crear({
             nombre,
             especialidad,
             perfil: 'produccion',
             ...(imagen ? { imagen } : {}),
             activo: true,
-        }));
+            email,
+            password,
+        });
+        return crearProductor(colaborador);
     },
 };
 

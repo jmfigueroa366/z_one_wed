@@ -1,5 +1,5 @@
-// CAPA: Infraestructura
-import { Storage, generarIdUnico } from '../infrastructure/storage.ts';
+﻿// CAPA: Infraestructura
+import { Storage } from '../infrastructure/storage.ts';
 import { SEED } from '../data/seed.ts';
 import { crearColaborador } from '../models/Colaborador.ts';
 import type { Colaborador, EntradaColaborador } from '../models/Colaborador.ts';
@@ -12,9 +12,9 @@ import {
     insertarColaborador,
     actualizarColaborador,
     cambiosDeColaborador,
+    registrarIdRemoto,
+    recordarIdRemoto,
 } from '../infrastructure/supabaseSync.ts';
-import { subirAlta, subirCambio } from '../infrastructure/colaRemota.ts';
-
 
 const CLAVE = 'colaboradores';
 
@@ -30,7 +30,11 @@ function normalizarLista(colaboradores: EntradaColaborador[]): Colaborador[] {
     );
 }
 
-// Sincroniza colaboradores desde Supabase una vez al cargar el módulo.
+function actualizarCache(colaboradores: Colaborador[]): void {
+    Storage.guardarValor(CLAVE, colaboradores);
+}
+
+// Sincroniza colaboradores desde Supabase una vez al cargar el mÃ³dulo.
 let sincronizado = false;
 export async function sincronizar() {
     if (sincronizado) {
@@ -61,65 +65,116 @@ export const colaboradorRepo = {
         return this.listar().find((colaborador) => String(colaborador.id) === String(id)) ?? null;
     },
 
-    crear(data: EntradaColaborador): Colaborador {
+    async crear(data: EntradaColaborador): Promise<Colaborador> {
+        if (!hayConexionSupabase()) {
+            throw new Error('No hay conexiÃ³n con Supabase. No se puede guardar el colaborador.');
+        }
+
+        const colaboradorBase = crearColaborador({ ...data, origen: 'usuario', activo: data?.activo !== false });
+        const { id: idRemotoColaborador } = await insertarColaborador(colaboradorBase);
+
         const colaboradores = this.listar();
-        const siguienteId = generarIdUnico(colaboradores);
-        const colaborador = crearColaborador({ ...data, id: siguienteId, origen: 'usuario' });
+        const colaborador = crearColaborador({
+            ...colaboradorBase,
+            id: (idRemotoColaborador as number | string | null) ?? colaboradorBase.id,
+            id_remoto: (idRemotoColaborador as number | string | null) ?? null,
+        });
         colaboradores.push(colaborador);
-        Storage.guardarValor(CLAVE, colaboradores);
-        this.subir(colaborador);
+        actualizarCache(colaboradores);
+
+        if (typeof idRemotoColaborador === 'string') {
+            recordarIdRemoto(claveColaborador(colaborador.id), idRemotoColaborador);
+            registrarIdRemoto('colaboradores', colaborador.id, idRemotoColaborador);
+        }
+
+        await sincronizarColaboradores().catch((error) => console.warn('No se pudo refrescar colaboradores tras guardar en Supabase.', error));
         return colaborador;
     },
 
-    actualizar(id: number | string, data: EntradaColaborador): Colaborador | null {
+    async actualizar(id: number | string, data: EntradaColaborador): Promise<Colaborador | null> {
+        if (!hayConexionSupabase()) {
+            throw new Error('No hay conexiÃ³n con Supabase. No se puede actualizar el colaborador.');
+        }
+
         const colaboradores = this.listar();
         const indice = colaboradores.findIndex((colaborador) => String(colaborador.id) === String(id));
         if (indice === -1) {
             return null;
         }
-        colaboradores[indice] = crearColaborador({ ...colaboradores[indice], ...data, id: colaboradores[indice].id });
-        Storage.guardarValor(CLAVE, colaboradores);
-        this.subirCambios(colaboradores[indice]);
+
+        const colaboradorActual = colaboradores[indice];
+        const colaboradorActualizado = crearColaborador({ ...colaboradorActual, ...data, id: colaboradorActual.id, origen: colaboradorActual.origen ?? 'usuario' });
+        const idRemotoColaborador = idRemoto(colaboradorActualizado) ?? idRemoto(colaboradorActual);
+
+        if (idRemotoColaborador == null) {
+            throw new Error('El colaborador no tiene id remoto en Supabase. Sincroniza los datos e intÃ©ntalo de nuevo.');
+        }
+
+        const cambios = cambiosDeColaborador(colaboradorActualizado);
+            await actualizarColaborador(idRemotoColaborador as number | string, cambios);
+
+        colaboradores[indice] = crearColaborador({ ...colaboradorActualizado, id_remoto: idRemotoColaborador as number | string | null });
+        actualizarCache(colaboradores);
+
+        await sincronizarColaboradores().catch((error) => console.warn('No se pudo refrescar colaboradores tras actualizar en Supabase.', error));
         return colaboradores[indice];
     },
 
-    eliminar(id: number | string): Colaborador[] {
+    async eliminar(id: number | string): Promise<Colaborador[]> {
+        if (!hayConexionSupabase()) {
+            throw new Error('No hay conexiÃ³n con Supabase. No se puede eliminar el colaborador.');
+        }
+
         const colaboradores = this.listar();
         const colaborador = colaboradores.find((item) => String(item.id) === String(id)) ?? null;
         const colaboradoresRestantes = colaboradores.filter((item) => String(item.id) !== String(id));
-        Storage.guardarValor(CLAVE, colaboradoresRestantes);
-        if (hayConexionSupabase() && colaborador) {
-            // Solo se borra en Supabase la fila que existe alli: el id local
-            // puede coincidir con el de otro colaborador y se borraria por error.
+
+        if (colaborador) {
             const idRemotoColaborador = idRemoto(colaborador);
             if (idRemotoColaborador != null) {
-                eliminarFilaRemota('colaboradores', idRemotoColaborador).catch((error) => console.warn('No se pudo borrar el colaborador en Supabase.', error));
+                await eliminarFilaRemota('colaboradores', idRemotoColaborador as number | string);
+            } else {
+                throw new Error('El colaborador no tiene id remoto en Supabase. No se puede eliminar desde la base de datos.');
             }
         }
+
+        Storage.guardarValor(CLAVE, colaboradoresRestantes);
+        await sincronizarColaboradores().catch((error) => console.warn('No se pudo refrescar colaboradores tras eliminar en Supabase.', error));
         return colaboradoresRestantes;
     },
 
-    // Sube el colaborador a Supabase.
     subir(colaborador: Colaborador): void {
-        subirAlta({
-            tipo: 'colaboradores',
-            clave: claveColaborador(colaborador.id),
-            idLocal: colaborador.id,
-            insertar: () => insertarColaborador(colaborador),
-            sincronizar: sincronizarColaboradores,
-        });
+        void (async () => {
+            try {
+                if (!hayConexionSupabase()) return;
+                const { id: idRemotoColaborador } = await insertarColaborador(colaborador);
+                if (typeof idRemotoColaborador === 'string') {
+                    recordarIdRemoto(claveColaborador(colaborador.id), idRemotoColaborador);
+                    registrarIdRemoto('colaboradores', colaborador.id, idRemotoColaborador);
+                }
+                await sincronizarColaboradores();
+            } catch (error) {
+                console.warn('No se pudo guardar el colaborador en Supabase.', error);
+            }
+        })();
     },
 
-    // Sube los cambios del colaborador (nombre, perfil y especialidad).
     subirCambios(colaborador: Colaborador): void {
-        subirCambio({
-            clave: claveColaborador(colaborador.id),
-            obtenerIdRemoto: () => idRemoto(this.obtenerPorId(colaborador.id)) ?? idRemoto(colaborador),
-            cambios: () => cambiosDeColaborador(colaborador),
-            aplicar: (idRemotoColaborador, cambios) => actualizarColaborador(idRemotoColaborador, cambios),
-            sincronizar: sincronizarColaboradores,
-        });
+        void (async () => {
+            try {
+                if (!hayConexionSupabase()) return;
+                const idRemotoColaborador = idRemoto(colaborador);
+                if (idRemotoColaborador == null) return;
+                const cambios = cambiosDeColaborador(colaborador);
+                if (!cambios) return;
+                await actualizarColaborador(idRemotoColaborador as string, cambios as Record<string, unknown>);
+                await sincronizarColaboradores();
+            } catch (error) {
+                console.warn('No se pudo actualizar el colaborador en Supabase.', error);
+            }
+        })();
     },
+
 };
 
 export default colaboradorRepo;

@@ -18,6 +18,7 @@ alter type public.estado_solicitud add value if not exists 'por_pagar';
 -- Un único trigger sobre auth.users: crea la fila en public.usuarios y, para
 -- los clientes, también la fila en public.clientes (con el nombre enviado en
 -- los metadatos del registro, o el prefijo del correo).
+-- Para colaboradores el registro público NO crea colaborador: debe ser por invitación/admin.
 -- Se elimina el trigger viejo sobre public.usuarios que provocaba orden
 -- ambiguo de disparadores.
 drop trigger if exists trg_crear_cliente_al_registrar on public.usuarios;
@@ -28,17 +29,23 @@ language plpgsql
 security definer
 set search_path = public
 as $$
+declare
+  v_rol text := coalesce(nullif(trim(new.raw_user_meta_data->>'rol'), ''), 'cliente');
+  v_nombre text := coalesce(nullif(trim(new.raw_user_meta_data->>'nombre'), ''), split_part(new.email, '@', 1));
 begin
   insert into public.usuarios (id, email)
   values (new.id, new.email)
   on conflict (id) do nothing;
 
-  insert into public.clientes (usuario_id, nombre)
-  values (
-    new.id,
-    coalesce(nullif(trim(new.raw_user_meta_data->>'nombre'), ''), split_part(new.email, '@', 1))
-  )
-  on conflict (usuario_id) do nothing;
+  if v_rol = 'cliente' then
+    insert into public.clientes (usuario_id, nombre)
+    values (new.id, v_nombre)
+    on conflict (usuario_id) do nothing;
+  elsif v_rol = 'colaborador' then
+    -- No se crea colaborador desde registro público. Debe hacerse por invitación o desde panel admin.
+    -- Solo se crea el usuario; el colaborador se vincula luego.
+    null;
+  end if;
 
   return new;
 end;

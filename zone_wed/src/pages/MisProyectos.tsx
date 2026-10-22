@@ -183,7 +183,7 @@ export default function MisProyectos() {
         setError(anotacion || '');
     };
 
-    const crearProyecto = (evento: FormEvent) => {
+    const crearProyecto = async (evento: FormEvent) => {
         evento.preventDefault();
         avisar('', '');
         const nombre = nombreProyecto.trim();
@@ -201,7 +201,7 @@ export default function MisProyectos() {
             return;
         }
         try {
-            const proyecto = ProyectoService.crear({ nombre, tipo: tipoProyecto, usuario_id: usuarioId });
+            const proyecto = await ProyectoService.crear({ nombre, tipo: tipoProyecto, usuario_id: usuarioId });
             setNombreProyecto('');
             setPropietarioId('');
             setProyectoActivoId(proyecto.id);
@@ -229,7 +229,7 @@ export default function MisProyectos() {
             return;
         }
         const duracion = duracionCancion.trim() === '' ? null : Number(duracionCancion);
-        CancionService.crear({
+            void CancionService.crear({
             proyecto_id: proyectoActivo.id,
             nombre,
             duracion: duracion !== null && Number.isFinite(duracion) && duracion > 0 ? duracion : null,
@@ -242,7 +242,7 @@ export default function MisProyectos() {
     };
 
     const eliminarCancion = (cancion: Cancion) => {
-        CancionService.eliminar(cancion.id as number | string);
+        void CancionService.eliminar(cancion.id as number | string);
         setMensaje(`Canción "${cancion.nombre}" eliminada.`);
     };
 

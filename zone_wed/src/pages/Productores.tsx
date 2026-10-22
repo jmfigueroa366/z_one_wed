@@ -42,7 +42,7 @@ function iniciales(nombre: string | null | undefined) {
 
 export default function Productores() {
     const [productores] = useProductores();
-    const [formulario, setFormulario] = useState({ nombre: '', especialidad: ESPECIALIDADES[0], imagen: '' });
+    const [formulario, setFormulario] = useState({ nombre: '', especialidad: ESPECIALIDADES[0], imagen: '', email: '', password: '' });
     const [error, setError] = useState('');
     const [cargandoImagen, setCargandoImagen] = useState(false);
     const [productorGrabacion, setProductorGrabacion] = useState<Colaborador | null>(null);
@@ -119,13 +119,13 @@ export default function Productores() {
         lector.readAsDataURL(archivo);
     };
 
-    const manejarRegistro = (event: FormEvent<HTMLFormElement>) => {
+    const manejarRegistro = async (event: FormEvent<HTMLFormElement>) => {
         event.preventDefault();
         setError('');
 
         try {
-            ProductorService.crear(formulario);
-            setFormulario({ nombre: '', especialidad: ESPECIALIDADES[0], imagen: '' });
+            await ProductorService.crear(formulario);
+            setFormulario({ nombre: '', especialidad: ESPECIALIDADES[0], imagen: '', email: '', password: '' });
             const campoImagen = document.getElementById('producer-image') as HTMLInputElement | null;
             if (campoImagen) campoImagen.value = '';
             setFiltroEspecialidad('Todas');
@@ -326,6 +326,32 @@ export default function Productores() {
                             type="text"
                             placeholder="Ej: Marco Reyes"
                             value={formulario.nombre}
+                            onChange={manejarCambio}
+                            required
+                        />
+                    </label>
+                    <label>
+                        <span className={ETIQUETA}>Correo electrónico (para login)</span>
+                        <input
+                            className={CAMPO}
+                            id="producer-email"
+                            name="email"
+                            type="email"
+                            placeholder="productor@correo.com"
+                            value={formulario.email}
+                            onChange={manejarCambio}
+                            required
+                        />
+                    </label>
+                    <label>
+                        <span className={ETIQUETA}>Contraseña (para login)</span>
+                        <input
+                            className={CAMPO}
+                            id="producer-password"
+                            name="password"
+                            type="password"
+                            placeholder="Mínimo 6 caracteres"
+                            value={formulario.password}
                             onChange={manejarCambio}
                             required
                         />

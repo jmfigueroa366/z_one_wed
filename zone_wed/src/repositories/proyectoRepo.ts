@@ -1,5 +1,5 @@
 // CAPA: Infraestructura
-import { Storage, generarIdUnico } from '../infrastructure/storage.ts';
+import { Storage } from '../infrastructure/storage.ts';
 import { SEED } from '../data/seed.ts';
 import { crearProyecto } from '../models/Proyecto.ts';
 import type { EntradaProyecto, Proyecto } from '../models/Proyecto.ts';
@@ -13,8 +13,9 @@ import {
     actualizarProyecto,
     cambiosDeProyecto,
     resolverClienteId,
+    registrarIdRemoto,
+    recordarIdRemoto,
 } from '../infrastructure/supabaseSync.ts';
-import { subirAlta, subirCambio } from '../infrastructure/colaRemota.ts';
 
 
 const CLAVE = 'proyectos';
@@ -47,6 +48,10 @@ export async function sincronizar() {
 
 sincronizar();
 
+function actualizarCache(proyectos: Proyecto[]): void {
+    Storage.guardarValor(CLAVE, proyectos);
+}
+
 export const proyectoRepo = {
     listar(): Proyecto[] {
         const proyectos = Storage.obtenerValor<unknown>(CLAVE, []);
@@ -68,72 +73,124 @@ export const proyectoRepo = {
         return this.listar().filter((proyecto) => String(proyecto.usuario_id) === String(usuarioId));
     },
 
-    crear(data: EntradaProyecto): Proyecto {
+    async crear(data: EntradaProyecto): Promise<Proyecto> {
+        if (!hayConexionSupabase()) {
+            throw new Error('No hay conexión con Supabase. No se puede guardar el proyecto.');
+        }
+
+        const clienteId = await resolverClienteId(data?.usuario_id);
+        if (!clienteId) {
+            throw new Error('El propietario del proyecto no tiene un cliente en Supabase.');
+        }
+
+        const proyectoBase = crearProyecto({ ...data, origen: 'usuario' });
+        const { id: idRemotoProyecto } = await insertarProyecto(proyectoBase, clienteId);
+
         const proyectos = this.listar();
-        const siguienteId = generarIdUnico(proyectos);
-        const proyecto = crearProyecto({ ...data, id: siguienteId, origen: 'usuario' });
+        const proyecto = crearProyecto({
+            ...proyectoBase,
+            id: (idRemotoProyecto as number | string | null) ?? proyectoBase.id,
+            id_remoto: (idRemotoProyecto as number | string | null) ?? null,
+        });
         proyectos.push(proyecto);
-        Storage.guardarValor(CLAVE, proyectos);
-        this.subir(proyecto);
+        actualizarCache(proyectos);
+
+        if (typeof idRemotoProyecto === 'number' || typeof idRemotoProyecto === 'string') {
+            recordarIdRemoto(claveProyecto(proyecto.id), idRemotoProyecto);
+            registrarIdRemoto('proyectos', proyecto.id, idRemotoProyecto);
+        }
+
+        await sincronizarProyectos().catch((error) => console.warn('No se pudo refrescar proyectos tras guardar en Supabase.', error));
         return proyecto;
     },
 
-    actualizar(id: number | string, data: EntradaProyecto): Proyecto | null {
+    async actualizar(id: number | string, data: EntradaProyecto): Promise<Proyecto | null> {
+        if (!hayConexionSupabase()) {
+            throw new Error('No hay conexión con Supabase. No se puede actualizar el proyecto.');
+        }
+
         const proyectos = this.listar();
         const indice = proyectos.findIndex((proyecto) => String(proyecto.id) === String(id));
         if (indice === -1) {
             return null;
         }
-        proyectos[indice] = crearProyecto({ ...proyectos[indice], ...data, id: proyectos[indice].id });
-        Storage.guardarValor(CLAVE, proyectos);
-        this.subirCambios(proyectos[indice]);
+
+        const proyectoActual = proyectos[indice];
+        const proyectoActualizado = crearProyecto({ ...proyectoActual, ...data, id: proyectoActual.id, origen: proyectoActual.origen ?? 'usuario' });
+        const idRemotoProyecto = idRemoto(proyectoActualizado) ?? idRemoto(proyectoActual);
+
+        if (idRemotoProyecto == null) {
+            throw new Error('El proyecto no tiene id remoto en Supabase. Sincroniza los datos e inténtalo de nuevo.');
+        }
+
+        const cambios = cambiosDeProyecto(proyectoActualizado);
+        await actualizarProyecto(idRemotoProyecto, cambios);
+
+        proyectos[indice] = crearProyecto({ ...proyectoActualizado, id_remoto: idRemotoProyecto as number | string | null });
+        actualizarCache(proyectos);
+
+        await sincronizarProyectos().catch((error) => console.warn('No se pudo refrescar proyectos tras actualizar en Supabase.', error));
         return proyectos[indice];
     },
 
-    eliminar(id: number | string): Proyecto[] {
+    async eliminar(id: number | string): Promise<Proyecto[]> {
+        if (!hayConexionSupabase()) {
+            throw new Error('No hay conexión con Supabase. No se puede eliminar el proyecto.');
+        }
+
         const proyectos = this.listar();
         const proyecto = proyectos.find((item) => String(item.id) === String(id)) ?? null;
         const proyectosRestantes = proyectos.filter((item) => String(item.id) !== String(id));
-        Storage.guardarValor(CLAVE, proyectosRestantes);
-        if (hayConexionSupabase() && proyecto) {
-            // Solo se borra en Supabase la fila que existe alli: el id local
-            // puede coincidir con el de otro proyecto y se borraria por error.
+
+        if (proyecto) {
             const idRemotoProyecto = idRemoto(proyecto);
             if (idRemotoProyecto != null) {
-                eliminarFilaRemota('proyectos', idRemotoProyecto).catch((error) => console.warn('No se pudo borrar el proyecto en Supabase.', error));
+                await eliminarFilaRemota('proyectos', idRemotoProyecto as number | string);
+            } else {
+                throw new Error('El proyecto no tiene id remoto en Supabase. No se puede eliminar desde la base de datos.');
             }
         }
+
+        Storage.guardarValor(CLAVE, proyectosRestantes);
+        await sincronizarProyectos().catch((error) => console.warn('No se pudo refrescar proyectos tras eliminar en Supabase.', error));
         return proyectosRestantes;
     },
 
-    // Sube el proyecto a Supabase. El proyecto necesita un cliente: si el
-    // propietario no tiene cliente en la base de datos, no se sube.
+    // Métodos de compatibilidad (ya no usan cola, pero se mantienen por si se llaman)
     subir(proyecto: Proyecto): void {
-        subirAlta({
-            tipo: 'proyectos',
-            clave: claveProyecto(proyecto.id),
-            idLocal: proyecto.id,
-            insertar: async () => {
+        void (async () => {
+            try {
+                if (!hayConexionSupabase()) return;
                 const clienteId = await resolverClienteId(proyecto.usuario_id);
-                if (!clienteId) {
-                    throw new Error('El propietario del proyecto no tiene un cliente en Supabase.');
+                if (!clienteId) return;
+                const { id: idRemotoProyecto } = await insertarProyecto(proyecto, clienteId);
+                if (typeof idRemotoProyecto === 'number' || typeof idRemotoProyecto === 'string') {
+                    recordarIdRemoto(claveProyecto(proyecto.id), idRemotoProyecto);
+                    registrarIdRemoto('proyectos', proyecto.id, idRemotoProyecto);
                 }
-                return insertarProyecto(proyecto, clienteId);
-            },
-            sincronizar: sincronizarProyectos,
-        });
+                await sincronizarProyectos();
+            } catch (error) {
+                console.warn('No se pudo guardar el proyecto en Supabase.', error);
+            }
+        })();
     },
 
-    // Sube los cambios del proyecto (nombre y tipo) a la fila de Supabase.
     subirCambios(proyecto: Proyecto): void {
-        subirCambio({
-            clave: claveProyecto(proyecto.id),
-            obtenerIdRemoto: () => idRemoto(this.obtenerPorId(proyecto.id)) ?? idRemoto(proyecto),
-            cambios: () => cambiosDeProyecto(proyecto),
-            aplicar: (idRemotoProyecto, cambios) => actualizarProyecto(idRemotoProyecto, cambios),
-            sincronizar: sincronizarProyectos,
-        });
+        void (async () => {
+            try {
+                if (!hayConexionSupabase()) return;
+                const idRemotoProyecto = idRemoto(proyecto);
+                if (idRemotoProyecto == null) return;
+                const cambios = cambiosDeProyecto(proyecto);
+                if (!cambios) return;
+                await actualizarProyecto(idRemotoProyecto as number | string, cambios);
+                await sincronizarProyectos();
+            } catch (error) {
+                console.warn('No se pudo actualizar el proyecto en Supabase.', error);
+            }
+        })();
     },
 };
 
 export default proyectoRepo;
+
