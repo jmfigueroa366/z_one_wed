@@ -1,17 +1,51 @@
-// CAPA: Presentaci�n
-import { createContext, useContext, useEffect, useMemo, useState } from 'react';
+// CAPA: Presentación
+import { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
 import type { ReactNode } from 'react';
-import { AuthService } from '../services/authService.ts';
+import { apiGet, apiPost } from '../lib/apiClient.ts';
 import type { EntradaUsuario, Usuario } from '../models/Usuario.ts';
 import { refrescarDatosUsuario } from '../infrastructure/supabaseSync.ts';
 import { Storage } from '../infrastructure/storage.ts';
+
+// Forma real que devuelve la API (GET /auth/me y POST /auth/login|registro).
+interface UsuarioApi {
+    id: string;
+    email: string;
+    nombre: string;
+    rol: string;
+    debeCambiarPassword: boolean;
+    permisos: string[];
+    clienteId: string | null;
+    colaboradorId: string | null;
+    perfilColaborador: string | null;
+}
+
+interface SesionApi {
+    usuario: UsuarioApi;
+    accesoExpiraEn: string;
+}
+
+function mapearUsuario(dto: UsuarioApi): Usuario {
+    return {
+        id: dto.id,
+        nombre: dto.nombre || dto.email,
+        email: dto.email,
+        rol: dto.rol,
+        perfil: dto.perfilColaborador ?? null,
+        activo: true,
+        debeCambiarPassword: Boolean(dto.debeCambiarPassword),
+        permisos: dto.permisos ?? [],
+        clienteId: dto.clienteId ?? null,
+        colaboradorId: dto.colaboradorId ?? null,
+    };
+}
 
 interface ContextoAuth {
     usuario: Usuario | null;
     cargando: boolean;
     isAuthenticated: boolean;
+    login: (email: string, password: string) => Promise<Usuario>;
     iniciarSesion: (email: string, password: string, rol?: string | null) => Promise<Usuario | null>;
-    registrarUsuario: (data?: EntradaUsuario) => Promise<Usuario | boolean>;
+    registrarUsuario: (data?: EntradaUsuario) => Promise<Usuario>;
     cerrarSesion: () => Promise<boolean>;
 }
 
@@ -23,67 +57,95 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     useEffect(() => {
         let activo = true;
-        AuthService.obtenerSesion()
-            .then(async (sesion: Usuario | null) => {
+
+        const restaurarSesion = async () => {
+            try {
+                let dto: UsuarioApi | null = null;
+
+                try {
+                    dto = await apiGet<UsuarioApi>('/auth/me');
+                } catch {
+                    // La cookie de acceso dura poco; si venció, probamos el refresh.
+                    const sesion = await apiPost<SesionApi>('/auth/refresh').catch(() => null);
+                    dto = sesion?.usuario ?? null;
+                }
+
                 if (!activo) return;
-                setUsuario(sesion);
-                if (sesion) {
-                    await refrescarDatosUsuario();
+
+                if (dto) {
+                    setUsuario(mapearUsuario(dto));
+                    // Sincronización de datos de Supabase, independiente de la sesión de la API.
+                    void refrescarDatosUsuario().catch(() => undefined);
+                } else {
+                    setUsuario(null);
                 }
-            })
-            .catch(() => {
-            })
-            .finally(() => {
-                if (activo) {
-                    setCargando(false);
-                }
-            });
-        const desuscribir = AuthService.escucharSesion((evento: string) => {
-            if (evento === 'SIGNED_OUT') {
-                setUsuario(null);
-                setCargando(false);
-            } else if (evento === 'SIGNED_IN') {
-                AuthService.obtenerSesion()
-                    .then((sesion: Usuario | null) => setUsuario(sesion))
-                    .catch(() => undefined);
-            }
-        });
-        return () => {
-            activo = false;
-            if (typeof desuscribir === 'function') {
-                desuscribir();
+            } catch {
+                if (activo) setUsuario(null);
+            } finally {
+                if (activo) setCargando(false);
             }
         };
+
+        void restaurarSesion();
+
+        return () => {
+            activo = false;
+        };
+    }, []);
+
+    const login = useCallback(async (email: string, password: string) => {
+        const sesion = await apiPost<SesionApi>('/auth/login', {
+            email: email.trim(),
+            password,
+        });
+        const autenticado = mapearUsuario(sesion.usuario);
+        setUsuario(autenticado);
+        void refrescarDatosUsuario().catch(() => undefined);
+        return autenticado;
+    }, []);
+
+    const iniciarSesion = useCallback(async (email: string, password: string, rol?: string | null) => {
+        const autenticado = await login(email, password);
+        if (rol && autenticado.rol !== rol) {
+            await apiPost('/auth/logout').catch(() => undefined);
+            setUsuario(null);
+            throw new Error('La cuenta no corresponde al tipo seleccionado.');
+        }
+        return autenticado;
+    }, [login]);
+
+    const registrarUsuario = useCallback(async (data: EntradaUsuario = {}) => {
+        const sesion = await apiPost<SesionApi>('/auth/registro', {
+            Nombre: String(data.nombre ?? '').trim(),
+            Email: String(data.email ?? '').trim(),
+            Password: String(data.password ?? ''),
+        });
+        const autenticado = mapearUsuario(sesion.usuario);
+        setUsuario(autenticado);
+        void refrescarDatosUsuario().catch(() => undefined);
+        return autenticado;
+    }, []);
+
+    const cerrarSesion = useCallback(async () => {
+        try {
+            await apiPost('/auth/logout');
+        } catch {
+            // Aunque falle la red, limpiamos la sesión local.
+        }
+        setUsuario(null);
+        Storage.limpiarTodo();
+        return true;
     }, []);
 
     const value = useMemo<ContextoAuth>(() => ({
         usuario,
         cargando,
         isAuthenticated: Boolean(usuario),
-        iniciarSesion: async (email: string, password: string, rol?: string | null) => {
-            const usuarioAutenticado = await AuthService.iniciarSesion(email, password, rol);
-            if (usuarioAutenticado) {
-                setUsuario(usuarioAutenticado);
-                try {
-                    await refrescarDatosUsuario();
-                } catch (error) {
-                    console.warn('No se pudieron refrescar los datos tras iniciar sesi�n.', error);
-                }
-            }
-            return usuarioAutenticado;
-        },
-        registrarUsuario: async (data: EntradaUsuario = {}) => {
-            const resultado = await AuthService.registrarUsuario(data);
-            setUsuario(null);
-            return resultado;
-        },
-        cerrarSesion: async () => {
-            const resultado = await AuthService.cerrarSesion();
-            setUsuario(null);
-            Storage.limpiarTodo();
-            return resultado;
-        },
-    }), [usuario, cargando]);
+        login,
+        iniciarSesion,
+        registrarUsuario,
+        cerrarSesion,
+    }), [usuario, cargando, login, iniciarSesion, registrarUsuario, cerrarSesion]);
 
     return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }

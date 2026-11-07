@@ -5,12 +5,14 @@ import { ArrowUp, Disc3, Menu, MessageCircle, Mic, Pause, Play, Quote, SlidersHo
 import { Link } from 'react-router-dom';
 import { RUTAS } from '../config/rutas.ts';
 import { cancionesArtistas } from '../data/cancionesArtistas.ts';
-import { salaRepo } from '../repositories/salaRepo.ts';
 import VinylDisc from '../components/VinylDisc.tsx';
 import { formatearMoneda } from '../utils/helpers.ts';
 import { useSpotlight } from '../hooks/useSpotlight.ts';
 import { useAuth } from '../context/AuthContext.tsx';
 import { esAdministrador, esColaborador } from '../config/roles.ts';
+import { useApi } from '../hooks/useApi.ts';
+import { obtenerLandingApi } from '../lib/landingApi.ts';
+import { urlImagen } from '../lib/apiClient.ts';
 import '../styles/tailwind.css';
 
 const MENOS_MOVIMIENTO = () =>
@@ -22,31 +24,16 @@ const BOTON_PRIMARIO =
 const BOTON_SECUNDARIO =
     'inline-flex min-h-[52px] items-center justify-center rounded-md border border-white/20 px-7 text-sm font-semibold text-texto-soft transition duration-300 hover:border-magenta/60 hover:bg-magenta/10';
 
-const IMAGENES_SALON = ['/landing/cabina%201.jpg', '/landing/cabina%202.jpg', '/landing/cabina%203.jpg'];
 const BARRAS_SALON = [50, 92, 64, 100, 46, 78, 60, 38, 84, 54];
+
+const ICONO: Record<string, React.ElementType> = {
+    mic: Mic,
+    'sliders-horizontal': SlidersHorizontal,
+    'disc-3': Disc3,
+};
 
 const ARTISTA_DESTACADO = cancionesArtistas[0];
 const CANCION_DESTACADA = ARTISTA_DESTACADO.canciones[0];
-
-const SERVICIOS = [
-    { n: '01', icono: Mic, t: 'Grabación', d: 'Cabinas tratadas acústicamente para voces, instrumentos y ensayos, con ingeniero de sonido.', tono: '#9365f2', glifo: 'from-[#9365f2]/25 via-[#9365f2]/5 to-transparent' },
-    { n: '02', icono: SlidersHorizontal, t: 'Producción y mezcla', d: 'Sesiones de producción y mezcla con fecha, duración y responsable definidos desde la agenda.', tono: '#e34ba6', glifo: 'from-[#e34ba6]/25 via-[#e34ba6]/5 to-transparent' },
-    { n: '03', icono: Disc3, t: 'Masterización', d: 'El cierre de tu proyecto: nivel, tono y consistencia finales para su publicación.', tono: '#5393da', glifo: 'from-[#5393da]/25 via-[#5393da]/5 to-transparent' },
-];
-
-const PASOS = [
-    { n: '01', icono: SlidersHorizontal, t: 'Elige el espacio', d: 'Revisa las cabinas y salas disponibles y selecciona la que necesitas.' },
-    { n: '02', icono: Mic, t: 'Envía tu solicitud', d: 'Define fecha, hora y tipo de trabajo en pocos pasos.' },
-    { n: '03', icono: Disc3, t: 'Haz que suceda', d: 'Sigue tus reservas y el avance de tu proyecto desde un solo lugar.' },
-];
-
-const FAQ = [
-    { p: '¿Qué tipos de servicio puedo solicitar?', r: 'Grabación, mezcla, masterización, ensayo o producción musical. Eliges el tipo al crear tu solicitud.' },
-    { p: '¿Qué necesito para crear una solicitud?', r: 'Una fecha, hora de inicio y fin, la cabina y al menos un artista o productor. El nombre y la canción son opcionales.' },
-    { p: '¿Necesito iniciar sesión?', r: 'Sí. Al elegir «Reservar una sesión» te llevamos al acceso y luego continúas con el formulario.' },
-    { p: '¿Cómo se confirma mi reserva?', r: 'Envías una solicitud y los artistas o productores invitados la responden. La sesión se crea automáticamente solo cuando todos aceptan.' },
-    { p: '¿Puedo cambiar o cancelar mi solicitud?', r: 'Mientras siga en estado «Solicitada» puedes cancelarla desde tu área de solicitudes. Cuando se confirma, aparece en tu agenda.' },
-];
 
 const ENLACES_NAV = [
     { etiqueta: 'Servicios', href: '#servicios' },
@@ -55,31 +42,6 @@ const ENLACES_NAV = [
     { etiqueta: 'Testimonios', href: '#testimonios' },
     { etiqueta: 'Preguntas', href: '#preguntas' },
     { etiqueta: 'Contacto', href: '#contacto' },
-];
-
-const METRICAS = [
-    { valor: 320, sufijo: '+', etiqueta: 'Proyectos producidos' },
-    { valor: 12, sufijo: 'k+', etiqueta: 'Horas de cabina' },
-    { valor: 98, sufijo: '%', etiqueta: 'Clientes satisfechos' },
-    { valor: 8, sufijo: ' años', etiqueta: 'De experiencia sonora' },
-];
-
-const TESTIMONIOS = [
-    {
-        nombre: 'Valentina Ríos',
-        rol: 'Artista independiente',
-        texto: 'Grabar en Z-ONE cambió por completo el resultado de mi EP. El equipo entiende la música y te acompaña en cada toma.',
-    },
-    {
-        nombre: 'Andrés Beltrán',
-        rol: 'Productor musical',
-        texto: 'La agenda en línea y las salas impecables hacen que cada sesión rinda al máximo. Es mi estudio de confianza.',
-    },
-    {
-        nombre: 'Mariana Cifuentes',
-        rol: 'Cantautora',
-        texto: 'Desde la reserva hasta el máster, todo se siente profesional y cercano. Mi sonido nunca sonó tan bien.',
-    },
 ];
 
 const modificadorReveal = (indice: number) => ({ 'data-revelar-delay': String(indice * 90) });
@@ -177,7 +139,16 @@ export default function LandingPage() {
         .map((parte) => parte[0] ?? '')
         .join('')
         .toLocaleUpperCase() || 'Z';
-    const salas = salaRepo.listar().filter((sala) => sala.activo !== false);
+    const { datos, error, cargando, recargar } = useApi(obtenerLandingApi);
+    const salas = datos?.salas ?? [];
+    const servicios = datos?.servicios ?? [];
+    const pasos = datos?.pasos ?? [];
+    const preguntas = datos?.preguntas ?? [];
+    const testimonios = datos?.testimonios ?? [];
+    const metricas = datos?.metricas ?? [];
+    const artistas = datos?.artistas ?? [];
+    const totalServicios = datos?.totalServicios ?? 0;
+    const config = datos?.config;
     const animar = !MENOS_MOVIMIENTO();
     const oculto = animar ? { opacity: 0 } : undefined;
 
@@ -275,7 +246,46 @@ export default function LandingPage() {
                 if (p) anime.remove(p);
             });
         };
-    }, []);
+    }, [datos]);
+
+    if (cargando) {
+        return (
+            <main ref={landingRef} className="min-h-screen overflow-x-hidden bg-bg text-texto-soft">
+                <div aria-hidden="true" className="pointer-events-none fixed inset-0 z-[60] opacity-[0.05] mix-blend-soft-light" />
+                <section className="mx-auto max-w-[1280px] px-6 py-32 lg:px-10" data-header style={{ opacity: 0 }}>
+                    <div className="animate-pulse h-7 w-40 rounded bg-surface/60 mx-auto mb-8" />
+                    <div className="mx-auto animate-pulse h-32 w-full rounded-2xl bg-surface/60 max-w-[1280px]" />
+                    <div className="mt-10 grid gap-5 sm:grid-cols-3">
+                        {[1, 2, 3].map((i) => (
+                            <div key={i} className="animate-pulse rounded-2xl border border-white/10 p-6 h-64" />
+                        ))}
+                    </div>
+                    <div className="scroll-mt-24 border-y border-border/60 bg-[#140f23] animate-pulse h-36" />
+                    <div className="scroll-mt-24 grid gap-5 sm:grid-cols-3 animate-pulse h-56 rounded-xl p-7" />
+                    <div className="scroll-mt-24 border-y border-border/60 bg-[#140f23] h-20" />
+                </section>
+            </main>
+        );
+    }
+
+    if (error) {
+        return (
+            <main ref={landingRef} className="min-h-screen overflow-x-hidden bg-bg text-texto-soft">
+                <div aria-hidden="true" className="pointer-events-none fixed inset-0 z-[60] opacity-[0.05] mix-blend-soft-light" />
+                <section style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: '100vh', padding: '2rem' }}>
+                    <p className="font-mono text-2xl uppercase tracking-[0.3em] text-magenta">Lo sentimos.</p>
+                    <p className="mt-4 text-base text-texto-soft">No pudimos cargar los datos del sitio. Intenta de nuevo.</p>
+                    <button
+                        type="button"
+                        onClick={recargar}
+                        className="mt-6 inline-flex min-h-[52px] items-center justify-center rounded-md bg-gradient-to-r from-[#9365f2] to-[#e34ba6] px-7 text-sm font-bold text-white shadow-lg shadow-accent/25 transition duration-300 hover:brightness-110"
+                    >
+                        Reintentar
+                    </button>
+                </section>
+            </main>
+        );
+    }
 
     return (
         <main
@@ -390,8 +400,8 @@ export default function LandingPage() {
                         <dl data-hero-stats style={oculto} className="mt-14 grid max-w-lg grid-cols-3 gap-6 border-t border-border pt-7">
                             {[
                                 { v: String(salas.length).padStart(2, '0'), l: 'Cabinas y salas', n: salas.length },
-                                { v: '06', l: 'Servicios de audio', n: 6 },
-                                { v: 'Lun–Dom', l: 'Horario del estudio' },
+                                { v: String(totalServicios), l: 'Servicios de audio', n: totalServicios },
+                                { v: config?.horario_estudio ?? 'Lun–Dom', l: 'Horario del estudio' },
                             ].map((stat) => (
                                 <div key={stat.l}>
                                     <dt style={FUENTE_TITULO} className="text-2xl font-bold tracking-tight text-texto-soft">
@@ -405,7 +415,7 @@ export default function LandingPage() {
 
 <div data-hero-art style={oculto} className="relative min-h-[560px] overflow-hidden border-t border-border/60 lg:min-h-[620px] lg:border-l lg:border-t-0" aria-label="Estudio Z-ONE: disco de vinilo sobre la sala de piano">
                         <div aria-hidden="true" className="absolute inset-0 [animation:kenburns_36s_ease-in-out_infinite_alternate]">
-                            <img src="/landing/piano.jpg" alt="" className="h-full w-full object-cover opacity-40" />
+                            <img src={urlImagen(config?.hero_imagen)} alt="" className="h-full w-full object-cover opacity-40" />
                         </div>
                         <div aria-hidden="true" className="absolute inset-0 bg-[#0b0814]/60" />
                         <div aria-hidden="true" className="pointer-events-none absolute -left-24 -top-24 h-[28rem] w-[28rem] rounded-full bg-[#8b5cf6]/30 blur-[150px]" />
@@ -446,6 +456,7 @@ export default function LandingPage() {
                 </div>
             </section>
 
+            {artistas.length > 0 && (
             <div className="border-b border-border/60 bg-[#140f23]">
                 <div className="mx-auto max-w-[1280px] px-6 py-7 lg:px-10">
                     <p className="flex items-center gap-3 font-mono text-[0.7rem] uppercase tracking-[0.22em] text-sutil">
@@ -454,17 +465,26 @@ export default function LandingPage() {
                     </p>
                     <div className="mt-4 overflow-hidden [mask-image:linear-gradient(to_right,transparent,black_6%,black_94%,transparent)]">
                         <div className="flex w-max animate-marquee items-center gap-3 pr-3 hover:[animation-play-state:paused]">
-                            {[...cancionesArtistas, ...cancionesArtistas].map((artista, i) => (
-                                <div key={`${artista.artista}-${i}`} className="flex shrink-0 items-center gap-3 rounded-full border border-border bg-surface/60 py-1.5 pl-1.5 pr-5">
-                                    <img src={artista.imagen} alt="" loading="lazy" className="h-9 w-9 rounded-full object-cover" />
-                                    <span className="whitespace-nowrap text-sm font-semibold text-texto-soft">{artista.artista}</span>
+                            {[...artistas, ...artistas].map((artista, i) => {
+                                const iniciales = artista.nombre.trim().split(/\s+/).slice(0, 2).map((parte) => parte[0] ?? '').join('').toLocaleUpperCase() || '?';
+                                return (
+                                <div key={`${artista.id}-${i}`} className="flex shrink-0 items-center gap-3 rounded-full border border-border bg-surface/60 py-1.5 pl-1.5 pr-5">
+                                    {artista.foto ? (
+                                        <img src={urlImagen(artista.foto)} alt="" loading="lazy" className="h-9 w-9 rounded-full object-cover" />
+                                    ) : (
+                                        <span className="grid h-9 w-9 place-items-center rounded-full bg-gradient-to-br from-[#9365f2] to-[#e34ba6] text-xs font-black text-white">{iniciales}</span>
+                                    )}
+                                    <span className="whitespace-nowrap text-sm font-semibold text-texto-soft">{artista.nombre}</span>
                                 </div>
-                            ))}
+                                );
+                            })}
                         </div>
                     </div>
                 </div>
             </div>
+            )}
 
+            {servicios.length > 0 && (
             <section className="mx-auto max-w-[1280px] scroll-mt-24 px-6 py-24 lg:px-10" id="servicios">
                 <div data-revelar {...modificadorReveal(0)} className="max-w-[46ch]">
                     <Etiqueta>Qué hacemos</Etiqueta>
@@ -476,32 +496,37 @@ export default function LandingPage() {
                     </p>
                 </div>
                 <div className="mt-12 grid gap-5 sm:grid-cols-3">
-                    {SERVICIOS.map((servicio, indice) => (
+                    {servicios.map((servicio, indice) => {
+                        const Icono = ICONO[servicio.icono] ?? Mic;
+                        const numero = String(indice + 1).padStart(2, '0');
+                        return (
                         <article
-                            key={servicio.n}
+                            key={servicio.id}
                             data-revelar
                             {...modificadorReveal(indice)}
                             className="group relative flex flex-col overflow-hidden rounded-2xl border border-white/10 p-6 transition duration-500 hover:-translate-y-1.5"
-                            style={{ background: `radial-gradient(120% 90% at 100% 0%, ${servicio.tono}22, transparent 55%), linear-gradient(160deg, rgba(33,28,54,0.95), rgba(18,14,28,0.98))` }}
+                            style={{ background: `radial-gradient(120% 90% at 100% 0%, ${servicio.color}22, transparent 55%), linear-gradient(160deg, rgba(33,28,54,0.95), rgba(18,14,28,0.98))` }}
                         >
-                            <span aria-hidden="true" className="absolute inset-x-0 top-0 h-[2px] origin-left scale-x-0 transition-transform duration-500 group-hover:scale-x-100" style={{ background: `linear-gradient(to right, ${servicio.tono}, transparent)` }} />
-                            <span aria-hidden="true" className="pointer-events-none absolute -right-6 -top-8 h-40 w-40 rounded-full opacity-60 blur-3xl transition-opacity duration-500 group-hover:opacity-100" style={{ background: `${servicio.tono}40` }} />
+                            <span aria-hidden="true" className="absolute inset-x-0 top-0 h-[2px] origin-left scale-x-0 transition-transform duration-500 group-hover:scale-x-100" style={{ background: `linear-gradient(to right, ${servicio.color}, transparent)` }} />
+                            <span aria-hidden="true" className="pointer-events-none absolute -right-6 -top-8 h-40 w-40 rounded-full opacity-60 blur-3xl transition-opacity duration-500 group-hover:opacity-100" style={{ background: `${servicio.color}40` }} />
                             <span aria-hidden="true" className="pointer-events-none absolute -right-3 -bottom-8 opacity-[0.07] transition-opacity duration-500 group-hover:opacity-[0.16]">
-                                <servicio.icono className="h-40 w-40" style={{ color: servicio.tono }} strokeWidth={1} />
+                                <Icono className="h-40 w-40" style={{ color: servicio.color }} strokeWidth={1} />
                             </span>
                             <div className="relative flex items-center justify-between">
-                                <span className="grid h-14 w-14 shrink-0 place-items-center rounded-xl border transition-transform duration-500 group-hover:scale-105" style={{ borderColor: `${servicio.tono}55`, background: `linear-gradient(135deg, ${servicio.tono}26, ${servicio.tono}0a)`, color: servicio.tono }}>
-                                    <servicio.icono aria-hidden="true" className="h-6 w-6" />
+                                <span className="grid h-14 w-14 shrink-0 place-items-center rounded-xl border transition-transform duration-500 group-hover:scale-105" style={{ borderColor: `${servicio.color}55`, background: `linear-gradient(135deg, ${servicio.color}26, ${servicio.color}0a)`, color: servicio.color }}>
+                                    <Icono aria-hidden="true" className="h-6 w-6" />
                                 </span>
-                                <span className="font-mono text-2xl font-black leading-none" style={{ ...FUENTE_TITULO, color: servicio.tono }}>{servicio.n}</span>
+                                <span className="font-mono text-2xl font-black leading-none" style={{ ...FUENTE_TITULO, color: servicio.color }}>{numero}</span>
                             </div>
-                            <h3 style={FUENTE_TITULO} className="relative mt-5 text-2xl font-bold leading-tight tracking-tight text-texto-soft">{servicio.t}</h3>
-                            <p className="relative mt-2 flex-1 text-sm leading-6 text-sutil">{servicio.d}</p>
-                            <span className="relative mt-5 h-px w-full origin-left scale-x-0 transition-transform duration-500 group-hover:scale-x-100" style={{ background: `linear-gradient(to right, ${servicio.tono}80, transparent)` }} aria-hidden="true" />
+                            <h3 style={FUENTE_TITULO} className="relative mt-5 text-2xl font-bold leading-tight tracking-tight text-texto-soft">{servicio.titulo}</h3>
+                            <p className="relative mt-2 flex-1 text-sm leading-6 text-sutil">{servicio.descripcion}</p>
+                            <span className="relative mt-5 h-px w-full origin-left scale-x-0 transition-transform duration-500 group-hover:scale-x-100" style={{ background: `linear-gradient(to right, ${servicio.color}80, transparent)` }} aria-hidden="true" />
                         </article>
-                    ))}
+                        );
+                    })}
                 </div>
             </section>
+            )}
 
             <section className="scroll-mt-24 border-y border-border/60 bg-[#140f23]" id="espacios">
                 <div className="mx-auto max-w-[1280px] px-6 py-24 lg:px-10">
@@ -519,7 +544,7 @@ export default function LandingPage() {
                                 <span aria-hidden="true" className="absolute inset-x-0 top-0 z-10 h-px origin-left scale-x-0 bg-gradient-to-r from-[#8b5cf6] to-[#ec4899] transition-transform duration-500 group-hover:scale-x-100" />
                                 <div className="relative aspect-[4/3] overflow-hidden">
                                     <img
-                                        src={IMAGENES_SALON[index % IMAGENES_SALON.length]}
+                                        src={urlImagen(sala.imagenUrl)}
                                         alt={`${sala.nombre} del estudio Z-ONE`}
                                         loading="lazy"
                                         className="h-full w-full object-cover transition duration-[1200ms] ease-out group-hover:scale-[1.08] group-hover:brightness-110"
@@ -544,7 +569,7 @@ export default function LandingPage() {
                                         <h3 style={FUENTE_TITULO} className="text-base font-bold tracking-tight text-texto-soft">{sala.nombre}</h3>
                                         <p className="mt-0.5 font-mono text-[0.7rem] text-sutil">Disponible por hora</p>
                                     </div>
-                                    <strong style={FUENTE_TITULO} className="text-base font-bold text-texto-soft transition-colors duration-300 group-hover:text-magenta">{formatearMoneda(sala.precio_hora)}</strong>
+                                    <strong style={FUENTE_TITULO} className="text-base font-bold text-texto-soft transition-colors duration-300 group-hover:text-magenta">{formatearMoneda(sala.precioHora)}</strong>
                                 </div>
                                 <Link className="mt-4 flex items-center justify-between border-t border-border px-5 py-3.5 text-sm font-semibold text-texto-soft transition duration-300 group-hover:bg-magenta/5 group-hover:text-magenta" to={destinoReserva}>
                                     Reservar
@@ -557,25 +582,32 @@ export default function LandingPage() {
                 </div>
             </section>
 
+            {pasos.length > 0 && (
             <section className="mx-auto max-w-[1280px] scroll-mt-24 px-6 py-24 lg:px-10" id="proceso">
                 <div data-revelar {...modificadorReveal(0)} className="max-w-[40ch]">
                     <Etiqueta>Cómo funciona</Etiqueta>
                     <h2 style={FUENTE_TITULO} className="mt-5 text-[clamp(2rem,4vw,3rem)] font-bold leading-tight tracking-[-0.03em] text-texto-soft">Reservar toma tres pasos.</h2>
                 </div>
                 <div className="mt-12 grid gap-5 sm:grid-cols-3">
-                    {PASOS.map((paso, indice) => (
-                        <div key={paso.n} data-revelar {...modificadorReveal(indice)} className="group relative overflow-hidden rounded-xl border border-border bg-gradient-to-b from-[#161022] to-bg p-7 transition-colors duration-500 hover:border-magenta/40">
-                            <span aria-hidden="true" className="pointer-events-none absolute right-5 top-4 text-6xl font-black leading-none text-white/[0.04] transition-colors duration-500 group-hover:text-magenta/10" style={FUENTE_TITULO}>{paso.n}</span>
+                    {pasos.map((paso, indice) => {
+                        const Icono = ICONO[paso.icono] ?? Mic;
+                        const numero = String(indice + 1).padStart(2, '0');
+                        return (
+                        <div key={paso.id} data-revelar {...modificadorReveal(indice)} className="group relative overflow-hidden rounded-xl border border-border bg-gradient-to-b from-[#161022] to-bg p-7 transition-colors duration-500 hover:border-magenta/40">
+                            <span aria-hidden="true" className="pointer-events-none absolute right-5 top-4 text-6xl font-black leading-none text-white/[0.04] transition-colors duration-500 group-hover:text-magenta/10" style={FUENTE_TITULO}>{numero}</span>
                             <span className="grid h-12 w-12 place-items-center rounded-xl border border-border bg-surface text-magenta transition-transform duration-500 group-hover:-translate-y-1">
-                                <paso.icono aria-hidden="true" className="h-5 w-5" />
+                                <Icono aria-hidden="true" className="h-5 w-5" />
                             </span>
-                            <h3 style={FUENTE_TITULO} className="mt-6 text-lg font-bold tracking-tight text-texto-soft">{paso.t}</h3>
-                            <p className="mt-2 text-sm leading-7 text-sutil">{paso.d}</p>
+                            <h3 style={FUENTE_TITULO} className="mt-6 text-lg font-bold tracking-tight text-texto-soft">{paso.titulo}</h3>
+                            <p className="mt-2 text-sm leading-7 text-sutil">{paso.descripcion}</p>
                         </div>
-                    ))}
+                        );
+                    })}
                 </div>
             </section>
+            )}
 
+            {(metricas.length > 0 || testimonios.length > 0) && (
             <section className="scroll-mt-24 border-y border-border/60 bg-[#140f23]" id="testimonios">
                 <div className="mx-auto max-w-[1280px] px-6 py-24 lg:px-10">
                     <div data-revelar {...modificadorReveal(0)} className="max-w-[40ch]">
@@ -584,8 +616,8 @@ export default function LandingPage() {
                     </div>
 
                     <div data-revelar {...modificadorReveal(1)} className="mt-12 grid gap-px overflow-hidden rounded-xl border border-border bg-border sm:grid-cols-2 lg:grid-cols-4">
-                        {METRICAS.map((metrica) => (
-                            <div key={metrica.etiqueta} className="bg-bg p-6 text-center">
+                        {metricas.map((metrica) => (
+                            <div key={metrica.id} className="bg-bg p-6 text-center">
                                 <p style={FUENTE_TITULO} className="text-4xl font-black tracking-tight text-texto-soft">
                                     <Numero valor={metrica.valor} />
                                     <span className="text-magenta">{metrica.sufijo}</span>
@@ -596,13 +628,13 @@ export default function LandingPage() {
                     </div>
 
                     <div className="mt-6 grid gap-5 lg:grid-cols-3">
-                        {TESTIMONIOS.map((testimonio, indice) => (
-                            <article key={testimonio.nombre} data-revelar {...modificadorReveal(indice)} className="group relative flex flex-col overflow-hidden rounded-xl border border-border bg-surface p-7 transition duration-500 hover:-translate-y-1.5 hover:border-magenta/50 hover:shadow-[0_36px_70px_-28px_rgba(0,0,0,0.95)]">
+                        {testimonios.map((testimonio, indice) => (
+                            <article key={testimonio.id} data-revelar {...modificadorReveal(indice)} className="group relative flex flex-col overflow-hidden rounded-xl border border-border bg-surface p-7 transition duration-500 hover:-translate-y-1.5 hover:border-magenta/50 hover:shadow-[0_36px_70px_-28px_rgba(0,0,0,0.95)]">
                                 <span aria-hidden="true" className="absolute inset-x-0 top-0 h-px origin-left scale-x-0 bg-gradient-to-r from-[#8b5cf6] to-[#ec4899] transition-transform duration-500 group-hover:scale-x-100" />
                                 <Quote className="h-7 w-7 text-magenta/60" aria-hidden="true" />
-                                <div className="mt-4 flex gap-0.5" aria-label="5 de 5 estrellas">
+                                <div className="mt-4 flex gap-0.5" aria-label={`${testimonio.calificacion} de 5 estrellas`}>
                                     {Array.from({ length: 5 }).map((_, i) => (
-                                        <Star key={i} className="h-3.5 w-3.5 fill-magenta text-magenta" aria-hidden="true" />
+                                        <Star key={i} className={`h-3.5 w-3.5 ${i < testimonio.calificacion ? 'fill-magenta text-magenta' : 'text-border'}`} aria-hidden="true" />
                                     ))}
                                 </div>
                                 <p className="mt-4 flex-1 text-sm leading-7 text-sutil">{testimonio.texto}</p>
@@ -620,7 +652,9 @@ export default function LandingPage() {
                     </div>
                 </div>
             </section>
+            )}
 
+            {preguntas.length > 0 && (
             <section className="scroll-mt-24 border-y border-border/60 bg-[#140f23]" id="preguntas">
                 <div className="mx-auto grid max-w-[1280px] gap-12 px-6 py-24 lg:grid-cols-[0.8fr_1.2fr] lg:px-10">
                     <div data-revelar {...modificadorReveal(0)}>
@@ -629,18 +663,19 @@ export default function LandingPage() {
                         <p className="mt-5 max-w-[38ch] text-sm leading-7 text-sutil">Lo esencial para preparar tu sesión en Z-ONE.</p>
                     </div>
                     <div className="border-t border-border">
-                        {FAQ.map((faq, indice) => (
-                            <details key={faq.p} data-faq data-revelar {...modificadorReveal(indice)} className="group border-b border-border">
+                        {preguntas.map((faq, indice) => (
+                            <details key={faq.id} data-faq data-revelar {...modificadorReveal(indice)} className="group border-b border-border">
                                 <summary className="flex cursor-pointer list-none items-center justify-between gap-6 py-6 text-base font-semibold text-texto-soft transition-colors hover:text-magenta [&::-webkit-details-marker]:hidden">
-                                    {faq.p}
+                                    {faq.pregunta}
                                     <span className="text-xl text-magenta transition-transform duration-300 group-open:rotate-45" aria-hidden="true">+</span>
                                 </summary>
-                                <p className="max-w-[62ch] pb-6 pr-8 text-sm leading-7 text-sutil">{faq.r}</p>
+                                <p className="max-w-[62ch] pb-6 pr-8 text-sm leading-7 text-sutil">{faq.respuesta}</p>
                             </details>
                         ))}
                     </div>
                 </div>
             </section>
+            )}
 
             <section className="relative overflow-hidden border-t border-border/60 bg-gradient-to-br from-[#1b1430] via-[#161022] to-[#120d1b]" id="contacto">
                 <span aria-hidden="true" className="pointer-events-none absolute -right-16 -top-16 h-56 w-56 rounded-full bg-[#e34ba6]/25 blur-3xl" />

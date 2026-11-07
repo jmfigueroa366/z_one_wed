@@ -3,6 +3,7 @@ import { useState } from 'react';
 import { Link, Navigate, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext.tsx';
 import AuthLayout, { authBoton, authCampo, authEtiqueta } from '../components/AuthLayout.tsx';
+import { PASSWORD_MIN_LENGTH, validarPasswordSegura } from '../utils/validators.ts';
 
 export default function Register() {
     const navigate = useNavigate();
@@ -40,14 +41,20 @@ export default function Register() {
         setCargando(true);
 
         try {
-            const resultado = await registrarUsuario({
+            const erroresPassword = validarPasswordSegura(formulario.password, formulario.email, formulario.nombre);
+            if (erroresPassword.length > 0) {
+                setError(erroresPassword.join(' '));
+                return;
+            }
+
+            const usuarioCreado = await registrarUsuario({
                 ...formulario,
             });
-            if (resultado === false) {
+            if (!usuarioCreado) {
                 setError('No se pudo registrar el usuario. Revisa los datos e inténtalo de nuevo.');
                 return;
             }
-            navigate('/login', { replace: true, state: location.state });
+            navigate(rutaDestino, { replace: true });
         } catch (err: unknown) {
             setError(err instanceof Error ? err.message : 'No se pudo registrar el usuario.');
         } finally {
@@ -105,8 +112,12 @@ export default function Register() {
                         placeholder="••••••••"
                         autoComplete="new-password"
                         className={authCampo}
+                        minLength={PASSWORD_MIN_LENGTH}
                         required
                     />
+                    <span className="mt-1 block text-xs text-sutil">
+                        Mínimo {PASSWORD_MIN_LENGTH} caracteres, con al menos una letra y un número.
+                    </span>
                 </label>
 
                 {error ? (

@@ -8,6 +8,10 @@ export interface Usuario {
     rol: string;
     perfil: string | null;
     activo: boolean;
+    debeCambiarPassword?: boolean;
+    permisos?: string[];
+    clienteId?: string | null;
+    colaboradorId?: string | null;
     [key: string]: unknown;
 }
 

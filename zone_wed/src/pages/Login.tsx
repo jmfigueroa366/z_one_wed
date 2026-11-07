@@ -14,9 +14,10 @@ const CUENTAS_DEMO = [
 export default function Login() {
     const navigate = useNavigate();
     const location = useLocation();
-    const { usuario, cargando: cargandoSesion, iniciarSesion } = useAuth();
+    const { usuario, cargando: cargandoSesion, iniciarSesion, cerrarSesion } = useAuth();
     const [formulario, setFormulario] = useState({ email: '', password: '', rol: '' });
     const [error, setError] = useState('');
+    const [aviso, setAviso] = useState('');
     const [cargando, setCargando] = useState(false);
     const destino = location.state?.from;
     const rutaDestino = destino
@@ -27,7 +28,7 @@ export default function Login() {
         return <main className="grid min-h-screen place-items-center bg-bg text-sutil">Cargando sesión...</main>;
     }
 
-    if (usuario) {
+    if (usuario && !aviso) {
         return <Navigate to={rutaDestino} replace />;
     }
 
@@ -44,12 +45,18 @@ export default function Login() {
     const manejarSubmit = async (event: FormEvent<HTMLFormElement>) => {
         event.preventDefault();
         setError('');
+        setAviso('');
         setCargando(true);
 
         try {
-            const usuario = await iniciarSesion(formulario.email, formulario.password, formulario.rol);
-            if (!usuario) {
+            const autenticado = await iniciarSesion(formulario.email, formulario.password, formulario.rol);
+            if (!autenticado) {
                 throw new Error('Revisa tus credenciales y el tipo de cuenta seleccionado.');
+            }
+
+            if (autenticado.debeCambiarPassword) {
+                setAviso('Tu cuenta usa una contraseña temporal. Debes cambiarla antes de continuar.');
+                return;
             }
 
             navigate(rutaDestino, { replace: true });
@@ -66,6 +73,22 @@ export default function Login() {
             subtitulo="Selecciona tu tipo de cuenta para acceder al centro operativo del estudio."
         >
             <form onSubmit={manejarSubmit} className="grid gap-4">
+                {aviso ? (
+                    <div className="rounded-xl border border-accent/40 bg-accent/10 px-4 py-3 text-sm text-texto" role="status">
+                        <p>{aviso}</p>
+                        <button
+                            type="button"
+                            onClick={async () => {
+                                await cerrarSesion();
+                                setAviso('');
+                            }}
+                            className="mt-2 font-bold text-accent underline"
+                        >
+                            Cerrar sesión
+                        </button>
+                    </div>
+                ) : null}
+
                 <label className="block">
                     <span className={authEtiqueta}>Tipo de cuenta</span>
                     <select name="rol" value={formulario.rol} onChange={manejarCambio} className={authCampo} required>
