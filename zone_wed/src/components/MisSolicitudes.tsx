@@ -1,81 +1,33 @@
-﻿// CAPA: Presentaci├│n
-import { useEffect, useMemo, useRef, useState } from 'react';
-import type { FormEvent, ReactNode } from 'react';
-import { Link, useLocation } from 'react-router-dom';
+﻿// CAPA: Presentación
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import type { ReactNode } from 'react';
 import anime from 'animejs';
 import {
     CalendarClock,
     Check,
     Clock,
-    Coins,
     Disc3,
-    Layers,
-    MapPin,
     Mic,
     Music,
-    Send,
     SlidersHorizontal,
     Sparkles,
     Users,
     Wand2,
+    X,
     XCircle,
 } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 import { Contador, Ecualizador } from './Animados.tsx';
 import { useAuth } from '../context/AuthContext.tsx';
-import { esCliente } from '../config/roles.ts';
-import { useColaboradores } from '../hooks/useColaboradores.ts';
-import { useSalas } from '../hooks/useSalas.ts';
-import { useSolicitudes } from '../hooks/useSolicitudes.ts';
-import { useSesiones } from '../hooks/useSesiones.ts';
-import { useProyectos } from '../hooks/useProyectos.ts';
-import { useCancionesDeUsuario } from '../hooks/useCanciones.ts';
-import { useOrdenes } from '../hooks/useOrdenes.ts';
-import { SolicitudService } from '../services/solicitudService.ts';
+import { useApi } from '../hooks/useApi.ts';
+import { listarSolicitudes, obtenerSolicitud, responderInvitacionSolicitud } from '../api/solicitudesApi.ts';
+import { adaptarSolicitud, adaptarSolicitudResumen } from '../api/adapters.ts';
 import { TIPOS_SOLICITUD } from '../models/Solicitud.ts';
 import type { Solicitud } from '../models/Solicitud.ts';
-import { TIPOS_ORDEN } from '../config/facturacion.ts';
-import { RUTAS } from '../config/rutas.ts';
-import {
-    aMinutos,
-    etiquetaEstado,
-    etiquetaInvitacion,
-    etiquetaRol,
-    etiquetaTipo,
-    estimadoSala,
-    franjasOcupadas,
-    rolDeColaborador,
-    seSolapan,
-} from '../utils/solicitudes.ts';
-import { formatearFecha, formatearMoneda } from '../utils/helpers.ts';
-import { BOTON_PELIGRO, BOTON_PRIMARIO, CAMPO, ETIQUETA, clasePillEstado } from '../styles/clases.ts';
+import { etiquetaEstado, etiquetaInvitacion, etiquetaTipo } from '../utils/solicitudes.ts';
+import { formatearFecha } from '../utils/helpers.ts';
+import { BOTON_PELIGRO, BOTON_PRIMARIO, clasePillEstado } from '../styles/clases.ts';
 import '../styles/tailwind.css';
-
-interface FormularioSolicitud {
-    tipo: string;
-    titulo: string;
-    descripcion: string;
-    sala_id: string;
-    fecha: string;
-    hora_inicio: string;
-    hora_fin: string;
-    cancion_id: string;
-}
-
-interface GrabacionPrevia {
-    cancion_id?: number | string;
-}
-
-interface MetaTipo {
-    icono: LucideIcon;
-    ayuda: string;
-}
-
-interface PasoProps {
-    numero: string;
-    titulo: string;
-    icono: LucideIcon;
-}
 
 interface DatoProps {
     icono: LucideIcon;
@@ -83,23 +35,12 @@ interface DatoProps {
     valor: ReactNode;
 }
 
-const FORM_INICIAL: FormularioSolicitud = {
-    tipo: TIPOS_SOLICITUD.GRABACION,
-    titulo: '',
-    descripcion: '',
-    sala_id: '',
-    fecha: '',
-    hora_inicio: '09:00',
-    hora_fin: '12:00',
-    cancion_id: '',
-};
-
-const TIPOS_META: Record<string, MetaTipo> = {
-    [TIPOS_SOLICITUD.GRABACION]: { icono: Mic, ayuda: 'Voces e instrumentos' },
-    [TIPOS_SOLICITUD.MEZCLA]: { icono: SlidersHorizontal, ayuda: 'Equilibrar pistas' },
-    [TIPOS_SOLICITUD.MASTERIZACION]: { icono: Disc3, ayuda: 'Acabado final' },
-    [TIPOS_SOLICITUD.ENSAYO]: { icono: Music, ayuda: 'Practicar en cabina' },
-    [TIPOS_SOLICITUD.PRODUCCION]: { icono: Wand2, ayuda: 'Arreglos y direcci├│n' },
+const TIPOS_META: Record<string, LucideIcon> = {
+    [TIPOS_SOLICITUD.GRABACION]: Mic,
+    [TIPOS_SOLICITUD.MEZCLA]: SlidersHorizontal,
+    [TIPOS_SOLICITUD.MASTERIZACION]: Disc3,
+    [TIPOS_SOLICITUD.ENSAYO]: Music,
+    [TIPOS_SOLICITUD.PRODUCCION]: Wand2,
 };
 
 const MENOS_MOVIMIENTO = () =>
@@ -119,24 +60,10 @@ const ESTADOS_CANCELABLES = ['solicitada', 'por_autorizar', 'por_pagar'];
 
 const SIGUIENTE_PASO: Record<string, string> = {
     solicitada: 'Esperando que el equipo invitado acepte.',
-    por_autorizar: 'El equipo acept├│. El estudio debe autorizar la reserva.',
-    por_pagar: 'El estudio autoriz├│. Paga el anticipo para confirmar tu sesi├│n.',
-    confirmada: 'Reserva confirmada. ┬íTu sesi├│n est├í agendada!',
+    por_autorizar: 'El equipo aceptó. El estudio debe autorizar la reserva.',
+    por_pagar: 'El estudio autorizó. Paga el anticipo para confirmar tu sesión.',
+    confirmada: 'Reserva confirmada. ¡Tu sesión está agendada!',
 };
-
-function Paso({ numero, titulo, icono: Icono }: PasoProps) {
-    return (
-        <div className="mb-4 flex items-center gap-3">
-            <span className="grid h-9 w-9 shrink-0 place-items-center rounded-xl border border-accent/30 bg-accent/10 text-sm font-black text-accent-soft">
-                {numero}
-            </span>
-            <h3 className="flex items-center gap-2 text-sm font-bold uppercase tracking-wider text-texto-soft">
-                {Icono && <Icono className="h-4 w-4 text-accent-soft" aria-hidden="true" />}
-                {titulo}
-            </h3>
-        </div>
-    );
-}
 
 function Dato({ icono: Icono, etiqueta, valor }: DatoProps) {
     return (
@@ -152,59 +79,34 @@ function Dato({ icono: Icono, etiqueta, valor }: DatoProps) {
 
 export default function MisSolicitudes() {
     const { usuario } = useAuth();
-    const location = useLocation();
-    const [solicitudes] = useSolicitudes();
-    const [salas] = useSalas(true);
-    const [sesiones] = useSesiones();
-    const [colaboradores] = useColaboradores(true);
-    const [proyectos] = useProyectos(usuario?.id);
-    const [canciones] = useCancionesDeUsuario(usuario?.id);
-    const [ordenes] = useOrdenes(usuario);
-    const [form, setForm] = useState(FORM_INICIAL);
-    const [partesMarcadas, setPartesMarcadas] = useState<string[]>([]);
-    const [colaboradoresElegidos, setColaboradoresElegidos] = useState<string[]>([]);
-    const [mensaje, setMensaje] = useState('');
-    const [error, setError] = useState('');
-    const [ocupado, setOcupado] = useState<number | string | null>(null);
+    const cargarSolicitudes = useCallback(() => listarSolicitudes({ tamano: 100 }), []);
+    const { datos, error, cargando, recargar } = useApi(cargarSolicitudes);
+    const solicitudes = useMemo(() => (datos?.items ?? []).map(adaptarSolicitudResumen), [datos]);
 
-    const esClienteActual = esCliente(usuario);
-    const esGrabacion = form.tipo === TIPOS_SOLICITUD.GRABACION;
-    const cancionSeleccionada = canciones.find((cancion) => String(cancion.id) === String(form.cancion_id));
-    const colaboradorActual = colaboradores.find((colaborador) => String(colaborador.usuario_id) === String(usuario?.id));
+    const [detalle, setDetalle] = useState<{ id: number; esInvitacion: boolean } | null>(null);
 
-    useEffect(() => {
-        const previa = location.state?.grabacionPrevia as GrabacionPrevia | null | undefined;
-        if (!previa?.cancion_id) return;
+    const clienteId = usuario?.clienteId ?? null;
+    const colaboradorId = usuario?.colaboradorId ?? null;
 
-        const cancion = canciones.find((item) => String(item.id) === String(previa.cancion_id));
-        setForm((previo) => ({
-            ...previo,
-            tipo: TIPOS_SOLICITUD.GRABACION,
-            cancion_id: String(previa.cancion_id),
-        }));
-        setPartesMarcadas(cancion?.partes ?? []);
-        window.history.replaceState({}, document.title);
-    }, [location.state, canciones]);
+    const misSolicitudes = useMemo(() => {
+        if (!clienteId) return [];
+        return [...solicitudes]
+            .filter((solicitud) => String(solicitud.usuario_id) === String(clienteId))
+            .sort((a, b) => String(b.fecha_solicitud ?? b.fecha ?? '').localeCompare(String(a.fecha_solicitud ?? a.fecha ?? '')));
+    }, [solicitudes, clienteId]);
 
-    const misSolicitudes = useMemo(() => [...solicitudes]
-        .filter((solicitud) => String(solicitud.usuario_id) === String(usuario?.id))
-        .sort((a, b) => String(b.fecha_solicitud ?? b.fecha ?? '').localeCompare(String(a.fecha_solicitud ?? a.fecha ?? ''))),
-    [solicitudes, usuario]);
-
-    const invitacionesPorResponder: typeof solicitudes = [];
+    const invitacionesRecibidas = useMemo(
+        () => [...solicitudes]
+            .filter((solicitud) => String(solicitud.usuario_id) !== String(clienteId))
+            .sort((a, b) => String(b.fecha_solicitud ?? b.fecha ?? '').localeCompare(String(a.fecha_solicitud ?? a.fecha ?? ''))),
+        [solicitudes, clienteId]
+    );
 
     const resumen = useMemo(() => ({
         total: misSolicitudes.length,
         activas: misSolicitudes.filter((solicitud) => ESTADOS_CANCELABLES.includes(solicitud.estado)).length,
-        porPagar: misSolicitudes.filter((solicitud) => solicitud.estado === 'por_pagar').length,
         confirmadas: misSolicitudes.filter((solicitud) => solicitud.estado === 'confirmada').length,
     }), [misSolicitudes]);
-
-    const pagoPendiente = useMemo(
-        () => ordenes.find((orden) =>
-            orden.tipo === TIPOS_ORDEN.RESERVA && ['facturada', 'parcial'].includes(orden.estado)) ?? null,
-        [ordenes]
-    );
 
     const historialRef = useRef<HTMLDivElement | null>(null);
     useEffect(() => {
@@ -221,146 +123,10 @@ export default function MisSolicitudes() {
         return () => animacion.pause();
     }, [misSolicitudes]);
 
-    const salaSeleccionada = salas.find((sala) => String(sala.id) === String(form.sala_id));
-    const franjaPropuesta = `${form.hora_inicio}-${form.hora_fin}`;
-    const estimado = estimadoSala(salaSeleccionada, franjaPropuesta);
-
-    const ocupadas = useMemo(
-        () => franjasOcupadas({ fecha: form.fecha, salaId: form.sala_id, solicitudes, sesiones }),
-        [form.fecha, form.sala_id, solicitudes, sesiones]
-    );
-    const franjasEnConflicto = ocupadas.filter((franja) => seSolapan(franja, franjaPropuesta));
-    const tieneConflicto = Boolean(form.sala_id && form.fecha && franjasEnConflicto.length);
-
-    const cambiarCampo = (campo: keyof FormularioSolicitud, valor: string) =>
-        setForm((previo) => ({ ...previo, [campo]: valor }));
-
-    const cambiarTipo = (tipo: string) => {
-        if (tipo !== TIPOS_SOLICITUD.GRABACION) {
-            setForm((previo) => ({ ...previo, tipo, cancion_id: '' }));
-            setPartesMarcadas([]);
-        } else {
-            setForm((previo) => ({ ...previo, tipo }));
-        }
+    const abrirDetalle = (solicitud: Solicitud, esInvitacion: boolean) => {
+        if (solicitud.id == null) return;
+        setDetalle({ id: Number(solicitud.id), esInvitacion });
     };
-
-    const cambiarCancion = (cancionId: string) => {
-        setForm((previo) => ({ ...previo, cancion_id: cancionId }));
-        const cancion = canciones.find((item) => String(item.id) === String(cancionId));
-        setPartesMarcadas(cancion?.partes ?? []);
-    };
-
-    const alternarParte = (parte: string) => {
-        setPartesMarcadas((previo) =>
-            previo.includes(parte) ? previo.filter((item) => item !== parte) : [...previo, parte]);
-    };
-
-    const alternarColaborador = (id: string) => {
-        setColaboradoresElegidos((previo) =>
-            previo.includes(id) ? previo.filter((item) => item !== id) : [...previo, id]);
-    };
-
-    const proyectoDe = (cancionId: string | number | null) => {
-        const cancion = canciones.find((item) => String(item.id) === String(cancionId));
-        return proyectos.find((proyecto) => String(proyecto.id) === String(cancion?.proyecto_id));
-    };
-
-    const nombreColaborador = (id: string | number | null) =>
-        colaboradores.find((colaborador) => String(colaborador.id) === String(id))?.nombre ?? `Colaborador #${id}`;
-
-    const enviar = async (evento: FormEvent<HTMLFormElement>) => {
-        evento.preventDefault();
-        setError('');
-        setMensaje('');
-
-        if (!form.sala_id) {
-            setError('Elige la cabina para tu solicitud.');
-            return;
-        }
-        if (!form.fecha) {
-            setError('Elige la fecha de tu solicitud.');
-            return;
-        }
-        if (colaboradoresElegidos.length === 0) {
-            setError('Selecciona al menos un artista o productor.');
-            return;
-        }
-
-        const inicio = aMinutos(form.hora_inicio);
-        const fin = aMinutos(form.hora_fin);
-        if (!Number.isFinite(inicio) || !Number.isFinite(fin) || fin <= inicio) {
-            setError('La franja horaria debe terminar despu├®s de comenzar.');
-            return;
-        }
-        if (tieneConflicto) {
-            setError(`La cabina ya est├í ocupada el ${formatearFecha(form.fecha)} en: ${franjasEnConflicto.join(', ')}. Elige otra franja.`);
-            return;
-        }
-
-        const cancionElegida = canciones.find((item) => String(item.id) === String(form.cancion_id));
-        const invitados = colaboradoresElegidos.map((id) => {
-            const colaborador = colaboradores.find((item) => String(item.id) === String(id));
-            return { colaborador_id: id, rol: rolDeColaborador(colaborador) };
-        });
-
-        try {
-            await SolicitudService.crear({
-                usuario_id: usuario?.id ?? null,
-                solicitante_nombre: usuario?.nombre ?? null,
-                titulo: form.titulo.trim(),
-                descripcion: form.descripcion.trim(),
-                sala_id: form.sala_id,
-                fecha: form.fecha,
-                franja: `${form.hora_inicio}-${form.hora_fin}`,
-                tipo: form.tipo,
-                cancion_id: cancionElegida ? cancionElegida.id : null,
-                proyecto_id: proyectoDe(form.cancion_id)?.id ?? null,
-                partes: esGrabacion && cancionElegida ? partesMarcadas : [],
-                colaboradores: invitados,
-            });
-            setForm(FORM_INICIAL);
-            setPartesMarcadas([]);
-            setColaboradoresElegidos([]);
-            setMensaje(`Solicitud de ${etiquetaTipo(form.tipo)} enviada. Espera a que el equipo acepte y el estudio la autorice.`);
-        } catch (errorCrear) {
-            setError(errorCrear instanceof Error ? errorCrear.message : 'No se pudo enviar la solicitud.');
-        }
-    };
-
-    const cancelar = async (id: number | string) => {
-        setError('');
-        setMensaje('');
-        setOcupado(id);
-        try {
-            await SolicitudService.cancelar(id, { usuario, rol: usuario?.rol });
-            setMensaje('Solicitud cancelada.');
-        } catch (errorCancelar) {
-            setError(errorCancelar instanceof Error ? errorCancelar.message : 'No se pudo cancelar la solicitud.');
-        } finally {
-            setOcupado(null);
-        }
-    };
-
-    const responder = async (solicitudId: number | string, colaboradorId: number | string, decision: string) => {
-        setError('');
-        setMensaje('');
-        try {
-            await SolicitudService.responderInvitacion(solicitudId, colaboradorId, decision);
-            setMensaje(decision === 'aceptada' ? 'Aceptaste la solicitud.' : 'Rechazaste la solicitud.');
-        } catch (errorResponder) {
-            setError(errorResponder instanceof Error ? errorResponder.message : 'No se pudo responder la solicitud.');
-        }
-    };
-
-    const obtenerSala = (id: string | number | null) =>
-        salas.find((sala) => String(sala.id) === String(id))?.nombre ?? 'Sala no disponible';
-
-    const nombreCancionDe = (solicitud: Solicitud): string | null => {
-        if (!solicitud.cancion_id) return null;
-        return canciones.find((item) => String(item.id) === String(solicitud.cancion_id))?.nombre ?? 'Canci├│n no encontrada';
-    };
-
-    const pasoFecha = esGrabacion ? '06' : '05';
 
     return (
         <main className="workspace-content" data-page="mis-solicitudes">
@@ -385,17 +151,10 @@ export default function MisSolicitudes() {
                             Reserva, produce, suena.
                         </h1>
                         <p className="mt-3 text-sm leading-7 text-sutil">
-                            Pide tu cabina para grabar, mezclar, masterizar o ensayar. Elige a los artistas y productores:
-                            cuando todos acepten, el estudio autoriza y podr├ís pagar el anticipo para confirmar tu sesi├│n.
+                            Consulta el avance de tus reservas y responde las invitaciones que recibas como artista o
+                            productor. Cuando el equipo acepta y el estudio autoriza, podrás pagar el anticipo para
+                            confirmar tu sesión.
                         </p>
-                        {esClienteActual && (
-                            <a
-                                href="#nueva-reserva"
-                                className="mt-6 inline-flex min-h-[46px] items-center gap-2 rounded-xl bg-gradient-to-r from-[#9365f2] to-[#e34ba6] px-5 text-sm font-bold text-white shadow-lg shadow-accent/30 transition hover:-translate-y-0.5 hover:brightness-110"
-                            >
-                                <Send className="h-4 w-4" aria-hidden="true" /> Nueva reserva
-                            </a>
-                        )}
                     </div>
 
                     <div className="flex flex-wrap items-center gap-3">
@@ -416,223 +175,70 @@ export default function MisSolicitudes() {
                 </div>
             </section>
 
-            {mensaje && <p className="mt-5 rounded-xl border border-exito/30 bg-exito/10 px-4 py-3 text-sm text-exito-soft" role="status">{mensaje}</p>}
-            {error && <p className="mt-5 rounded-xl border border-peligro/30 bg-peligro/10 px-4 py-3 text-sm text-peligro-soft" role="alert">{error}</p>}
-
-            {pagoPendiente && esClienteActual && (
-                <div className="mt-5 flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-magenta/40 bg-magenta/[0.08] px-4 py-3.5">
-                    <p className="text-sm text-magenta">
-                        Tu reserva est├í autorizada pero el anticipo sigue sin pagar. Compl├®talo para poder crear nuevas solicitudes.
-                    </p>
-                    <Link to={RUTAS.PAGOS} className={BOTON_PRIMARIO}>Ir a pagar el anticipo</Link>
+            {error && (
+                <div className="mt-5 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-peligro/30 bg-peligro/10 px-4 py-3 text-sm text-peligro-soft" role="alert">
+                    <span>{error}</span>
+                    <button
+                        type="button"
+                        onClick={recargar}
+                        className="rounded-lg border border-peligro/40 px-3 py-1.5 text-xs font-bold transition hover:bg-peligro/10"
+                    >
+                        Reintentar
+                    </button>
                 </div>
             )}
 
-            {/* FORMULARIO (cliente) */}
-            {esClienteActual && (
-                <section id="nueva-reserva" className="mt-6 scroll-mt-24 rounded-[2rem] border border-border bg-surface/60 p-6 shadow-lg shadow-black/20 backdrop-blur sm:p-8">
-                    <div className="mb-7 flex items-center gap-3">
-                        <span className="grid h-12 w-12 place-items-center rounded-2xl bg-gradient-to-br from-[#9365f2] to-[#e34ba6] text-white shadow-lg shadow-accent/25">
-                            <Send className="h-5 w-5" aria-hidden="true" />
-                        </span>
+            {/* INVITACIONES RECIBIDAS */}
+            {colaboradorId && datos && invitacionesRecibidas.length > 0 && (
+                <section className="mt-9" aria-labelledby="invitaciones-title">
+                    <div className="mb-4 flex flex-wrap items-end justify-between gap-3">
                         <div>
-                            <p className="workspace-eyebrow">NUEVA RESERVA</p>
-                            <h2 className="text-2xl font-bold tracking-tight text-texto-soft">Arma tu sesi├│n</h2>
+                            <p className="workspace-eyebrow">INVITACIONES</p>
+                            <h2 id="invitaciones-title" className="mt-1 text-2xl font-bold tracking-tight text-texto-soft">Invitaciones recibidas</h2>
                         </div>
+                        <span className="rounded-full border border-accent-soft/30 px-3 py-1.5 text-[0.68rem] font-extrabold tracking-[0.1em] text-accent-soft">
+                            {String(invitacionesRecibidas.length).padStart(2, '0')} RECIBIDAS
+                        </span>
                     </div>
 
-                    <form className="grid gap-8" onSubmit={enviar} aria-label="Crear solicitud de cabina">
-                        {/* 01 TIPO */}
-                        <div>
-                            <Paso numero="01" titulo="Tipo de servicio" icono={Sparkles} />
-                            <div className="grid gap-3 sm:grid-cols-3 lg:grid-cols-5" role="group" aria-label="Tipo de servicio">
-                                {Object.values(TIPOS_SOLICITUD).map((tipo) => {
-                                    const meta = TIPOS_META[tipo];
-                                    const Icono = meta.icono;
-                                    const activo = form.tipo === tipo;
-                                    return (
-                                        <button key={tipo} type="button" onClick={() => cambiarTipo(tipo)} aria-pressed={activo}
-                                            className={`group flex flex-col gap-2 rounded-2xl border p-4 text-left transition ${activo ? 'border-accent/60 bg-gradient-to-br from-[#5b418f]/50 to-transparent shadow-lg shadow-accent/10' : 'border-border bg-white/[0.02] hover:-translate-y-0.5 hover:border-accent/40'}`}>
-                                            <span className={`grid h-10 w-10 place-items-center rounded-xl ${activo ? 'bg-gradient-to-br from-[#9365f2] to-[#e34ba6] text-white' : 'bg-white/[0.05] text-accent-soft'}`}>
-                                                <Icono className="h-5 w-5" aria-hidden="true" />
+                    <div className="grid gap-3 sm:grid-cols-2">
+                        {invitacionesRecibidas.map((solicitud) => {
+                            const acento = acentoEstado(solicitud.estado);
+                            const IconoTipo = TIPOS_META[solicitud.tipo] ?? Music;
+                            return (
+                                <button
+                                    key={solicitud.id}
+                                    type="button"
+                                    onClick={() => abrirDetalle(solicitud, true)}
+                                    className="group relative overflow-hidden rounded-2xl border bg-white/[0.02] p-4 text-left transition hover:-translate-y-0.5 hover:shadow-xl hover:shadow-black/40"
+                                    style={{ borderColor: `${acento}44` }}
+                                >
+                                    <span aria-hidden="true" className="pointer-events-none absolute -right-10 -top-10 h-24 w-24 rounded-full blur-2xl" style={{ background: `${acento}22` }} />
+                                    <div className="relative flex items-start justify-between gap-3">
+                                        <div className="flex min-w-0 items-start gap-3">
+                                            <span className="grid h-9 w-9 shrink-0 place-items-center rounded-xl border bg-surface-2" style={{ borderColor: `${acento}66` }} aria-hidden="true">
+                                                <IconoTipo className="h-4 w-4" style={{ color: acento }} />
                                             </span>
-                                            <span className="text-sm font-bold text-texto-soft">{etiquetaTipo(tipo)}</span>
-                                            <span className="text-xs text-sutil">{meta.ayuda}</span>
-                                        </button>
-                                    );
-                                })}
-                            </div>
-                        </div>
-
-                        {/* 02 NOMBRE Y DESCRIPCION */}
-                        <div>
-                            <Paso numero="02" titulo="Nombre y detalles" icono={Music} />
-                            <div className="grid gap-5 rounded-2xl border border-border bg-white/[0.02] p-5">
-                                <label className="flex flex-col">
-                                    <span className={ETIQUETA}>Nombre de la sesi├│n</span>
-                                    <input className={CAMPO} type="text" value={form.titulo}
-                                        onChange={(evento) => cambiarCampo('titulo', evento.target.value)}
-                                        placeholder="Ej. Grabaci├│n de voces ÔÇö Sencillo 1" />
-                                </label>
-                                <label className="flex flex-col">
-                                    <span className={ETIQUETA}>Descripci├│n (opcional)</span>
-                                    <textarea className={CAMPO} rows={3} value={form.descripcion}
-                                        onChange={(evento) => cambiarCampo('descripcion', evento.target.value)}
-                                        placeholder="Cu├®ntanos qu├® necesitas, instrumentos, referenciasÔÇª" />
-                                </label>
-                            </div>
-                        </div>
-
-                        {/* 03 ARTISTAS Y PRODUCTORES */}
-                        <div>
-                            <Paso numero="03" titulo="Artistas y productores" icono={Users} />
-                            <p className="mb-3 text-sm text-sutil">Elige con qui├®n quieres la sesi├│n. <strong className="text-texto-soft">Todos deben aceptar</strong> para confirmarla.</p>
-                            {colaboradores.length ? (
-                                <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3" role="group" aria-label="Artistas y productores">
-                                    {colaboradores.map((colaborador) => {
-                                        const activo = colaboradoresElegidos.includes(String(colaborador.id));
-                                        return (
-                                            <button key={colaborador.id} type="button" aria-pressed={activo}
-                                                onClick={() => alternarColaborador(String(colaborador.id))}
-                                                className={`flex flex-col gap-1 rounded-2xl border p-4 text-left transition ${activo ? 'border-accent/60 bg-gradient-to-br from-[#5b418f]/50 to-transparent' : 'border-border bg-white/[0.02] hover:-translate-y-0.5 hover:border-accent/40'}`}>
-                                                <span className="flex items-center justify-between gap-2">
-                                                    <span className="text-sm font-bold text-texto-soft">{colaborador.nombre}</span>
-                                                    {activo && <Check className="h-4 w-4 text-accent-soft" aria-hidden="true" />}
-                                                </span>
-                                                <span className="text-xs text-sutil">{etiquetaRol(rolDeColaborador(colaborador))} ┬À {colaborador.especialidad}</span>
-                                            </button>
-                                        );
-                                    })}
-                                </div>
-                            ) : (
-                                <p className="rounded-2xl border border-dashed border-border bg-surface/40 px-4 py-6 text-center text-sm text-sutil">No hay colaboradores disponibles.</p>
-                            )}
-                        </div>
-
-                        {/* 04 CABINA */}
-                        <div>
-                            <Paso numero="04" titulo="Elige tu cabina" icono={MapPin} />
-                            <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3" role="group" aria-label="Cabina">
-                                {salas.map((sala) => {
-                                    const activo = String(form.sala_id) === String(sala.id);
-                                    return (
-                                        <button key={sala.id} type="button" onClick={() => cambiarCampo('sala_id', String(sala.id))} aria-pressed={activo}
-                                            className={`group relative flex flex-col gap-2 overflow-hidden rounded-2xl border p-4 text-left transition ${activo ? 'border-accent/60 bg-gradient-to-br from-[#5b418f]/50 to-transparent' : 'border-border bg-white/[0.02] hover:-translate-y-0.5 hover:border-accent/40'}`}>
-                                            <span className="flex items-center justify-between gap-2">
-                                                <span className="text-sm font-bold text-texto-soft">{sala.nombre}</span>
-                                                <MapPin className={`h-4 w-4 shrink-0 ${activo ? 'text-magenta' : 'text-sutil'}`} aria-hidden="true" />
-                                            </span>
-                                            <span className="flex items-baseline gap-1 text-sutil">
-                                                <strong className="text-lg font-extrabold text-texto-soft">{formatearMoneda(sala.precio_hora)}</strong>
-                                                <span className="text-xs">/hora</span>
-                                            </span>
-                                            {activo && <span aria-hidden="true" className="pointer-events-none absolute -right-8 -top-8 h-20 w-20 rounded-full bg-[#e34ba6]/25 blur-2xl" />}
-                                        </button>
-                                    );
-                                })}
-                            </div>
-                        </div>
-
-                        {/* 05 CANCION (solo grabacion) */}
-                        {esGrabacion && (
-                            <div>
-                                <Paso numero="05" titulo="Detalles de grabaci├│n" icono={Music} />
-                                <div className="grid gap-5 rounded-2xl border border-border bg-white/[0.02] p-5">
-                                    <label className="flex flex-col">
-                                        <span className={ETIQUETA}>Canci├│n a grabar</span>
-                                        <select className={CAMPO} value={form.cancion_id} onChange={(evento) => cambiarCancion(evento.target.value)}>
-                                            <option value="">Grabaci├│n general (sin canci├│n espec├¡fica)</option>
-                                            {canciones.map((cancion) => {
-                                                const proyecto = proyectoDe(cancion.id);
-                                                return (
-                                                    <option key={cancion.id} value={String(cancion.id ?? '')}>
-                                                        {cancion.nombre}{proyecto ? ` — ${proyecto.nombre}` : ''}
-                                                    </option>
-                                                );
-                                            })}
-                                        </select>
-                                    </label>
-
-                                    {cancionSeleccionada && (cancionSeleccionada.partes ?? []).length > 0 && (
-                                        <fieldset>
-                                            <legend className={ETIQUETA}>Partes a grabar (un audio por parte)</legend>
-                                            <div className="flex flex-wrap gap-2">
-                                                {(cancionSeleccionada.partes ?? []).map((parte) => {
-                                                    const activa = partesMarcadas.includes(parte);
-                                                    return (
-                                                        <button key={parte} type="button" aria-pressed={activa} onClick={() => alternarParte(parte)}
-                                                            className={`inline-flex items-center gap-1.5 rounded-full border px-3.5 py-2 text-sm font-semibold transition ${activa ? 'border-accent/60 bg-gradient-to-r from-[#9365f2]/40 to-[#e34ba6]/30 text-white' : 'border-border bg-white/[0.03] text-sutil hover:border-accent/50 hover:text-texto'}`}>
-                                                            <Layers className="h-3.5 w-3.5" aria-hidden="true" /> {parte}
-                                                        </button>
-                                                    );
-                                                })}
+                                            <div className="min-w-0">
+                                                <h3 className="truncate text-sm font-bold text-texto-soft">{solicitud.titulo || etiquetaTipo(solicitud.tipo)}</h3>
+                                                <p className="mt-0.5 truncate text-xs text-sutil">
+                                                    {etiquetaTipo(solicitud.tipo)} · {formatearFecha(solicitud.fecha, { weekday: 'short', day: 'numeric' }) || 'Fecha pendiente'}
+                                                </p>
                                             </div>
-                                        </fieldset>
-                                    )}
-                                </div>
-                            </div>
-                        )}
-
-                        {/* 05/06 FECHA Y HORARIO */}
-                        <div>
-                            <Paso numero={pasoFecha} titulo="Fecha y horario" icono={CalendarClock} />
-                            <div className="grid gap-5 sm:grid-cols-3">
-                                <label className="flex flex-col">
-                                    <span className={ETIQUETA}>Fecha</span>
-                                    <input className={CAMPO} type="date" value={form.fecha} onChange={(evento) => cambiarCampo('fecha', evento.target.value)} />
-                                </label>
-                                <label className="flex flex-col">
-                                    <span className={ETIQUETA}>Desde</span>
-                                    <input className={CAMPO} type="time" value={form.hora_inicio} onChange={(evento) => cambiarCampo('hora_inicio', evento.target.value)} />
-                                </label>
-                                <label className="flex flex-col">
-                                    <span className={ETIQUETA}>Hasta</span>
-                                    <input className={CAMPO} type="time" value={form.hora_fin} onChange={(evento) => cambiarCampo('hora_fin', evento.target.value)} />
-                                </label>
-                            </div>
-
-                            {form.sala_id && form.fecha && (
-                                <div className="mt-5 flex flex-col gap-2 rounded-2xl border border-border bg-surface-2/60 px-4 py-3.5">
-                                    <p className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-sutil">
-                                        <Clock className="h-3.5 w-3.5" aria-hidden="true" />
-                                        Disponibilidad ┬À {obtenerSala(form.sala_id)} ┬À {formatearFecha(form.fecha)}
-                                    </p>
-                                    {ocupadas.length ? (
-                                        <div className="flex flex-wrap gap-2">
-                                            {ocupadas.map((franja) => {
-                                                const chocando = seSolapan(franja, franjaPropuesta);
-                                                return (
-                                                    <span key={franja} className={`rounded-full px-2.5 py-1 text-xs ${chocando ? 'border border-peligro/40 bg-peligro/10 text-peligro' : 'border border-border bg-surface-3 text-sutil'}`}>
-                                                        {franja} reservado
-                                                    </span>
-                                                );
-                                            })}
                                         </div>
-                                    ) : (
-                                        <p className="text-sm text-exito">Sin reservas ese d├¡a. Cabina despejada.</p>
-                                    )}
-                                    {tieneConflicto && (
-                                        <p className="text-sm text-peligro" role="alert">Tu franja ({franjaPropuesta}) choca con la reserva indicada. Elige otra.</p>
-                                    )}
-                                </div>
-                            )}
-                        </div>
-
-                        <div className="flex flex-wrap items-center justify-between gap-4 rounded-2xl border border-border bg-gradient-to-r from-[#5b418f]/25 to-transparent p-5">
-                            <div className="flex items-center gap-3">
-                                <span className="grid h-11 w-11 place-items-center rounded-xl bg-white/[0.06] text-accent-soft" aria-hidden="true">
-                                    <Coins className="h-5 w-5" />
-                                </span>
-                                <div>
-                                    <p className="text-[0.62rem] font-bold uppercase tracking-[0.12em] text-sutil">Estimado de la franja</p>
-                                    <strong className="text-2xl font-black tracking-tight text-texto-soft">{estimado !== null ? formatearMoneda(estimado) : 'ÔÇö'}</strong>
-                                </div>
-                            </div>
-                            <button className={`${BOTON_PRIMARIO} w-full sm:w-auto`} type="submit">
-                                <Send className="mr-2 h-4 w-4" aria-hidden="true" /> Enviar solicitud
-                            </button>
-                        </div>
-                    </form>
+                                        <span className={clasePillEstado(solicitud.estado)}>{etiquetaEstado(solicitud.estado)}</span>
+                                    </div>
+                                    <p className="relative mt-2.5 flex items-center gap-1.5 text-xs text-sutil">
+                                        <Clock className="h-3 w-3 text-accent-soft" aria-hidden="true" />
+                                        {solicitud.franja || 'Por coordinar'}
+                                    </p>
+                                    <span className="relative mt-2 flex items-center gap-1 text-[0.62rem] font-bold uppercase tracking-wider text-accent-soft opacity-70 transition group-hover:opacity-100">
+                                        Ver invitación →
+                                    </span>
+                                </button>
+                            );
+                        })}
+                    </div>
                 </section>
             )}
 
@@ -648,82 +254,295 @@ export default function MisSolicitudes() {
                     </span>
                 </div>
 
-                {misSolicitudes.length ? (
-                    <div ref={historialRef} className="relative grid gap-4">
-                        <span aria-hidden="true" className="pointer-events-none absolute bottom-3 left-4 top-3 w-px bg-gradient-to-b from-accent/50 via-white/10 to-transparent" />
-                        {misSolicitudes.map((solicitud) => {
-                            const sala = salas.find((item) => String(item.id) === String(solicitud.sala_id));
-                            const costo = estimadoSala(sala, solicitud.franja);
-                            const acento = acentoEstado(solicitud.estado);
-                            const IconoTipo = TIPOS_META[solicitud.tipo]?.icono ?? Music;
-
-                            return (
-                                <article data-solicitud className="relative pl-12" key={solicitud.id}>
-                                    <span className="absolute left-0 top-5 grid h-8 w-8 place-items-center rounded-full border bg-surface-2" style={{ borderColor: `${acento}66` }} aria-hidden="true">
-                                        <IconoTipo className="h-4 w-4" style={{ color: acento }} />
-                                    </span>
-                                    <div className="group relative overflow-hidden rounded-2xl border bg-white/[0.02] p-5 transition hover:-translate-y-0.5 hover:shadow-xl hover:shadow-black/40" style={{ borderColor: `${acento}44` }}>
-                                        <span aria-hidden="true" className="pointer-events-none absolute -right-12 -top-12 h-28 w-28 rounded-full blur-2xl" style={{ background: `${acento}22` }} />
-                                        <div className="relative flex flex-wrap items-start justify-between gap-3">
-                                            <div>
-                                                <p className="workspace-eyebrow">{formatearFecha(solicitud.fecha, { weekday: 'short', day: 'numeric' }) || 'Fecha pendiente'}</p>
-                                                <h3 className="mt-1 text-lg font-bold text-texto-soft">{solicitud.titulo || etiquetaTipo(solicitud.tipo)}</h3>
-                                            </div>
-                                            <span className={clasePillEstado(solicitud.estado)}>{etiquetaEstado(solicitud.estado)}</span>
-                                        </div>
-                                        <div className="relative mt-4 grid gap-x-6 gap-y-4 sm:grid-cols-2 lg:grid-cols-3">
-                                            <Dato icono={Clock} etiqueta="Horario" valor={solicitud.franja || 'Por coordinar'} />
-                                            <Dato icono={MapPin} etiqueta="Sala" valor={obtenerSala(solicitud.sala_id)} />
-                                            {nombreCancionDe(solicitud) && <Dato icono={Music} etiqueta="Canci├│n" valor={nombreCancionDe(solicitud)} />}
-                                            {costo !== null && <Dato icono={Coins} etiqueta="Estimado" valor={formatearMoneda(costo)} />}
-                                        </div>
-
-                                        {(solicitud.colaboradores ?? []).length > 0 && (
-                                            <div className="relative mt-4 flex flex-wrap items-center gap-2 border-t border-border/40 pt-4">
-                                                <span className="text-[0.62rem] font-bold uppercase tracking-[0.12em] text-sutil">Equipo</span>
-                                                {(solicitud.colaboradores ?? []).map((invitacion) => (
-                                                    <span key={invitacion.colaborador_id} className={clasePillEstado(invitacion.estado)}>
-                                                        {nombreColaborador(invitacion.colaborador_id)} ┬À {etiquetaInvitacion(invitacion.estado)}
-                                                    </span>
-                                                ))}
-                                            </div>
-                                        )}
-
-                                        {SIGUIENTE_PASO[solicitud.estado] && (
-                                            <p className="relative mt-3 flex items-center gap-2 text-xs text-sutil">
-                                                <Sparkles className="h-3.5 w-3.5 shrink-0 text-accent-soft" aria-hidden="true" />
-                                                {SIGUIENTE_PASO[solicitud.estado]}
-                                            </p>
-                                        )}
-
-                                        {ESTADOS_CANCELABLES.includes(solicitud.estado) && (
-                                            <div className="relative mt-4 flex flex-wrap items-center justify-end gap-2">
-                                                {solicitud.estado === 'por_pagar' && esClienteActual && (
-                                                    <Link to={RUTAS.PAGOS} className={BOTON_PRIMARIO}>
-                                                        <Coins className="mr-2 h-4 w-4" aria-hidden="true" /> Pagar anticipo
-                                                    </Link>
-                                                )}
-                                                <button
-                                                    className={BOTON_PELIGRO}
-                                                    disabled={ocupado === solicitud.id}
-                                                    onClick={() => cancelar(solicitud.id!)}
-                                                    type="button"
-                                                >
-                                                    <XCircle className="mr-2 h-4 w-4" aria-hidden="true" /> Cancelar solicitud
-                                                </button>
-                                            </div>
-                                        )}
-                                    </div>
-                                </article>
-                            );
-                        })}
+                {cargando ? (
+                    <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4" role="status" aria-label="Cargando solicitudes">
+                        {[0, 1, 2, 3].map((indice) => (
+                            <div key={indice} className="animate-pulse rounded-2xl border border-border bg-surface/60 p-4">
+                                <div className="h-4 w-2/3 rounded bg-white/10" />
+                                <div className="mt-3 h-3 w-1/2 rounded bg-white/[0.06]" />
+                                <div className="mt-4 h-14 rounded-xl bg-white/[0.06]" />
+                            </div>
+                        ))}
                     </div>
-                ) : (
-                    <p className="rounded-2xl border border-dashed border-border bg-surface/40 px-4 py-10 text-center text-sm text-sutil">
-                        Todav├¡a no has creado solicitudes.
+                ) : datos ? (
+                    misSolicitudes.length ? (
+                        <div ref={historialRef} className="relative grid gap-4">
+                            <span aria-hidden="true" className="pointer-events-none absolute bottom-3 left-4 top-3 w-px bg-gradient-to-b from-accent/50 via-white/10 to-transparent" />
+                            {misSolicitudes.map((solicitud) => {
+                                const acento = acentoEstado(solicitud.estado);
+                                const IconoTipo = TIPOS_META[solicitud.tipo] ?? Music;
+
+                                return (
+                                    <article data-solicitud className="relative pl-12" key={solicitud.id}>
+                                        <span className="absolute left-0 top-5 grid h-8 w-8 place-items-center rounded-full border bg-surface-2" style={{ borderColor: `${acento}66` }} aria-hidden="true">
+                                            <IconoTipo className="h-4 w-4" style={{ color: acento }} />
+                                        </span>
+                                        <div
+                                            role="button"
+                                            tabIndex={0}
+                                            onClick={() => abrirDetalle(solicitud, false)}
+                                            onKeyDown={(evento) => {
+                                                if (evento.key === 'Enter' || evento.key === ' ') {
+                                                    evento.preventDefault();
+                                                    abrirDetalle(solicitud, false);
+                                                }
+                                            }}
+                                            className="group relative cursor-pointer overflow-hidden rounded-2xl border bg-white/[0.02] p-5 transition hover:-translate-y-0.5 hover:shadow-xl hover:shadow-black/40 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent/60"
+                                            style={{ borderColor: `${acento}44` }}
+                                        >
+                                            <span aria-hidden="true" className="pointer-events-none absolute -right-12 -top-12 h-28 w-28 rounded-full blur-2xl" style={{ background: `${acento}22` }} />
+                                            <div className="relative flex flex-wrap items-start justify-between gap-3">
+                                                <div>
+                                                    <p className="workspace-eyebrow">{formatearFecha(solicitud.fecha, { weekday: 'short', day: 'numeric' }) || 'Fecha pendiente'}</p>
+                                                    <h3 className="mt-1 text-lg font-bold text-texto-soft">{solicitud.titulo || etiquetaTipo(solicitud.tipo)}</h3>
+                                                </div>
+                                                <span className={clasePillEstado(solicitud.estado)}>{etiquetaEstado(solicitud.estado)}</span>
+                                            </div>
+                                            <div className="relative mt-4 grid gap-x-6 gap-y-4 sm:grid-cols-2">
+                                                <Dato icono={Clock} etiqueta="Horario" valor={solicitud.franja || 'Por coordinar'} />
+                                                <Dato icono={Music} etiqueta="Servicio" valor={etiquetaTipo(solicitud.tipo)} />
+                                            </div>
+
+                                            {SIGUIENTE_PASO[solicitud.estado] && (
+                                                <p className="relative mt-3 flex items-center gap-2 text-xs text-sutil">
+                                                    <Sparkles className="h-3.5 w-3.5 shrink-0 text-accent-soft" aria-hidden="true" />
+                                                    {SIGUIENTE_PASO[solicitud.estado]}
+                                                </p>
+                                            )}
+
+                                            <span className="relative mt-3 flex items-center gap-1 text-[0.62rem] font-bold uppercase tracking-wider text-accent-soft opacity-70 transition group-hover:opacity-100">
+                                                Ver detalle →
+                                            </span>
+                                        </div>
+                                    </article>
+                                );
+                            })}
+                        </div>
+                    ) : (
+                        <p className="rounded-2xl border border-dashed border-border bg-surface/40 px-4 py-10 text-center text-sm text-sutil">
+                            Todavía no has creado solicitudes.
+                        </p>
+                    )
+                ) : null}
+            </section>
+
+            {detalle && (
+                <DetalleSolicitud
+                    id={detalle.id}
+                    colaboradorId={detalle.esInvitacion ? colaboradorId : null}
+                    onCerrar={() => setDetalle(null)}
+                    onRecargarLista={recargar}
+                />
+            )}
+        </main>
+    );
+}
+
+function DetalleSolicitud({ id, colaboradorId, onCerrar, onRecargarLista }: {
+    id: number;
+    colaboradorId?: string | null;
+    onCerrar: () => void;
+    onRecargarLista?: () => void;
+}) {
+    const cargar = useCallback(() => obtenerSolicitud(id), [id]);
+    const { datos, error, cargando, recargar } = useApi(cargar);
+    const solicitud = useMemo(() => (datos ? adaptarSolicitud(datos) : null), [datos]);
+    const [ocupado, setOcupado] = useState<'aceptada' | 'rechazada' | null>(null);
+    const [mensaje, setMensaje] = useState('');
+    const [errorResponder, setErrorResponder] = useState('');
+
+    useEffect(() => {
+        const cerrarConEscape = (evento: KeyboardEvent) => {
+            if (evento.key === 'Escape') onCerrar();
+        };
+        window.addEventListener('keydown', cerrarConEscape);
+        return () => window.removeEventListener('keydown', cerrarConEscape);
+    }, [onCerrar]);
+
+    const invitacion = colaboradorId && datos
+        ? datos.colaboradores.find((item) => String(item.colaboradorId) === String(colaboradorId)) ?? null
+        : null;
+
+    const responder = async (decision: 'aceptada' | 'rechazada') => {
+        if (!colaboradorId) return;
+        setOcupado(decision);
+        setMensaje('');
+        setErrorResponder('');
+        try {
+            await responderInvitacionSolicitud(id, colaboradorId, decision);
+            setMensaje(decision === 'aceptada' ? 'Aceptaste la invitación.' : 'Rechazaste la invitación.');
+            recargar();
+            onRecargarLista?.();
+        } catch (errorAccion) {
+            setErrorResponder(errorAccion instanceof Error ? errorAccion.message : 'No se pudo responder la invitación.');
+        } finally {
+            setOcupado(null);
+        }
+    };
+
+    return (
+        <div
+            className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4"
+            onClick={onCerrar}
+            role="presentation"
+        >
+            <div
+                className="max-h-[85vh] w-full max-w-lg overflow-y-auto rounded-2xl border border-border bg-surface p-5 shadow-xl"
+                onClick={(evento) => evento.stopPropagation()}
+                role="dialog"
+                aria-modal="true"
+                aria-label="Detalle de la solicitud"
+            >
+                <div className="flex items-start justify-between gap-3">
+                    <div className="min-w-0">
+                        <p className="text-[0.62rem] font-bold uppercase tracking-wider text-sutil">Detalle de la solicitud</p>
+                        <h2 className="mt-1 truncate text-lg font-bold text-texto-soft">
+                            {datos ? datos.titulo || etiquetaTipo(datos.tipo) : 'Solicitud'}
+                        </h2>
+                    </div>
+                    <button
+                        type="button"
+                        onClick={onCerrar}
+                        className="grid h-8 w-8 shrink-0 place-items-center rounded-lg border border-border bg-white/[0.04] text-sutil transition hover:text-texto"
+                        aria-label="Cerrar detalle"
+                    >
+                        <X className="h-4 w-4" aria-hidden="true" />
+                    </button>
+                </div>
+
+                {cargando && (
+                    <p className="mt-4 rounded-xl border border-border bg-surface-2/60 px-4 py-3 text-sm text-sutil" role="status">
+                        Cargando detalle de la solicitud…
                     </p>
                 )}
-            </section>
-        </main>
+
+                {error && (
+                    <div className="mt-4 rounded-xl border border-peligro/30 bg-peligro/10 px-4 py-3 text-sm text-peligro-soft" role="alert">
+                        <p>{error}</p>
+                        <button
+                            type="button"
+                            onClick={recargar}
+                            className="mt-2 rounded-lg border border-peligro/40 px-3 py-1.5 text-xs font-bold transition hover:bg-peligro/10"
+                        >
+                            Reintentar
+                        </button>
+                    </div>
+                )}
+
+                {datos && solicitud && (
+                    <div className="mt-4 space-y-4">
+                        <div className="flex flex-wrap items-center gap-2">
+                            <span className={clasePillEstado(datos.estado)}>{etiquetaEstado(datos.estado)}</span>
+                            <span className="text-xs font-semibold text-sutil">{etiquetaTipo(datos.tipo)}</span>
+                        </div>
+
+                        <dl className="grid gap-2 text-sm sm:grid-cols-2">
+                            <div>
+                                <dt className="text-[0.62rem] font-bold uppercase tracking-wider text-sutil">Cliente</dt>
+                                <dd className="text-texto-soft">{datos.cliente || 'Cliente'}</dd>
+                            </div>
+                            <div>
+                                <dt className="text-[0.62rem] font-bold uppercase tracking-wider text-sutil">Sala</dt>
+                                <dd className="text-texto-soft">{datos.sala ?? 'Sala no disponible'}</dd>
+                            </div>
+                            <div>
+                                <dt className="text-[0.62rem] font-bold uppercase tracking-wider text-sutil">Fecha deseada</dt>
+                                <dd className="text-texto-soft">{formatearFecha(datos.fechaDeseada) || 'Pendiente'}</dd>
+                            </div>
+                            <div>
+                                <dt className="text-[0.62rem] font-bold uppercase tracking-wider text-sutil">Franja</dt>
+                                <dd className="text-texto-soft">{datos.franja || 'Por coordinar'}</dd>
+                            </div>
+                            {datos.cancion && (
+                                <div>
+                                    <dt className="text-[0.62rem] font-bold uppercase tracking-wider text-sutil">Canción</dt>
+                                    <dd className="text-texto-soft">{datos.cancion}</dd>
+                                </div>
+                            )}
+                            {datos.proyecto && (
+                                <div>
+                                    <dt className="text-[0.62rem] font-bold uppercase tracking-wider text-sutil">Proyecto</dt>
+                                    <dd className="text-texto-soft">{datos.proyecto}</dd>
+                                </div>
+                            )}
+                        </dl>
+
+                        <div>
+                            <p className="text-[0.62rem] font-bold uppercase tracking-wider text-sutil">Descripción</p>
+                            <p className="mt-1 text-sm leading-relaxed text-texto-soft">{datos.descripcion || 'Sin descripción.'}</p>
+                        </div>
+
+                        {solicitud.partes.length > 0 && (
+                            <div>
+                                <p className="text-[0.62rem] font-bold uppercase tracking-wider text-sutil">Partes</p>
+                                <p className="mt-1 text-sm text-texto-soft">{solicitud.partes.join(', ')}</p>
+                            </div>
+                        )}
+
+                        <div>
+                            <p className="flex items-center gap-1.5 text-[0.62rem] font-bold uppercase tracking-wider text-sutil">
+                                <Users className="h-3.5 w-3.5" aria-hidden="true" /> Equipo
+                            </p>
+                            {datos.colaboradores.length > 0 ? (
+                                <ul className="mt-2 flex flex-wrap gap-1.5">
+                                    {datos.colaboradores.map((colaborador) => (
+                                        <li key={colaborador.colaboradorId} className={clasePillEstado(colaborador.estado)}>
+                                            {colaborador.nombre}
+                                            <span className="ml-1.5 font-normal opacity-80">{etiquetaInvitacion(colaborador.estado)}</span>
+                                        </li>
+                                    ))}
+                                </ul>
+                            ) : (
+                                <p className="mt-1 text-sm text-sutil">Sin colaboradores invitados.</p>
+                            )}
+                        </div>
+
+                        {mensaje && (
+                            <p className="rounded-xl border border-exito/30 bg-exito/10 px-4 py-3 text-sm text-exito-soft" role="status">{mensaje}</p>
+                        )}
+                        {errorResponder && (
+                            <p className="rounded-xl border border-peligro/30 bg-peligro/10 px-4 py-3 text-sm text-peligro-soft" role="alert">{errorResponder}</p>
+                        )}
+
+                        {invitacion && (
+                            <div className="border-t border-border/60 pt-3">
+                                {invitacion.estado === 'pendiente' ? (
+                                    <div className="flex flex-wrap gap-2">
+                                        <button
+                                            type="button"
+                                            className={BOTON_PRIMARIO}
+                                            disabled={ocupado !== null}
+                                            onClick={() => responder('aceptada')}
+                                        >
+                                            <Check className="mr-2 h-4 w-4" aria-hidden="true" />
+                                            {ocupado === 'aceptada' ? 'Aceptando…' : 'Aceptar'}
+                                        </button>
+                                        <button
+                                            type="button"
+                                            className={BOTON_PELIGRO}
+                                            disabled={ocupado !== null}
+                                            onClick={() => responder('rechazada')}
+                                        >
+                                            <XCircle className="mr-2 h-4 w-4" aria-hidden="true" />
+                                            {ocupado === 'rechazada' ? 'Rechazando…' : 'Rechazar'}
+                                        </button>
+                                    </div>
+                                ) : (
+                                    <p className="flex items-center gap-2 text-xs text-sutil">
+                                        Tu invitación:
+                                        <span className={clasePillEstado(invitacion.estado)}>{etiquetaInvitacion(invitacion.estado)}</span>
+                                    </p>
+                                )}
+                            </div>
+                        )}
+
+                        <div className="grid gap-1 border-t border-border/60 pt-3 text-[0.68rem] text-sutil">
+                            <span>Creada: {formatearFecha(datos.creadoEn.slice(0, 10)) || '—'}</span>
+                            <span>Actualizada: {formatearFecha(datos.actualizadoEn.slice(0, 10)) || '—'}</span>
+                        </div>
+                    </div>
+                )}
+            </div>
+        </div>
     );
 }
