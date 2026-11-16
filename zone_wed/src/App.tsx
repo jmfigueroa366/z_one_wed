@@ -22,7 +22,6 @@ import Sesiones from './pages/Sesiones.tsx';
 import Solicitudes from './pages/Solicitudes.tsx';
 import Pagos from './pages/Pagos.tsx';
 import Precios from './pages/Precios.tsx';
-import ApiSalasDevPanel from './components/ApiSalasDevPanel.tsx';
 
 export default function App() {
     return (
@@ -57,7 +56,6 @@ export default function App() {
 
                     <Route path="*" element={<Navigate to="/" replace />} />
                 </Routes>
-                {import.meta.env.DEV && <ApiSalasDevPanel />}
             </AuthProvider>
         </BrowserRouter>
     );
