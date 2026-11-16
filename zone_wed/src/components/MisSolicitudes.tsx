@@ -18,7 +18,9 @@ import {
 } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 import { Contador, Ecualizador } from './Animados.tsx';
+import FormularioSolicitud from './FormularioSolicitud.tsx';
 import { useAuth } from '../context/AuthContext.tsx';
+import { esCliente } from '../config/roles.ts';
 import { useApi } from '../hooks/useApi.ts';
 import { listarSolicitudes, obtenerSolicitud, responderInvitacionSolicitud } from '../api/solicitudesApi.ts';
 import { adaptarSolicitud, adaptarSolicitudResumen } from '../api/adapters.ts';
@@ -185,6 +187,12 @@ export default function MisSolicitudes() {
                     >
                         Reintentar
                     </button>
+                </div>
+            )}
+
+            {esCliente(usuario) && usuario?.clienteId && (
+                <div className="mt-9">
+                    <FormularioSolicitud onCreada={recargar} />
                 </div>
             )}
 
