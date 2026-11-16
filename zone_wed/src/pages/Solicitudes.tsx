@@ -1,31 +1,29 @@
 // CAPA: Presentación
-import { useEffect, useMemo, useRef, useState, type ComponentType, type MouseEvent } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState, type ComponentType } from 'react';
 import anime from 'animejs';
 import {
     Check,
     Clock,
     Coins,
     Hourglass,
-    Music,
     Sparkles,
     ThumbsUp,
     Users,
     Wallet,
+    X,
     XCircle,
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext.tsx';
 import { esAdministrador } from '../config/roles.ts';
-import { useColaboradores } from '../hooks/useColaboradores.ts';
-import { useSalas } from '../hooks/useSalas.ts';
-import { useSolicitudes } from '../hooks/useSolicitudes.ts';
-import { CancionService } from '../services/cancionService.ts';
-import { SolicitudService } from '../services/solicitudService.ts';
-import { etiquetaEstado, etiquetaInvitacion, etiquetaTipo, estimadoSala } from '../utils/solicitudes.ts';
+import { useApi } from '../hooks/useApi.ts';
+import { listarSolicitudes, obtenerSolicitud } from '../api/solicitudesApi.ts';
+import { adaptarSolicitud, adaptarSolicitudResumen } from '../api/adapters.ts';
+import { etiquetaEstado, etiquetaInvitacion, etiquetaTipo } from '../utils/solicitudes.ts';
 import type { Solicitud } from '../models/Solicitud.ts';
-import { formatearFecha, formatearMoneda } from '../utils/helpers.ts';
+import { formatearFecha } from '../utils/helpers.ts';
 import MisSolicitudes from '../components/MisSolicitudes.tsx';
 import { Contador } from '../components/Animados.tsx';
-import { BOTON_PELIGRO, BOTON_PRIMARIO, clasePillEstado } from '../styles/clases.ts';
+import { clasePillEstado } from '../styles/clases.ts';
 import '../styles/tailwind.css';
 
 const MENOS_MOVIMIENTO = () =>
@@ -87,28 +85,6 @@ function tonoAvatar(nombre: string): string {
     return TONOS_AVATAR[suma % TONOS_AVATAR.length];
 }
 
-function animarRipple(evento: MouseEvent<HTMLButtonElement>) {
-    if (MENOS_MOVIMIENTO()) return;
-    const boton = evento.currentTarget;
-    const circulo = document.createElement('span');
-    const dimension = Math.max(boton.clientWidth, boton.clientHeight);
-    const rect = boton.getBoundingClientRect();
-    circulo.className = 'pointer-events-none absolute rounded-full bg-white/30 [transform:scale(0)]';
-    circulo.style.width = `${dimension}px`;
-    circulo.style.height = `${dimension}px`;
-    circulo.style.left = `${evento.clientX - rect.left - dimension / 2}px`;
-    circulo.style.top = `${evento.clientY - rect.top - dimension / 2}px`;
-    boton.appendChild(circulo);
-    anime({
-        targets: circulo,
-        scale: [0, 2.4],
-        opacity: [0.55, 0],
-        duration: 620,
-        easing: 'easeOutCubic',
-        complete: () => circulo.remove(),
-    });
-}
-
 function KpiSolicitudes({ icono: Icono, etiqueta, valor, degradado, acento }: {
     icono: ComponentType<{ className?: string; 'aria-hidden'?: boolean }>;
     etiqueta: string;
@@ -130,17 +106,20 @@ function KpiSolicitudes({ icono: Icono, etiqueta, valor, degradado, acento }: {
 }
 
 function BandejaSolicitudes() {
-    const { usuario } = useAuth();
-    const [solicitudes] = useSolicitudes();
-    const [colaboradores] = useColaboradores();
-    const [salas] = useSalas();
     const boardRef = useRef<HTMLDivElement>(null);
-    const [ocupado, setOcupado] = useState<number | string | null>(null);
-    const [mensaje, setMensaje] = useState('');
-    const [error, setError] = useState('');
     const [filtro, setFiltro] = useState<string>('todas');
+    const [detalleId, setDetalleId] = useState<number | null>(null);
+    const { datos, error, cargando, recargar } = useApi(listarSolicitudes);
 
-    const canciones = useMemo(() => CancionService.listar(), [solicitudes]);
+    const solicitudes = useMemo(
+        () => (datos?.items ?? []).map(adaptarSolicitudResumen),
+        [datos]
+    );
+    const salasPorId = useMemo(() => {
+        const mapa = new Map<number, string | null>();
+        (datos?.items ?? []).forEach((dto) => mapa.set(dto.id, dto.sala));
+        return mapa;
+    }, [datos]);
 
     const grupos = useMemo<Record<string, Solicitud[]>>(() => {
         const base: Record<string, Solicitud[]> = { solicitada: [], por_autorizar: [], por_pagar: [], confirmada: [], rechazada: [], cancelada: [] };
@@ -174,42 +153,15 @@ function BandejaSolicitudes() {
     }, [solicitudes, filtro]);
 
     const nombreSolicitante = (solicitud: Solicitud): string => solicitud.solicitante_nombre ?? 'Cliente';
-    const nombreColaborador = (id: number | string | null): string =>
-        colaboradores.find((colaborador) => String(colaborador.id) === String(id))?.nombre ?? `Colaborador #${id}`;
-    const obtenerSala = (id: number | string | null): string => salas.find((sala) => String(sala.id) === String(id))?.nombre ?? 'Sala no disponible';
-    const nombreCancionDe = (solicitud: Solicitud): string | null => {
-        if (!solicitud.cancion_id) return null;
-        return canciones.find((cancion) => String(cancion.id) === String(solicitud.cancion_id))?.nombre ?? 'Canción no encontrada';
+    const obtenerSala = (id: number | string | null): string => salasPorId.get(Number(id)) ?? 'Sala no disponible';
+
+    const abrirDetalle = (solicitud: Solicitud) => {
+        if (solicitud.id == null) return;
+        setDetalleId(Number(solicitud.id));
     };
 
     const porResponder = grupos.solicitada.length;
     const porAutorizar = grupos.por_autorizar.length;
-
-    const accion = (fn: () => unknown, solicitud: Solicitud, exito: string) => {
-        setMensaje('');
-        setError('');
-        setOcupado(solicitud.id);
-        try {
-            fn();
-            setMensaje(exito);
-        } catch (fallo) {
-            setError(fallo instanceof Error ? fallo.message : 'No se pudo completar la acción.');
-        } finally {
-            setOcupado(null);
-        }
-    };
-
-    const autorizar = (solicitud: Solicitud) => accion(
-        () => SolicitudService.autorizar(solicitud.id!, { rol: usuario?.rol }),
-        solicitud,
-        `Solicitud autorizada. Se emitió el anticipo para ${nombreSolicitante(solicitud)}.`
-    );
-
-    const rechazar = (solicitud: Solicitud) => accion(
-        () => SolicitudService.rechazar(solicitud.id!, { rol: usuario?.rol }),
-        solicitud,
-        'Solicitud rechazada.'
-    );
 
     return (
         <main className="workspace-content" data-page="solicitudes">
@@ -240,8 +192,18 @@ function BandejaSolicitudes() {
                 </div>
             </header>
 
-            {mensaje && <p className="mt-5 rounded-xl border border-exito/30 bg-exito/10 px-4 py-3 text-sm text-exito-soft" role="status">{mensaje}</p>}
-            {error && <p className="mt-5 rounded-xl border border-peligro/30 bg-peligro/10 px-4 py-3 text-sm text-peligro-soft" role="alert">{error}</p>}
+            {error && (
+                <div className="mt-5 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-peligro/30 bg-peligro/10 px-4 py-3 text-sm text-peligro-soft" role="alert">
+                    <span>{error}</span>
+                    <button
+                        type="button"
+                        onClick={recargar}
+                        className="rounded-lg border border-peligro/40 px-3 py-1.5 text-xs font-bold transition hover:bg-peligro/10"
+                    >
+                        Reintentar
+                    </button>
+                </div>
+            )}
 
             <section className="mt-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-4" aria-label="Resumen de solicitudes">
                 <KpiSolicitudes icono={Sparkles} etiqueta="Total de solicitudes" valor={solicitudes.length} degradado="from-[#5b418f]/45 to-surface/30" acento="text-accent-soft" />
@@ -275,6 +237,17 @@ function BandejaSolicitudes() {
                 })}
             </div>
 
+            {cargando ? (
+                <div className="mt-5 grid gap-3 sm:grid-cols-2 lg:grid-cols-4" role="status" aria-label="Cargando solicitudes">
+                    {[0, 1, 2, 3].map((indice) => (
+                        <div key={indice} className="animate-pulse rounded-2xl border border-border bg-surface/60 p-4">
+                            <div className="h-4 w-2/3 rounded bg-white/10" />
+                            <div className="mt-3 h-3 w-1/2 rounded bg-white/[0.06]" />
+                            <div className="mt-4 h-14 rounded-xl bg-white/[0.06]" />
+                        </div>
+                    ))}
+                </div>
+            ) : datos ? (
             <div
                 ref={boardRef}
                 className="mt-5 flex gap-4 overflow-x-auto pb-3 [scrollbar-color:theme(colors.accent/40)_transparent]"
@@ -303,16 +276,21 @@ function BandejaSolicitudes() {
                             <div className="flex max-h-[68vh] min-h-[120px] flex-1 flex-col gap-3 overflow-y-auto px-3.5 pb-3.5 pr-2">
                                 {items.length ? (
                                     items.map((solicitud) => {
-                                        const sala = salas.find((item) => String(item.id) === String(solicitud.sala_id));
-                                        const estimado = estimadoSala(sala, solicitud.franja);
-                                        const cancion = nombreCancionDe(solicitud);
-
                                         return (
                                             <article
                                                 key={solicitud.id}
                                                 data-solicitud
                                                 data-estado={solicitud.estado}
-                                                className="tarjeta-brillo group relative overflow-hidden rounded-2xl border border-border bg-surface/85 p-4 shadow-sm shadow-black/20 transition duration-300 hover:-translate-y-1 hover:border-accent/50 hover:shadow-xl hover:shadow-accent/15"
+                                                role="button"
+                                                tabIndex={0}
+                                                onClick={() => abrirDetalle(solicitud)}
+                                                onKeyDown={(evento) => {
+                                                    if (evento.key === 'Enter' || evento.key === ' ') {
+                                                        evento.preventDefault();
+                                                        abrirDetalle(solicitud);
+                                                    }
+                                                }}
+                                                className="tarjeta-brillo group relative cursor-pointer overflow-hidden rounded-2xl border border-border bg-surface/85 p-4 text-left shadow-sm shadow-black/20 transition duration-300 hover:-translate-y-1 hover:border-accent/50 hover:shadow-xl hover:shadow-accent/15 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent/60"
                                             >
                                                 <span className={`absolute inset-x-0 top-0 h-[3px] bg-gradient-to-r ${columna.brillo} to-transparent`} aria-hidden="true" />
                                                 <div className="flex items-start justify-between gap-3">
@@ -357,73 +335,7 @@ function BandejaSolicitudes() {
                                                         </span>
                                                         <span className="truncate">{obtenerSala(solicitud.sala_id)} · {solicitud.franja || 'Por coordinar'}</span>
                                                     </p>
-                                                    {cancion && (
-                                                        <p className="flex items-center gap-2 text-sutil">
-                                                            <span className="grid h-6 w-6 shrink-0 place-items-center rounded-lg bg-white/[0.05] text-accent-soft" aria-hidden="true">
-                                                                <Music className="h-3.5 w-3.5" />
-                                                            </span>
-                                                            <span className="truncate">{cancion}</span>
-                                                        </p>
-                                                    )}
                                                 </div>
-
-                                                {estimado !== null && (
-                                                    <p className="mt-3 flex items-center justify-between rounded-xl border border-border/60 bg-black/20 px-3 py-2">
-                                                        <span className="flex items-center gap-1.5 text-[0.66rem] font-bold uppercase tracking-wider text-sutil">
-                                                            <Coins className="h-3.5 w-3.5 text-accent-soft" aria-hidden="true" /> Estimado
-                                                        </span>
-                                                        <strong className="text-sm font-black text-accent-soft">{formatearMoneda(estimado)}</strong>
-                                                    </p>
-                                                )}
-
-                                                {(solicitud.colaboradores ?? []).length > 0 && (
-                                                    <div className="mt-3 rounded-xl border border-border/60 bg-black/15 p-2.5">
-                                                        <p className="mb-1.5 flex items-center gap-1.5 text-[0.6rem] font-bold uppercase tracking-wider text-sutil">
-                                                            <Users className="h-3 w-3" aria-hidden="true" /> Equipo
-                                                        </p>
-                                                        <ul className="flex flex-wrap gap-1.5" aria-label={`Colaboradores de ${solicitud.titulo || etiquetaTipo(solicitud.tipo)}`}>
-                                                            {(solicitud.colaboradores ?? []).map((invitacion) => (
-                                                                <li key={`${solicitud.id}-${invitacion.colaborador_id}`} className={clasePillEstado(invitacion.estado)}>
-                                                                    {nombreColaborador(invitacion.colaborador_id)}
-                                                                    <span className="ml-1.5 font-normal opacity-80">{etiquetaInvitacion(invitacion.estado)}</span>
-                                                                </li>
-                                                            ))}
-                                                        </ul>
-                                                    </div>
-                                                )}
-
-                                                {(solicitud.partes ?? []).length > 0 && (
-                                                    <p className="mt-2 text-[0.68rem] text-sutil">
-                                                        <span className="font-semibold text-texto-soft">Partes:</span> {solicitud.partes.join(', ')}
-                                                    </p>
-                                                )}
-
-                                                {solicitud.estado === 'por_autorizar' && (
-                                                    <div className="mt-3 flex gap-2">
-                                                        <button
-                                                            className={`${BOTON_PRIMARIO} relative flex-1 overflow-hidden`}
-                                                            disabled={ocupado === solicitud.id}
-                                                            onClick={(evento) => {
-                                                                animarRipple(evento);
-                                                                autorizar(solicitud);
-                                                            }}
-                                                            type="button"
-                                                        >
-                                                            <Check className="mr-2 h-4 w-4" aria-hidden="true" /> Autorizar
-                                                        </button>
-                                                        <button
-                                                            className={`${BOTON_PELIGRO} relative overflow-hidden`}
-                                                            disabled={ocupado === solicitud.id}
-                                                            onClick={(evento) => {
-                                                                animarRipple(evento);
-                                                                rechazar(solicitud);
-                                                            }}
-                                                            type="button"
-                                                        >
-                                                            <XCircle className="mr-2 h-4 w-4" aria-hidden="true" /> Rechazar
-                                                        </button>
-                                                    </div>
-                                                )}
 
                                                 {solicitud.estado === 'por_pagar' && (
                                                     <p className="mt-3 flex items-center gap-2 rounded-xl border border-magenta/30 bg-magenta/[0.08] px-3 py-2 text-xs text-magenta">
@@ -431,6 +343,10 @@ function BandejaSolicitudes() {
                                                         Anticipo emitido. Esperando el pago del cliente.
                                                     </p>
                                                 )}
+
+                                                <span className="mt-3 flex items-center gap-1 text-[0.62rem] font-bold uppercase tracking-wider text-accent-soft opacity-70 transition group-hover:opacity-100">
+                                                    Ver detalle →
+                                                </span>
                                             </article>
                                         );
                                     })
@@ -444,7 +360,153 @@ function BandejaSolicitudes() {
                     );
                 })}
             </div>
+            ) : null}
+
+            {detalleId != null && (
+                <DetalleSolicitud id={detalleId} onCerrar={() => setDetalleId(null)} />
+            )}
         </main>
+    );
+}
+
+function DetalleSolicitud({ id, onCerrar }: { id: number; onCerrar: () => void }) {
+    const cargar = useCallback(() => obtenerSolicitud(id), [id]);
+    const { datos, error, cargando, recargar } = useApi(cargar);
+    const solicitud = useMemo(() => (datos ? adaptarSolicitud(datos) : null), [datos]);
+
+    useEffect(() => {
+        const cerrarConEscape = (evento: KeyboardEvent) => {
+            if (evento.key === 'Escape') onCerrar();
+        };
+        window.addEventListener('keydown', cerrarConEscape);
+        return () => window.removeEventListener('keydown', cerrarConEscape);
+    }, [onCerrar]);
+
+    return (
+        <div
+            className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4"
+            onClick={onCerrar}
+            role="presentation"
+        >
+            <div
+                className="max-h-[85vh] w-full max-w-lg overflow-y-auto rounded-2xl border border-border bg-surface p-5 shadow-xl"
+                onClick={(evento) => evento.stopPropagation()}
+                role="dialog"
+                aria-modal="true"
+                aria-label="Detalle de la solicitud"
+            >
+                <div className="flex items-start justify-between gap-3">
+                    <div className="min-w-0">
+                        <p className="text-[0.62rem] font-bold uppercase tracking-wider text-sutil">Detalle de la solicitud</p>
+                        <h2 className="mt-1 truncate text-lg font-bold text-texto-soft">
+                            {datos ? datos.titulo || etiquetaTipo(datos.tipo) : 'Solicitud'}
+                        </h2>
+                    </div>
+                    <button
+                        type="button"
+                        onClick={onCerrar}
+                        className="grid h-8 w-8 shrink-0 place-items-center rounded-lg border border-border bg-white/[0.04] text-sutil transition hover:text-texto"
+                        aria-label="Cerrar detalle"
+                    >
+                        <X className="h-4 w-4" aria-hidden="true" />
+                    </button>
+                </div>
+
+                {cargando && (
+                    <p className="mt-4 rounded-xl border border-border bg-surface-2/60 px-4 py-3 text-sm text-sutil" role="status">
+                        Cargando detalle de la solicitud…
+                    </p>
+                )}
+
+                {error && (
+                    <div className="mt-4 rounded-xl border border-peligro/30 bg-peligro/10 px-4 py-3 text-sm text-peligro-soft" role="alert">
+                        <p>{error}</p>
+                        <button
+                            type="button"
+                            onClick={recargar}
+                            className="mt-2 rounded-lg border border-peligro/40 px-3 py-1.5 text-xs font-bold transition hover:bg-peligro/10"
+                        >
+                            Reintentar
+                        </button>
+                    </div>
+                )}
+
+                {datos && solicitud && (
+                    <div className="mt-4 space-y-4">
+                        <div className="flex flex-wrap items-center gap-2">
+                            <span className={clasePillEstado(datos.estado)}>{etiquetaEstado(datos.estado)}</span>
+                            <span className="text-xs font-semibold text-sutil">{etiquetaTipo(datos.tipo)}</span>
+                        </div>
+
+                        <dl className="grid gap-2 text-sm sm:grid-cols-2">
+                            <div>
+                                <dt className="text-[0.62rem] font-bold uppercase tracking-wider text-sutil">Cliente</dt>
+                                <dd className="text-texto-soft">{datos.cliente || 'Cliente'}</dd>
+                            </div>
+                            <div>
+                                <dt className="text-[0.62rem] font-bold uppercase tracking-wider text-sutil">Sala</dt>
+                                <dd className="text-texto-soft">{datos.sala ?? 'Sala no disponible'}</dd>
+                            </div>
+                            <div>
+                                <dt className="text-[0.62rem] font-bold uppercase tracking-wider text-sutil">Fecha deseada</dt>
+                                <dd className="text-texto-soft">{formatearFecha(datos.fechaDeseada) || 'Pendiente'}</dd>
+                            </div>
+                            <div>
+                                <dt className="text-[0.62rem] font-bold uppercase tracking-wider text-sutil">Franja</dt>
+                                <dd className="text-texto-soft">{datos.franja || 'Por coordinar'}</dd>
+                            </div>
+                            {datos.cancion && (
+                                <div>
+                                    <dt className="text-[0.62rem] font-bold uppercase tracking-wider text-sutil">Canción</dt>
+                                    <dd className="text-texto-soft">{datos.cancion}</dd>
+                                </div>
+                            )}
+                            {datos.proyecto && (
+                                <div>
+                                    <dt className="text-[0.62rem] font-bold uppercase tracking-wider text-sutil">Proyecto</dt>
+                                    <dd className="text-texto-soft">{datos.proyecto}</dd>
+                                </div>
+                            )}
+                        </dl>
+
+                        <div>
+                            <p className="text-[0.62rem] font-bold uppercase tracking-wider text-sutil">Descripción</p>
+                            <p className="mt-1 text-sm leading-relaxed text-texto-soft">{datos.descripcion || 'Sin descripción.'}</p>
+                        </div>
+
+                        {solicitud.partes.length > 0 && (
+                            <div>
+                                <p className="text-[0.62rem] font-bold uppercase tracking-wider text-sutil">Partes</p>
+                                <p className="mt-1 text-sm text-texto-soft">{solicitud.partes.join(', ')}</p>
+                            </div>
+                        )}
+
+                        <div>
+                            <p className="flex items-center gap-1.5 text-[0.62rem] font-bold uppercase tracking-wider text-sutil">
+                                <Users className="h-3.5 w-3.5" aria-hidden="true" /> Equipo
+                            </p>
+                            {datos.colaboradores.length > 0 ? (
+                                <ul className="mt-2 flex flex-wrap gap-1.5">
+                                    {datos.colaboradores.map((colaborador) => (
+                                        <li key={colaborador.colaboradorId} className={clasePillEstado(colaborador.estado)}>
+                                            {colaborador.nombre}
+                                            <span className="ml-1.5 font-normal opacity-80">{etiquetaInvitacion(colaborador.estado)}</span>
+                                        </li>
+                                    ))}
+                                </ul>
+                            ) : (
+                                <p className="mt-1 text-sm text-sutil">Sin colaboradores invitados.</p>
+                            )}
+                        </div>
+
+                        <div className="grid gap-1 border-t border-border/60 pt-3 text-[0.68rem] text-sutil">
+                            <span>Creada: {formatearFecha(datos.creadoEn.slice(0, 10)) || '—'}</span>
+                            <span>Actualizada: {formatearFecha(datos.actualizadoEn.slice(0, 10)) || '—'}</span>
+                        </div>
+                    </div>
+                )}
+            </div>
+        </div>
     );
 }
 
