@@ -1,7 +1,7 @@
 // CAPA: Presentación
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
 import type { ReactNode } from 'react';
-import { apiGet, apiPost } from '../lib/apiClient.ts';
+import { apiGet, apiPost, EVENTO_SESION_EXPIRADA } from '../api/apiClient.ts';
 import type { EntradaUsuario, Usuario } from '../models/Usuario.ts';
 import { refrescarDatosUsuario } from '../infrastructure/supabaseSync.ts';
 import { Storage } from '../infrastructure/storage.ts';
@@ -58,27 +58,21 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     useEffect(() => {
         let activo = true;
 
+        const alExpirarSesion = () => {
+            if (activo) setUsuario(null);
+        };
+
+        window.addEventListener(EVENTO_SESION_EXPIRADA, alExpirarSesion);
+
         const restaurarSesion = async () => {
             try {
-                let dto: UsuarioApi | null = null;
-
-                try {
-                    dto = await apiGet<UsuarioApi>('/auth/me');
-                } catch {
-                    // La cookie de acceso dura poco; si venció, probamos el refresh.
-                    const sesion = await apiPost<SesionApi>('/auth/refresh').catch(() => null);
-                    dto = sesion?.usuario ?? null;
-                }
+                const dto = await apiGet<UsuarioApi>('/auth/me');
 
                 if (!activo) return;
 
-                if (dto) {
-                    setUsuario(mapearUsuario(dto));
-                    // Sincronización de datos de Supabase, independiente de la sesión de la API.
-                    void refrescarDatosUsuario().catch(() => undefined);
-                } else {
-                    setUsuario(null);
-                }
+                setUsuario(mapearUsuario(dto));
+                // Sincronización de datos de Supabase, independiente de la sesión de la API.
+                void refrescarDatosUsuario().catch(() => undefined);
             } catch {
                 if (activo) setUsuario(null);
             } finally {
@@ -90,6 +84,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
         return () => {
             activo = false;
+            window.removeEventListener(EVENTO_SESION_EXPIRADA, alExpirarSesion);
         };
     }, []);
 
