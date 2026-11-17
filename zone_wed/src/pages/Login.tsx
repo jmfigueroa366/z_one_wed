@@ -106,6 +106,12 @@ export default function Login() {
                     />
                 </label>
 
+                <div className="-mt-1 text-right">
+                    <Link className="text-xs font-semibold text-accent transition hover:text-accent-soft" to="/olvide-password">
+                        ¿Olvidaste tu contraseña?
+                    </Link>
+                </div>
+
                 {error ? (
                     <p className="rounded-xl border border-peligro/40 bg-peligro/10 px-4 py-2.5 text-sm text-peligro" role="alert">
                         {error}

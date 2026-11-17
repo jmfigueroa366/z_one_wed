@@ -7,6 +7,8 @@ import WorkspaceLayout from './components/WorkspaceLayout.tsx';
 import LandingPage from './pages/LandingPage.tsx';
 import Login from './pages/Login.tsx';
 import Register from './pages/Register.tsx';
+import OlvidePassword from './pages/OlvidePassword.tsx';
+import RestablecerPassword from './pages/RestablecerPassword.tsx';
 import MenuPrincipal from './pages/MenuPrincipal.tsx';
 import MisProyectos from './pages/MisProyectos.tsx';
 import Agenda from './pages/Agenda.tsx';
@@ -31,6 +33,8 @@ export default function App() {
                     <Route path="/" element={<LandingPage />} />
                     <Route path={RUTAS.LOGIN} element={<Login />} />
                     <Route path={RUTAS.REGISTRO} element={<Register />} />
+                    <Route path={RUTAS.OLVIDE_PASSWORD} element={<OlvidePassword />} />
+                    <Route path={RUTAS.RESTABLECER_PASSWORD} element={<RestablecerPassword />} />
 
                     <Route element={
                         <ProtectedRoute>

@@ -4,6 +4,8 @@ import { ROLES } from './roles.ts';
 export const RUTAS = Object.freeze({
     LOGIN: '/login',
     REGISTRO: '/register',
+    OLVIDE_PASSWORD: '/olvide-password',
+    RESTABLECER_PASSWORD: '/restablecer-password',
     MENU_PRINCIPAL: '/menu-principal',
     ESTUDIO: '/estudio',
     AGENDA: '/agenda',
