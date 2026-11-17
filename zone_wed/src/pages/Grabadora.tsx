@@ -1,8 +1,7 @@
 // CAPA: Presentación
 import { useEffect, useRef, useState } from 'react';
-import { AlertTriangle, Download, Mic, Pause, Play, Square, Trash2 } from 'lucide-react';
+import { AlertTriangle, Download, Mic, Pause, Play, Sparkles, Square, Trash2 } from 'lucide-react';
 import OndaToma from '../components/OndaToma.tsx';
-import { BOTON_PELIGRO, BOTON_SECUNDARIO } from '../styles/clases.ts';
 import '../styles/tailwind.css';
 
 interface Toma {
@@ -23,7 +22,8 @@ const MIME_PREFERIDOS = [
 ];
 
 const BARRAS_ONDA = 180;
-const SEGMENTOS_NIVEL = 24;
+const SEGMENTOS_NIVEL = 32;
+const ALTURAS_ESTADO_VACIO = [12, 24, 16, 38, 28, 54, 36, 68, 46, 82, 58, 92, 66, 78, 50, 72, 40, 60, 30, 48, 22, 34, 16, 26];
 
 function formatearDuracion(segundos: number): string {
     const total = Math.max(0, Math.floor(segundos));
@@ -172,7 +172,7 @@ export default function Grabadora() {
             if (i < activos) {
                 segmento.style.opacity = '1';
                 segmento.style.background =
-                    i >= hijos.length * 0.8 ? '#f2a4b1' : i >= hijos.length * 0.55 ? '#f04fa6' : '#a477ff';
+                    i >= hijos.length * 0.86 ? '#ff8a8a' : i >= hijos.length * 0.62 ? '#e34ba6' : '#9365f2';
             } else {
                 segmento.style.opacity = '0.22';
                 segmento.style.background = 'rgba(247, 244, 255, 0.5)';
@@ -198,7 +198,7 @@ export default function Grabadora() {
         if (!ctx) return;
         ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
         ctx.clearRect(0, 0, ancho, alto);
-        ctx.strokeStyle = 'rgba(166, 158, 189, 0.18)';
+        ctx.strokeStyle = 'rgba(147, 101, 242, 0.22)';
         ctx.lineWidth = 1;
         ctx.beginPath();
         ctx.moveTo(0, alto / 2);
@@ -229,7 +229,7 @@ export default function Grabadora() {
         ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
         ctx.clearRect(0, 0, ancho, alto);
 
-        ctx.strokeStyle = 'rgba(166, 158, 189, 0.18)';
+        ctx.strokeStyle = 'rgba(147, 101, 242, 0.22)';
         ctx.lineWidth = 1;
         ctx.beginPath();
         ctx.moveTo(0, alto / 2);
@@ -237,10 +237,10 @@ export default function Grabadora() {
         ctx.stroke();
 
         const gradiente = ctx.createLinearGradient(0, 0, ancho, 0);
-        gradiente.addColorStop(0, '#a477ff');
-        gradiente.addColorStop(1, '#f04fa6');
+        gradiente.addColorStop(0, '#9365f2');
+        gradiente.addColorStop(1, '#e34ba6');
         ctx.strokeStyle = gradiente;
-        ctx.lineWidth = 2;
+        ctx.lineWidth = 2.5;
         ctx.lineJoin = 'round';
         ctx.beginPath();
 
@@ -254,7 +254,11 @@ export default function Grabadora() {
                 ctx.lineTo(x, y);
             }
         }
+        ctx.save();
+        ctx.shadowColor = 'rgba(227, 75, 166, 0.5)';
+        ctx.shadowBlur = 12;
         ctx.stroke();
+        ctx.restore();
     };
 
     const arrancarMonitor = (analizador: AnalyserNode) => {
@@ -523,13 +527,18 @@ export default function Grabadora() {
     return (
         <main className="workspace-content relative" data-page="grabadora">
             <header className="page-heading relative border-l-4 border-accent pl-4">
-                <p className="workspace-eyebrow">ESTUDIO · GRABADORA</p>
+                <div className="flex flex-wrap items-center gap-2">
+                    <p className="workspace-eyebrow mb-0">ESTUDIO · GRABADORA</p>
+                    <span className="rounded-full border border-border bg-white/[0.03] px-2 py-0.5 text-[10px] font-bold uppercase tracking-[0.2em] text-sutil">
+                        DAW
+                    </span>
+                </div>
                 <h1>Grabadora</h1>
                 <p>Graba tomas desde tu micrófono, escúchalas y descárgalas. Todo se procesa en tu navegador.</p>
             </header>
 
             <section
-                className="relative mt-6 overflow-hidden rounded-[2rem] border border-border bg-surface/60 p-5 backdrop-blur sm:p-6"
+                className="relative mt-6 overflow-hidden rounded-[2rem] border border-accent/25 bg-surface p-4 shadow-[0_30px_90px_-50px_rgba(147,101,242,0.8)] backdrop-blur sm:p-6"
                 aria-label="Transporte de grabación"
             >
                 <div
@@ -541,7 +550,20 @@ export default function Grabadora() {
                     className="pointer-events-none absolute -bottom-24 left-10 h-52 w-52 rounded-full bg-[#e34ba6]/15 blur-3xl"
                 />
 
-                <div className="relative flex flex-wrap items-center gap-4">
+                <div className="relative mb-4 flex flex-wrap items-center justify-between gap-2 border-b border-border/60 pb-3">
+                    <p className="text-[10px] font-bold uppercase tracking-[0.32em] text-sutil">TRANSPORTE</p>
+                    <span className="inline-flex items-center gap-2 rounded-full border border-border bg-white/[0.03] px-2.5 py-1 text-[10px] font-bold uppercase tracking-[0.2em] text-sutil">
+                        <span
+                            className={`h-1.5 w-1.5 rounded-full ${
+                                grabando ? 'animate-pulse bg-[#e34ba6]' : 'bg-border'
+                            }`}
+                            aria-hidden="true"
+                        />
+                        {grabando ? 'REC · CAPTURANDO' : 'LISTO PARA GRABAR'}
+                    </span>
+                </div>
+
+                <div className="relative flex flex-wrap items-center gap-4 sm:gap-5">
                     <button
                         type="button"
                         onClick={() => {
@@ -549,18 +571,21 @@ export default function Grabadora() {
                         }}
                         disabled={grabando}
                         aria-label="Grabar"
-                        className={`relative grid h-16 w-16 shrink-0 place-items-center rounded-full border border-white/20 text-white shadow-xl transition ${
-                            grabando
-                                ? 'cursor-not-allowed bg-gradient-to-br from-[#ff5a6e] to-[#c81e4a] opacity-80'
-                                : 'bg-gradient-to-br from-[#ff5a6e] to-[#c81e4a] hover:brightness-110'
-                        }`}
+                        title={grabando ? 'Grabación en curso' : 'Grabar'}
+                        className="relative grid h-20 w-20 shrink-0 place-items-center rounded-full border-2 border-white/25 bg-gradient-to-br from-[#ff5a6e] to-[#c81e4a] text-white shadow-[0_0_0_6px_rgba(227,75,166,0.10),0_18px_40px_-12px_rgba(200,30,74,0.85)] transition hover:brightness-110 active:scale-95 disabled:cursor-not-allowed disabled:opacity-75 motion-reduce:transform-none sm:h-24 sm:w-24"
                     >
-                        <Mic className="h-6 w-6" aria-hidden="true" />
+                        <Mic className="h-8 w-8 sm:h-9 sm:w-9" aria-hidden="true" />
                         {grabando && (
-                            <span
-                                aria-hidden="true"
-                                className="absolute inset-0 animate-ping rounded-full border border-magenta/60"
-                            />
+                            <>
+                                <span
+                                    aria-hidden="true"
+                                    className="pointer-events-none absolute -inset-2 animate-ping rounded-full border-2 border-[#e34ba6]/40 motion-reduce:animate-none"
+                                />
+                                <span
+                                    aria-hidden="true"
+                                    className="pointer-events-none absolute -inset-4 animate-glow rounded-full bg-[#e34ba6]/20 blur-xl motion-reduce:animate-none"
+                                />
+                            </>
                         )}
                     </button>
 
@@ -569,35 +594,60 @@ export default function Grabadora() {
                         onClick={detenerGrabacion}
                         disabled={!grabando}
                         aria-label="Detener grabación"
-                        className="grid h-12 w-12 shrink-0 place-items-center rounded-full border border-border bg-white/[0.04] text-texto transition hover:border-peligro/60 hover:text-peligro-soft disabled:cursor-not-allowed disabled:opacity-40"
+                        title={grabando ? 'Detener grabación' : 'Sin grabación activa'}
+                        className="grid h-14 w-14 shrink-0 place-items-center rounded-2xl border border-border bg-white/[0.04] text-texto shadow-inner transition hover:border-accent/60 disabled:cursor-not-allowed disabled:opacity-40"
                     >
-                        <Square className="h-4 w-4" aria-hidden="true" />
+                        <span className="grid h-6 w-6 place-items-center rounded-[4px] border border-border bg-white/[0.05]">
+                            <Square className="h-3.5 w-3.5" aria-hidden="true" />
+                        </span>
                     </button>
 
-                    <div className="rounded-2xl border border-border bg-[#0b0813] px-5 py-3 shadow-inner">
-                        <p className="text-[10px] font-bold uppercase tracking-[0.3em] text-sutil">
-                            {grabando ? 'REC' : 'STOP'}
-                        </p>
-                        <p className="font-mono text-3xl font-black tabular-nums tracking-tight text-texto-soft">
+                    <div className="relative min-w-[168px] overflow-hidden rounded-2xl border border-border bg-[#0b0813] px-5 py-3 shadow-[inset_0_1px_0_rgba(255,255,255,0.06),inset_0_-20px_35px_rgba(0,0,0,0.55)] sm:px-6 sm:py-4">
+                        <div
+                            aria-hidden="true"
+                            className="pointer-events-none absolute inset-0 opacity-40"
+                            style={{
+                                backgroundImage:
+                                    'repeating-linear-gradient(0deg, rgba(255,255,255,0.035) 0px, rgba(255,255,255,0.035) 1px, transparent 1px, transparent 4px)',
+                            }}
+                        />
+                        <div className="relative flex items-center justify-between gap-3">
+                            <p className="text-[9px] font-bold uppercase tracking-[0.3em] text-sutil">
+                                {grabando ? 'REC' : 'TIME'}
+                            </p>
+                            <span
+                                className={`h-2 w-2 rounded-full ${
+                                    grabando
+                                        ? 'animate-pulse bg-[#e34ba6] shadow-[0_0_10px_rgba(227,75,166,0.9)]'
+                                        : 'bg-border'
+                                }`}
+                                aria-hidden="true"
+                            />
+                        </div>
+                        <p className="relative mt-1 whitespace-nowrap font-mono text-[clamp(2rem,5vw,3.25rem)] font-black leading-none tracking-[-0.06em] text-[#f7f4ff] [text-shadow:0_0_16px_rgba(227,75,166,0.55),0_0_42px_rgba(147,101,242,0.45)]">
                             {formatearLcd(lcd)}
                         </p>
                     </div>
 
-                    <div className="min-w-[160px] flex-1">
+                    <div className="min-w-[180px] flex-1">
                         <div className="mb-2 flex items-center justify-between text-[10px] font-bold uppercase tracking-[0.25em] text-sutil">
                             <span>Nivel</span>
-                            <span className={grabando ? 'text-magenta' : 'text-sutil'}>
+                            <span className={grabando ? 'text-[#e34ba6]' : 'text-sutil'}>
                                 {grabando ? 'En vivo' : 'En espera'}
                             </span>
                         </div>
-                        <div ref={medidorRef} className="flex h-4 items-stretch gap-1" aria-hidden="true">
+                        <div ref={medidorRef} className="flex h-5 items-stretch gap-[3px] sm:h-6" aria-hidden="true">
                             {Array.from({ length: SEGMENTOS_NIVEL }).map((_valor, indice) => (
                                 <span
                                     key={indice}
-                                    className="flex-1 rounded-sm transition-opacity duration-75"
+                                    className="flex-1 rounded-[2px] transition-opacity duration-75"
                                     style={{ background: 'rgba(247, 244, 255, 0.5)', opacity: 0.22 }}
                                 />
                             ))}
+                        </div>
+                        <div className="mt-1 flex justify-between font-mono text-[8px] uppercase tracking-wider text-sutil/60">
+                            <span>−∞</span>
+                            <span>0 dB</span>
                         </div>
                     </div>
 
@@ -605,13 +655,13 @@ export default function Grabadora() {
                         <span
                             className={`inline-flex items-center gap-2 rounded-full border px-3 py-1 text-[11px] font-bold uppercase tracking-wider ${
                                 grabando
-                                    ? 'border-magenta/40 bg-magenta/10 text-magenta'
+                                    ? 'border-[#e34ba6]/40 bg-[#e34ba6]/10 text-[#e34ba6]'
                                     : 'border-border bg-white/[0.03] text-sutil'
                             }`}
                         >
                             <span
                                 className={`h-2 w-2 rounded-full ${
-                                    grabando ? 'animate-pulse bg-magenta' : 'bg-sutil/50'
+                                    grabando ? 'animate-pulse bg-[#e34ba6]' : 'bg-border'
                                 }`}
                                 aria-hidden="true"
                             />
@@ -635,16 +685,31 @@ export default function Grabadora() {
             </section>
 
             <section
-                className="relative mt-5 overflow-hidden rounded-[2rem] border border-border bg-surface/60 p-5 backdrop-blur sm:p-6"
+                className="relative mt-4 overflow-hidden rounded-2xl border border-border bg-surface/50 p-4 backdrop-blur sm:p-5"
                 aria-label="Monitor en vivo"
             >
                 <div className="flex flex-wrap items-center justify-between gap-2">
                     <p className="workspace-eyebrow mb-0">MONITOR EN VIVO</p>
-                    <span className="text-[10px] font-bold uppercase tracking-[0.25em] text-sutil">
+                    <span className="inline-flex items-center gap-2 text-[10px] font-bold uppercase tracking-[0.25em] text-sutil">
+                        <span
+                            className={`h-1.5 w-1.5 rounded-full ${
+                                grabando ? 'animate-pulse bg-[#e34ba6]' : 'bg-border'
+                            }`}
+                            aria-hidden="true"
+                        />
                         {grabando ? 'Señal del micrófono' : 'Sin señal'}
                     </span>
                 </div>
-                <div className="relative mt-3 h-28 overflow-hidden rounded-2xl border border-border bg-[#0b0813]">
+                <div className="relative mt-2 h-20 overflow-hidden rounded-xl border border-border bg-[#0b0813] sm:h-24">
+                    <div
+                        aria-hidden="true"
+                        className="pointer-events-none absolute inset-0 opacity-70"
+                        style={{
+                            backgroundImage:
+                                'linear-gradient(rgba(147,101,242,0.08) 1px, transparent 1px), linear-gradient(90deg, rgba(147,101,242,0.08) 1px, transparent 1px)',
+                            backgroundSize: '24px 24px',
+                        }}
+                    />
                     <canvas ref={vivoCanvasRef} className="absolute inset-0" aria-hidden="true" />
                     {!grabando && (
                         <div className="absolute inset-0 grid place-items-center px-4 text-center text-xs text-sutil">
@@ -666,11 +731,45 @@ export default function Grabadora() {
                 </div>
 
                 {tomas.length === 0 ? (
-                    <div className="mt-4 rounded-2xl border border-dashed border-border bg-white/[0.02] px-5 py-10 text-center">
-                        <p className="text-sm font-semibold text-texto">Aún no hay tomas</p>
-                        <p className="mt-1 text-xs text-sutil">
-                            Graba tu primera pista; se mantendrá en esta sesión hasta que recargues la página.
-                        </p>
+                    <div className="relative mt-4 overflow-hidden rounded-2xl border border-dashed border-accent/30 bg-gradient-to-br from-accent/[0.08] via-surface/40 to-magenta/[0.08] px-6 py-12 text-center">
+                        <div
+                            aria-hidden="true"
+                            className="pointer-events-none absolute -right-14 -top-16 h-44 w-44 rounded-full bg-[#9365f2]/15 blur-3xl"
+                        />
+                        <div
+                            aria-hidden="true"
+                            className="pointer-events-none absolute -bottom-16 left-6 h-40 w-40 rounded-full bg-[#e34ba6]/15 blur-3xl"
+                        />
+                        <div className="relative mx-auto grid max-w-md gap-4">
+                            <span className="mx-auto grid h-12 w-12 place-items-center rounded-full border border-accent/40 bg-accent/10 text-accent-soft">
+                                <Sparkles className="h-5 w-5" aria-hidden="true" />
+                            </span>
+                            <div>
+                                <p className="text-lg font-bold text-texto-soft">Tu primera pista te espera</p>
+                                <p className="mt-1 text-xs text-sutil">
+                                    Pulsa el botón rojo y verás la onda en vivo. Las tomas se mantienen en esta sesión
+                                    hasta que recargues la página.
+                                </p>
+                            </div>
+                            <div
+                                aria-hidden="true"
+                                className="flex h-24 items-center justify-center gap-1.5 rounded-xl border border-border/60 bg-[#0b0813] px-4"
+                            >
+                                {ALTURAS_ESTADO_VACIO.map((altura, indice) => (
+                                    <span
+                                        key={indice}
+                                        className="w-1.5 rounded-full opacity-60"
+                                        style={{
+                                            height: `${altura}%`,
+                                            backgroundImage: 'linear-gradient(180deg, #9365f2, #e34ba6)',
+                                        }}
+                                    />
+                                ))}
+                            </div>
+                            <span className="justify-self-center rounded-full border border-border bg-white/[0.03] px-3 py-1 font-mono text-[10px] uppercase tracking-[0.2em] text-sutil">
+                                REC · 00:00.0
+                            </span>
+                        </div>
                     </div>
                 ) : (
                     <div className="mt-4 grid gap-3">
@@ -680,76 +779,103 @@ export default function Grabadora() {
                             return (
                                 <article
                                     key={toma.id}
-                                    className={`rounded-2xl border p-4 backdrop-blur transition ${
+                                    className={`grid overflow-hidden rounded-xl border transition sm:grid-cols-[15rem_minmax(0,1fr)] lg:grid-cols-[17rem_minmax(0,1fr)] ${
                                         activa
-                                            ? 'border-accent/50 bg-accent/[0.06]'
-                                            : 'border-border bg-surface/50'
+                                            ? 'border-accent/50 bg-surface shadow-[0_0_0_1px_rgba(147,101,242,0.25),0_20px_50px_-32px_rgba(227,75,166,0.75)]'
+                                            : 'border-border bg-surface/40 hover:border-accent/30'
                                     }`}
                                 >
-                                    <div className="flex flex-wrap items-center gap-3">
-                                        <button
-                                            type="button"
-                                            onClick={() => {
-                                                void alternarReproduccion(toma);
-                                            }}
-                                            aria-label={
-                                                sonando
-                                                    ? `Pausar toma ${indice + 1}`
-                                                    : `Reproducir toma ${indice + 1}`
-                                            }
-                                            className={`grid h-11 w-11 shrink-0 place-items-center rounded-full border transition ${
-                                                sonando
-                                                    ? 'border-magenta/50 bg-magenta/20 text-magenta'
-                                                    : 'border-border bg-white/[0.05] text-texto hover:border-accent/60 hover:text-accent'
+                                    <div className="relative flex flex-col gap-3 border-b border-border/60 p-3.5 sm:border-b-0 sm:border-r">
+                                        <span
+                                            aria-hidden="true"
+                                            className={`absolute inset-y-0 left-0 w-1 ${
+                                                activa
+                                                    ? 'bg-gradient-to-b from-[#9365f2] to-[#e34ba6]'
+                                                    : 'bg-border'
                                             }`}
-                                        >
-                                            {sonando ? (
-                                                <Pause className="h-4 w-4" aria-hidden="true" />
-                                            ) : (
-                                                <Play className="h-4 w-4" aria-hidden="true" />
-                                            )}
-                                        </button>
-
-                                        <div className="min-w-0 flex-1">
-                                            <p className="truncate text-sm font-bold text-texto-soft">
-                                                Toma {indice + 1}
-                                            </p>
-                                            <p className="mt-0.5 text-xs text-sutil">
-                                                {formatearDuracion(toma.duracion)} ·{' '}
-                                                {extensionDe(toma.mime).toUpperCase()} ·{' '}
-                                                {new Date(toma.creadaEn).toLocaleTimeString('es-ES', {
-                                                    hour: '2-digit',
-                                                    minute: '2-digit',
-                                                })}
-                                            </p>
+                                        />
+                                        <div className="flex items-start justify-between gap-2 pl-2">
+                                            <div className="min-w-0">
+                                                <p className="font-mono text-[10px] uppercase tracking-[0.22em] text-sutil">
+                                                    Pista {String(indice + 1).padStart(2, '0')}
+                                                </p>
+                                                <p className="truncate text-sm font-bold text-texto-soft">
+                                                    Toma {indice + 1}
+                                                </p>
+                                            </div>
+                                            <span
+                                                aria-hidden="true"
+                                                className={`mt-1 h-2.5 w-2.5 shrink-0 rounded-full ${
+                                                    sonando
+                                                        ? 'animate-pulse bg-[#e34ba6] shadow-[0_0_12px_rgba(227,75,166,0.85)]'
+                                                        : activa
+                                                          ? 'bg-accent'
+                                                          : 'bg-border'
+                                                }`}
+                                            />
                                         </div>
 
-                                        <div className="flex shrink-0 gap-2">
+                                        <p className="pl-2 text-[11px] text-sutil">
+                                            {formatearDuracion(toma.duracion)} ·{' '}
+                                            {extensionDe(toma.mime).toUpperCase()} ·{' '}
+                                            {new Date(toma.creadaEn).toLocaleTimeString('es-ES', {
+                                                hour: '2-digit',
+                                                minute: '2-digit',
+                                            })}
+                                        </p>
+
+                                        <div className="mt-auto flex items-center gap-2 pl-2">
+                                            <button
+                                                type="button"
+                                                onClick={() => {
+                                                    void alternarReproduccion(toma);
+                                                }}
+                                                aria-label={
+                                                    sonando
+                                                        ? `Pausar toma ${indice + 1}`
+                                                        : `Reproducir toma ${indice + 1}`
+                                                }
+                                                title={sonando ? 'Pausar' : 'Reproducir'}
+                                                className={`grid h-10 w-10 shrink-0 place-items-center rounded-lg border transition ${
+                                                    sonando
+                                                        ? 'border-[#e34ba6]/60 bg-[#e34ba6]/15 text-[#e34ba6]'
+                                                        : 'border-border bg-white/[0.04] text-texto hover:border-accent/60 hover:text-accent'
+                                                }`}
+                                            >
+                                                {sonando ? (
+                                                    <Pause className="h-4 w-4" aria-hidden="true" />
+                                                ) : (
+                                                    <Play className="h-4 w-4" aria-hidden="true" />
+                                                )}
+                                            </button>
+
                                             <a
                                                 href={toma.url}
                                                 download={nombreArchivo(toma.mime, toma.creadaEn)}
-                                                className={BOTON_SECUNDARIO}
                                                 aria-label={`Descargar toma ${indice + 1}`}
+                                                title="Descargar"
+                                                className="grid h-10 w-10 shrink-0 place-items-center rounded-lg border border-border bg-white/[0.04] text-sutil transition hover:border-accent/60 hover:text-accent"
                                             >
-                                                <Download className="mr-2 h-4 w-4" aria-hidden="true" />
-                                                Descargar
+                                                <Download className="h-4 w-4" aria-hidden="true" />
                                             </a>
+
                                             <button
                                                 type="button"
                                                 onClick={() => borrarToma(toma)}
-                                                className={BOTON_PELIGRO}
                                                 aria-label={`Borrar toma ${indice + 1}`}
+                                                title="Borrar"
+                                                className="grid h-10 w-10 shrink-0 place-items-center rounded-lg border border-border bg-white/[0.04] text-sutil transition hover:border-peligro/50 hover:bg-peligro/10 hover:text-peligro-soft"
                                             >
-                                                <Trash2 className="mr-2 h-4 w-4" aria-hidden="true" />
-                                                Borrar
+                                                <Trash2 className="h-4 w-4" aria-hidden="true" />
                                             </button>
                                         </div>
                                     </div>
 
-                                    <div className="mt-3 rounded-xl border border-border/60 bg-[#0b0813]/70 px-2 py-1">
+                                    <div className="min-w-0 bg-[#0b0813] p-2.5 sm:p-3">
                                         <OndaToma
                                             picos={toma.picos}
                                             progreso={activa ? progreso : 0}
+                                            duracion={toma.duracion}
                                             onSeek={(fraccion) => buscarEnToma(toma, fraccion)}
                                         />
                                     </div>
