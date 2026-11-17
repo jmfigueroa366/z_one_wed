@@ -1,6 +1,7 @@
 // CAPA: Presentación
 import { useEffect, useRef, useState } from 'react';
 import anime from 'animejs';
+import { ShieldCheck } from 'lucide-react';
 import { EstadisticasService } from '../services/estadisticasService.ts';
 import { salaRepo } from '../repositories/salaRepo.ts';
 import { artistasDestacados } from '../data/artistasDestacados.ts';
@@ -10,10 +11,11 @@ const ARTISTA_FALLBACK =
     'radial-gradient(circle at 30% 20%, rgba(240, 79, 166, 0.38), transparent 55%), linear-gradient(150deg, #3a2a52, #171322 82%)';
 
 export const authCampo =
-    'w-full min-h-[48px] rounded-xl border border-border bg-surface-2 px-4 text-sm text-texto outline-none transition [color-scheme:dark] placeholder:text-sutil/70 focus:border-accent focus:ring-2 focus:ring-accent/40 [&>option]:bg-surface-3 [&>option]:text-texto';
-export const authEtiqueta = 'mb-1.5 block text-xs font-bold uppercase tracking-wider text-sutil';
+    'w-full min-h-[50px] rounded-2xl border border-border/80 bg-surface-2/80 px-4 text-sm text-texto outline-none transition [color-scheme:dark] placeholder:text-sutil/60 shadow-[inset_0_1px_0_rgba(255,255,255,0.04)] focus:border-accent/70 focus:bg-surface-2 focus:ring-4 focus:ring-accent/15 [&>option]:bg-surface-3 [&>option]:text-texto';
+export const authEtiqueta = 'mb-2 block text-[0.68rem] font-bold uppercase tracking-[0.18em] text-sutil';
 export const authBoton =
-    'inline-flex min-h-[50px] w-full items-center justify-center rounded-xl bg-gradient-to-r from-[#9365f2] to-[#e34ba6] px-4 text-sm font-bold text-white shadow-lg shadow-accent/25 transition hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-70';
+    'group relative inline-flex min-h-[52px] w-full items-center justify-center gap-2 overflow-hidden rounded-2xl bg-gradient-to-r from-[#9365f2] via-[#b857d1] to-[#e34ba6] px-4 text-sm font-bold text-white shadow-[0_18px_40px_-18px_rgba(227,75,166,0.9)] transition hover:-translate-y-0.5 hover:brightness-110 active:translate-y-0 disabled:cursor-not-allowed disabled:opacity-70 disabled:hover:translate-y-0 motion-reduce:transform-none';
+export const authSelect = `${authCampo} appearance-none pr-11`;
 
 function obtenerMetricas() {
     const resumen = EstadisticasService.obtenerResumen();
@@ -208,16 +210,61 @@ export default function AuthLayout({ titulo, subtitulo, children }: AuthLayoutPr
                 </div>
             </section>
 
-            <section className="flex items-center justify-center p-6 sm:p-10">
-                <div ref={tarjetaRef} className="w-full max-w-md">
-                    <div className="mb-8 flex items-center gap-3 lg:hidden">
-                        <span className="text-xl font-extrabold tracking-tight">Z-ONE</span>
+            <section className="relative flex items-center justify-center overflow-hidden p-4 sm:p-8 lg:p-10">
+                <div
+                    aria-hidden="true"
+                    className="pointer-events-none absolute -right-24 top-8 h-72 w-72 rounded-full bg-[#9365f2]/20 blur-3xl"
+                />
+                <div
+                    aria-hidden="true"
+                    className="pointer-events-none absolute -bottom-24 -left-20 h-72 w-72 rounded-full bg-[#e34ba6]/15 blur-3xl"
+                />
+                <div
+                    aria-hidden="true"
+                    className="pointer-events-none absolute inset-0 bg-[linear-gradient(rgba(164,119,255,0.055)_1px,transparent_1px),linear-gradient(90deg,rgba(164,119,255,0.055)_1px,transparent_1px)] [background-size:42px_42px] [mask-image:radial-gradient(ellipse_at_center,black,transparent_78%)]"
+                />
+
+                <div
+                    ref={tarjetaRef}
+                    className="relative w-full max-w-md overflow-hidden rounded-[2rem] border border-white/10 bg-surface/60 p-6 shadow-[0_40px_120px_-60px_rgba(147,101,242,0.95)] backdrop-blur-2xl sm:p-8"
+                >
+                    <div
+                        aria-hidden="true"
+                        className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-[#e34ba6]/60 to-transparent"
+                    />
+                    <div
+                        aria-hidden="true"
+                        className="pointer-events-none absolute -right-16 -top-20 h-44 w-44 rounded-full bg-[#9365f2]/15 blur-3xl"
+                    />
+
+                    <div className="relative">
+                        <div className="mb-7 flex items-center justify-between gap-3">
+                            <div className="flex items-center gap-2.5">
+                                <span className="grid h-10 w-10 place-items-center rounded-2xl bg-gradient-to-br from-[#9365f2] to-[#e34ba6] text-sm font-black text-white shadow-lg shadow-accent/30">
+                                    Z
+                                </span>
+                                <span className="text-sm font-extrabold tracking-[0.18em] text-texto-soft lg:hidden">
+                                    Z-ONE
+                                </span>
+                                <span className="hidden text-[10px] font-bold uppercase tracking-[0.22em] text-sutil lg:block">
+                                    Acceso al estudio
+                                </span>
+                            </div>
+                            <span className="inline-flex items-center gap-1.5 rounded-full border border-accent/25 bg-accent/10 px-2.5 py-1 text-[9px] font-bold uppercase tracking-[0.16em] text-accent-soft">
+                                <ShieldCheck className="h-3 w-3" aria-hidden="true" />
+                                Seguro
+                            </span>
+                        </div>
+
+                        <p className="text-[10px] font-bold uppercase tracking-[0.22em] text-accent">Bienvenido</p>
+                        <h1 className="mt-2 text-3xl font-extrabold tracking-tight text-texto-soft sm:text-[2.15rem]">
+                            {titulo}
+                        </h1>
+                        <p className="mt-2 text-sm leading-6 text-sutil">{subtitulo}</p>
+                        <div className="mt-3 h-1 w-14 rounded-full bg-gradient-to-r from-[#9365f2] to-[#e34ba6]" />
+
+                        <div className="mt-7">{children}</div>
                     </div>
-
-                    <h1 className="text-3xl font-bold tracking-tight text-texto-soft">{titulo}</h1>
-                    <p className="mt-2 text-sm leading-6 text-sutil">{subtitulo}</p>
-
-                    <div className="mt-8">{children}</div>
                 </div>
             </section>
         </main>

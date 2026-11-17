@@ -135,7 +135,7 @@ export default function Sidebar({ colapsado, onAlternar, movilAbierto, onCerrarM
             )}
 
             <aside
-                className={`fixed inset-y-0 left-0 z-50 flex w-[280px] flex-col border-r border-border bg-[#0d0a17]/95 p-4 backdrop-blur transition-transform duration-300 lg:static lg:z-auto lg:w-full lg:translate-x-0 lg:bg-[#0d0a17]/80 ${
+                className={`fixed inset-y-0 left-0 z-50 flex w-[280px] flex-col border-r border-border bg-[#0d0a17]/95 p-4 backdrop-blur transition-transform duration-300 lg:sticky lg:top-0 lg:bottom-auto lg:left-auto lg:z-auto lg:h-screen lg:w-full lg:translate-x-0 lg:bg-[#0d0a17]/80 ${
                     movilAbierto ? 'translate-x-0' : '-translate-x-full'
                 } ${colapsado ? 'lg:px-3' : ''}`}
             >
@@ -174,7 +174,7 @@ export default function Sidebar({ colapsado, onAlternar, movilAbierto, onCerrarM
                     </button>
                 </div>
 
-                <nav aria-label="Navegación principal" className="mt-5 flex-1 overflow-y-auto pr-1">
+                <nav aria-label="Navegación principal" className="scrollbar-discreta mt-5 min-h-0 flex-1 overflow-y-auto pr-1">
                     {secciones.map((seccion) => (
                         <div key={seccion.titulo} className="mb-4">
                             <p className={`px-3 pb-1.5 text-[0.62rem] font-extrabold uppercase tracking-[0.16em] text-sutil ${colapsado ? 'lg:hidden' : ''}`}>
