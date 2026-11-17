@@ -15,6 +15,7 @@ import Agenda from './pages/Agenda.tsx';
 import Artistas from './pages/Artistas.tsx';
 import Escuchar from './pages/Escuchar.tsx';
 import Catalogo from './pages/Catalogo.tsx';
+import Grabadora from './pages/Grabadora.tsx';
 import Chatbot from './pages/Chatbot.tsx';
 import Configuracion from './pages/Configuracion.tsx';
 import Estadisticas from './pages/Estadisticas.tsx';
@@ -46,6 +47,7 @@ export default function App() {
                         <Route path={RUTAS.AGENDA} element={<Agenda />} />
                         <Route path={RUTAS.ARTISTAS} element={<Artistas />} />
                         <Route path={RUTAS.CATALOGO} element={<Catalogo />} />
+                        <Route path={RUTAS.GRABADORA} element={<Grabadora />} />
                         <Route path={RUTAS.CHATBOT} element={<Chatbot />} />
                         <Route path={RUTAS.CONFIGURACION} element={<Configuracion />} />
                         <Route path={RUTAS.ESTADISTICAS} element={<Estadisticas />} />
