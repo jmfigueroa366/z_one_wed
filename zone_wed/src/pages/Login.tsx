@@ -5,17 +5,11 @@ import { useAuth } from '../context/AuthContext.tsx';
 import AuthLayout, { authBoton, authCampo, authEtiqueta } from '../components/AuthLayout.tsx';
 import type { ChangeEvent, FormEvent } from 'react';
 
-const CUENTAS_DEMO = [
-    { email: 'admin@z-one.com', clave: import.meta.env.VITE_DEMO_ADMIN_CLAVE ?? '', rol: 'Administrador' },
-    { email: 'lua@z-one.com', clave: import.meta.env.VITE_DEMO_COLAB_CLAVE ?? '', rol: 'Colaborador' },
-    { email: 'cliente@z-one.com', clave: import.meta.env.VITE_DEMO_CLIENTE_CLAVE ?? '', rol: 'Cliente' },
-].filter((cuenta) => cuenta.clave);
-
 export default function Login() {
     const navigate = useNavigate();
     const location = useLocation();
     const { usuario, cargando: cargandoSesion, iniciarSesion, cerrarSesion } = useAuth();
-    const [formulario, setFormulario] = useState({ email: '', password: '', rol: '' });
+    const [formulario, setFormulario] = useState({ email: '', password: '' });
     const [error, setError] = useState('');
     const [aviso, setAviso] = useState('');
     const [cargando, setCargando] = useState(false);
@@ -32,14 +26,9 @@ export default function Login() {
         return <Navigate to={rutaDestino} replace />;
     }
 
-    const manejarCambio = (event: ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+    const manejarCambio = (event: ChangeEvent<HTMLInputElement>) => {
         const { name, value } = event.target;
         setFormulario((anterior) => ({ ...anterior, [name]: value }));
-    };
-
-    const completarDemo = (cuenta: (typeof CUENTAS_DEMO)[number]) => {
-        setFormulario({ email: cuenta.email, password: cuenta.clave, rol: cuenta.rol.toLowerCase() });
-        setError('');
     };
 
     const manejarSubmit = async (event: FormEvent<HTMLFormElement>) => {
@@ -49,9 +38,9 @@ export default function Login() {
         setCargando(true);
 
         try {
-            const autenticado = await iniciarSesion(formulario.email, formulario.password, formulario.rol);
+            const autenticado = await iniciarSesion(formulario.email, formulario.password);
             if (!autenticado) {
-                throw new Error('Revisa tus credenciales y el tipo de cuenta seleccionado.');
+                throw new Error('Revisa tu correo y contraseña.');
             }
 
             if (autenticado.debeCambiarPassword) {
@@ -70,7 +59,7 @@ export default function Login() {
     return (
         <AuthLayout
             titulo="Iniciar sesión"
-            subtitulo="Selecciona tu tipo de cuenta para acceder al centro operativo del estudio."
+            subtitulo="Ingresa con tu correo y contraseña para acceder al centro operativo del estudio."
         >
             <form onSubmit={manejarSubmit} className="grid gap-4">
                 {aviso ? (
@@ -88,16 +77,6 @@ export default function Login() {
                         </button>
                     </div>
                 ) : null}
-
-                <label className="block">
-                    <span className={authEtiqueta}>Tipo de cuenta</span>
-                    <select name="rol" value={formulario.rol} onChange={manejarCambio} className={authCampo} required>
-                        <option value="">Selecciona tu rol</option>
-                        <option value="administrador">Administrador</option>
-                        <option value="cliente">Cliente</option>
-                        <option value="colaborador">Colaborador</option>
-                    </select>
-                </label>
 
                 <label className="block">
                     <span className={authEtiqueta}>Email</span>
@@ -137,26 +116,6 @@ export default function Login() {
                     {cargando ? 'Ingresando...' : 'Ingresar al estudio'}
                 </button>
             </form>
-
-            {import.meta.env.DEV ? (
-                <div className="mt-6 rounded-xl border border-border/70 bg-surface/40 p-4">
-                    <p className="mb-2 text-[0.68rem] font-bold uppercase tracking-[0.18em] text-sutil">Acceso de demostración</p>
-                    <ul className="grid gap-1.5">
-                        {CUENTAS_DEMO.map((cuenta) => (
-                            <li key={cuenta.email}>
-                                <button
-                                    type="button"
-                                    onClick={() => completarDemo(cuenta)}
-                                    className="flex w-full items-center justify-between gap-2 rounded-lg px-2 py-1.5 text-left text-xs text-sutil transition hover:bg-accent/10 hover:text-texto"
-                                >
-                                    <span className="font-semibold text-texto">{cuenta.email}</span>
-                                    <span>{cuenta.rol}</span>
-                                </button>
-                            </li>
-                        ))}
-                    </ul>
-                </div>
-            ) : null}            
 
             <p className="mt-6 text-center text-sm text-sutil">
                 ¿No tienes cuenta?{' '}
