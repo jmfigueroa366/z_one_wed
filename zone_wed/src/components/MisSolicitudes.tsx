@@ -61,9 +61,9 @@ const acentoEstado = (estado: string): string => ACENTO_ESTADO[estado] ?? '#a477
 const ESTADOS_CANCELABLES = ['solicitada', 'por_autorizar', 'por_pagar'];
 
 const SIGUIENTE_PASO: Record<string, string> = {
-    solicitada: 'Esperando que el equipo invitado acepte.',
-    por_autorizar: 'El equipo aceptó. El estudio debe autorizar la reserva.',
-    por_pagar: 'El estudio autorizó. Paga el anticipo para confirmar tu sesión.',
+    solicitada: 'Esperando que el estudio apruebe tu solicitud.',
+    por_autorizar: 'Aprobada. Esperando que el equipo invitado acepte.',
+    por_pagar: 'El equipo aceptó. Paga el anticipo para confirmar tu sesión.',
     confirmada: 'Reserva confirmada. ¡Tu sesión está agendada!',
 };
 
@@ -152,11 +152,10 @@ export default function MisSolicitudes() {
                         <h1 className="mt-2 text-3xl font-extrabold tracking-tight text-texto-soft sm:text-4xl">
                             Reserva, produce, suena.
                         </h1>
-                        <p className="mt-3 text-sm leading-7 text-sutil">
-                            Consulta el avance de tus reservas y responde las invitaciones que recibas como artista o
-                            productor. Cuando el equipo acepta y el estudio autoriza, podrás pagar el anticipo para
-                            confirmar tu sesión.
-                        </p>
+<p className="mt-3 text-sm leading-7 text-sutil">
+                             Consulta el avance de tus reservas y responde las invitaciones que recibas como artista o
+                             productor. El estudio aprueba → el equipo acepta → se paga el anticipo → sesión confirmada.
+                         </p>
                     </div>
 
                     <div className="flex flex-wrap items-center gap-3">
@@ -514,7 +513,7 @@ function DetalleSolicitud({ id, colaboradorId, onCerrar, onRecargarLista }: {
 
                         {invitacion && (
                             <div className="border-t border-border/60 pt-3">
-                                {invitacion.estado === 'pendiente' ? (
+                                {invitacion.estado === 'pendiente' && datos.estado === 'por_autorizar' ? (
                                     <div className="flex flex-wrap gap-2">
                                         <button
                                             type="button"

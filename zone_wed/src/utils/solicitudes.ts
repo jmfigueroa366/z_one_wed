@@ -6,8 +6,8 @@ import type { Solicitud } from '../models/Solicitud.ts';
 import type { Colaborador } from '../models/Colaborador.ts';
 
 export const ETIQUETAS_ESTADO: Record<string, string> = {
-    solicitada: 'Solicitada',
-    por_autorizar: 'Por autorizar',
+    solicitada: 'En revisión del administrador',
+    por_autorizar: 'Aprobadas · esperando equipo',
     por_pagar: 'Por pagar',
     confirmada: 'Confirmada',
     rechazada: 'Rechazada',

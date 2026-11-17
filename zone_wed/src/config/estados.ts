@@ -12,12 +12,12 @@ export interface EstadosConfig {
 
 export const ESTADOS: EstadosConfig = {
     solicitud: {
-        // Flujo: el cliente pide -> los colaboradores aceptan (por_autorizar)
-        // -> el administrador autoriza (por_pagar) -> el cliente paga (confirmada).
+        // Flujo: el cliente pide -> el estudio aprueba (por_autorizar)
+        // -> el equipo acepta (por_pagar) -> el cliente paga (confirmada).
         estados: ['solicitada', 'por_autorizar', 'por_pagar', 'confirmada', 'rechazada', 'cancelada'],
         transiciones: {
             solicitada: ['por_autorizar', 'rechazada', 'cancelada'],
-            por_autorizar: ['por_pagar', 'confirmada', 'rechazada', 'cancelada'],
+            por_autorizar: ['por_pagar', 'rechazada', 'cancelada'],
             por_pagar: ['confirmada', 'cancelada'],
             confirmada: ['cancelada'],
         },

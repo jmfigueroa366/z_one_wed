@@ -16,14 +16,14 @@ import {
 import { useAuth } from '../context/AuthContext.tsx';
 import { esAdministrador } from '../config/roles.ts';
 import { useApi } from '../hooks/useApi.ts';
-import { listarSolicitudes, obtenerSolicitud } from '../api/solicitudesApi.ts';
+import { cambiarEstadoSolicitud, listarSolicitudes, obtenerSolicitud } from '../api/solicitudesApi.ts';
 import { adaptarSolicitud, adaptarSolicitudResumen } from '../api/adapters.ts';
 import { etiquetaEstado, etiquetaInvitacion, etiquetaTipo } from '../utils/solicitudes.ts';
 import type { Solicitud } from '../models/Solicitud.ts';
 import { formatearFecha } from '../utils/helpers.ts';
 import MisSolicitudes from '../components/MisSolicitudes.tsx';
 import { Contador } from '../components/Animados.tsx';
-import { clasePillEstado } from '../styles/clases.ts';
+import { BOTON_PELIGRO, BOTON_PRIMARIO, clasePillEstado } from '../styles/clases.ts';
 import '../styles/tailwind.css';
 
 const MENOS_MOVIMIENTO = () =>
@@ -41,8 +41,8 @@ interface ColumnaKanban {
 }
 
 const COLUMNAS: ColumnaKanban[] = [
-    { clave: 'solicitada', titulo: 'Esperando respuestas', icono: Hourglass, punto: 'bg-aviso', borde: 'border-aviso/40', fondo: 'from-aviso/[0.09]', brillo: 'from-aviso/70', texto: 'text-aviso-soft' },
-    { clave: 'por_autorizar', titulo: 'Por autorizar', icono: Sparkles, punto: 'bg-accent', borde: 'border-accent/40', fondo: 'from-accent/[0.09]', brillo: 'from-accent/70', texto: 'text-accent-soft' },
+    { clave: 'solicitada', titulo: 'Por aprobar', icono: Hourglass, punto: 'bg-aviso', borde: 'border-aviso/40', fondo: 'from-aviso/[0.09]', brillo: 'from-aviso/70', texto: 'text-aviso-soft' },
+    { clave: 'por_autorizar', titulo: 'Esperando equipo', icono: Sparkles, punto: 'bg-accent', borde: 'border-accent/40', fondo: 'from-accent/[0.09]', brillo: 'from-accent/70', texto: 'text-accent-soft' },
     { clave: 'por_pagar', titulo: 'Por pagar', icono: Wallet, punto: 'bg-magenta', borde: 'border-magenta/40', fondo: 'from-magenta/[0.09]', brillo: 'from-magenta/70', texto: 'text-magenta' },
     { clave: 'confirmada', titulo: 'Confirmadas', icono: ThumbsUp, punto: 'bg-exito', borde: 'border-exito/40', fondo: 'from-exito/[0.09]', brillo: 'from-exito/70', texto: 'text-exito-soft' },
     { clave: 'rechazada', titulo: 'Rechazadas', icono: XCircle, punto: 'bg-peligro', borde: 'border-peligro/40', fondo: 'from-peligro/[0.09]', brillo: 'from-peligro/70', texto: 'text-peligro-soft' },
@@ -54,7 +54,7 @@ const FILTROS = [
     ...COLUMNAS.map((columna) => ({ clave: columna.clave, titulo: columna.titulo })),
 ];
 
-const PASOS_FLUJO = ['Cliente pide', 'Equipo acepta', 'Tú autorizas', 'Cliente paga', 'Reserva confirmada'];
+const PASOS_FLUJO = ['Cliente pide', 'Tú apruebas', 'Equipo acepta', 'Cliente paga', 'Reserva confirmada'];
 
 function pasoActual(estado: string): number {
     if (estado === 'solicitada') return 1;
@@ -109,6 +109,9 @@ function BandejaSolicitudes() {
     const boardRef = useRef<HTMLDivElement>(null);
     const [filtro, setFiltro] = useState<string>('todas');
     const [detalleId, setDetalleId] = useState<number | null>(null);
+    const [ocupado, setOcupado] = useState<{ id: number; accion: 'aprobar' | 'rechazar' } | null>(null);
+    const [mensaje, setMensaje] = useState('');
+    const [errorAccion, setErrorAccion] = useState('');
     const { datos, error, cargando, recargar } = useApi(listarSolicitudes);
 
     const solicitudes = useMemo(
@@ -117,7 +120,9 @@ function BandejaSolicitudes() {
     );
     const salasPorId = useMemo(() => {
         const mapa = new Map<number, string | null>();
-        (datos?.items ?? []).forEach((dto) => mapa.set(dto.id, dto.sala));
+        (datos?.items ?? []).forEach((dto) => {
+            if (dto.salaId != null) mapa.set(dto.salaId, dto.sala);
+        });
         return mapa;
     }, [datos]);
 
@@ -160,6 +165,26 @@ function BandejaSolicitudes() {
         setDetalleId(Number(solicitud.id));
     };
 
+    const cambiarEstado = async (solicitud: Solicitud, nuevo: 'por_autorizar' | 'rechazada') => {
+        if (solicitud.id == null) return;
+        const id = Number(solicitud.id);
+        const accion = nuevo === 'por_autorizar' ? 'aprobar' : 'rechazar';
+        setOcupado({ id, accion });
+        setMensaje('');
+        setErrorAccion('');
+        try {
+            await cambiarEstadoSolicitud(id, nuevo);
+            setMensaje(accion === 'aprobar'
+                ? 'Solicitud aprobada. Ahora espera la respuesta del equipo.'
+                : 'Solicitud rechazada.');
+            recargar();
+        } catch (errorCambio) {
+            setErrorAccion(errorCambio instanceof Error ? errorCambio.message : 'No se pudo cambiar el estado de la solicitud.');
+        } finally {
+            setOcupado(null);
+        }
+    };
+
     const porResponder = grupos.solicitada.length;
     const porAutorizar = grupos.por_autorizar.length;
 
@@ -174,7 +199,7 @@ function BandejaSolicitudes() {
                         Solicitudes <span className="texto-degradado">del estudio</span>
                     </h1>
                     <p className="mt-2 max-w-2xl leading-relaxed text-sutil">
-                        El cliente pide, el equipo acepta, tú autorizas y el cliente paga el anticipo para confirmar la reserva.
+                        Cliente pide → tú apruebas → equipo acepta → cliente paga
                     </p>
 
                     {/* Flujo visual: explica el recorrido de una solicitud */}
@@ -205,10 +230,18 @@ function BandejaSolicitudes() {
                 </div>
             )}
 
+            {mensaje && (
+                <p className="mt-5 rounded-xl border border-exito/30 bg-exito/10 px-4 py-3 text-sm text-exito-soft" role="status">{mensaje}</p>
+            )}
+
+            {errorAccion && (
+                <p className="mt-5 rounded-xl border border-peligro/30 bg-peligro/10 px-4 py-3 text-sm text-peligro-soft" role="alert">{errorAccion}</p>
+            )}
+
             <section className="mt-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-4" aria-label="Resumen de solicitudes">
                 <KpiSolicitudes icono={Sparkles} etiqueta="Total de solicitudes" valor={solicitudes.length} degradado="from-[#5b418f]/45 to-surface/30" acento="text-accent-soft" />
-                <KpiSolicitudes icono={Hourglass} etiqueta="Esperando respuestas" valor={porResponder} degradado="from-aviso/25 to-surface/30" acento="text-aviso-soft" />
-                <KpiSolicitudes icono={ThumbsUp} etiqueta="Por autorizar" valor={porAutorizar} degradado="from-accent/25 to-surface/30" acento="text-accent-soft" />
+                <KpiSolicitudes icono={Hourglass} etiqueta="Por aprobar" valor={porResponder} degradado="from-aviso/25 to-surface/30" acento="text-aviso-soft" />
+                <KpiSolicitudes icono={ThumbsUp} etiqueta="Esperando equipo" valor={porAutorizar} degradado="from-accent/25 to-surface/30" acento="text-accent-soft" />
                 <KpiSolicitudes icono={Check} etiqueta="Confirmadas" valor={grupos.confirmada.length} degradado="from-exito/25 to-surface/30" acento="text-exito-soft" />
             </section>
 
@@ -342,6 +375,38 @@ function BandejaSolicitudes() {
                                                         <Coins className="h-3.5 w-3.5 shrink-0 animate-glow" aria-hidden="true" />
                                                         Anticipo emitido. Esperando el pago del cliente.
                                                     </p>
+                                                )}
+
+                                                {solicitud.estado === 'solicitada' && (
+                                                    <div
+                                                        className="mt-3 flex flex-wrap gap-2"
+                                                        onKeyDown={(evento) => evento.stopPropagation()}
+                                                    >
+                                                        <button
+                                                            type="button"
+                                                            className={BOTON_PRIMARIO}
+                                                            disabled={ocupado !== null}
+                                                            onClick={(evento) => {
+                                                                evento.stopPropagation();
+                                                                cambiarEstado(solicitud, 'por_autorizar');
+                                                            }}
+                                                        >
+                                                            <Check className="mr-2 h-4 w-4" aria-hidden="true" />
+                                                            {ocupado?.id === Number(solicitud.id) && ocupado.accion === 'aprobar' ? 'Aprobando…' : 'Aprobar'}
+                                                        </button>
+                                                        <button
+                                                            type="button"
+                                                            className={BOTON_PELIGRO}
+                                                            disabled={ocupado !== null}
+                                                            onClick={(evento) => {
+                                                                evento.stopPropagation();
+                                                                cambiarEstado(solicitud, 'rechazada');
+                                                            }}
+                                                        >
+                                                            <XCircle className="mr-2 h-4 w-4" aria-hidden="true" />
+                                                            {ocupado?.id === Number(solicitud.id) && ocupado.accion === 'rechazar' ? 'Rechazando…' : 'Rechazar'}
+                                                        </button>
+                                                    </div>
                                                 )}
 
                                                 <span className="mt-3 flex items-center gap-1 text-[0.62rem] font-bold uppercase tracking-wider text-accent-soft opacity-70 transition group-hover:opacity-100">
