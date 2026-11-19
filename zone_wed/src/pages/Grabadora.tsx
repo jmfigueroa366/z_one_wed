@@ -374,7 +374,7 @@ export default function Grabadora() {
             trazarCapsula(ctx, x, centro + hueco, anchoBarra, media);
         }
         ctx.save();
-        ctx.shadowColor = 'rgba(227, 75, 166, 0.55)';
+        ctx.shadowColor = 'rgba(143, 188, 230, 0.55)';
         ctx.shadowBlur = 16;
         ctx.fillStyle = gradiente;
         ctx.fill();
@@ -658,11 +658,11 @@ export default function Grabadora() {
     const lcd = grabando ? elapsed : progreso * duracionActiva;
     const estado = grabando ? 'Grabando' : reproduciendo ? 'Reproduciendo' : 'Listo';
     const chipEstado = grabando
-        ? 'border-[#e34ba6]/40 bg-[#e34ba6]/10 text-[#e34ba6]'
+        ? 'border-accent-soft/40 bg-accent-soft/10 text-accent-soft'
         : reproduciendo
           ? 'border-accent/40 bg-accent/10 text-accent-soft'
           : 'border-border bg-white/[0.03] text-sutil';
-    const puntoEstado = grabando ? 'animate-pulse bg-[#e34ba6]' : reproduciendo ? 'bg-accent' : 'bg-border';
+    const puntoEstado = grabando ? 'animate-pulse bg-accent-soft' : reproduciendo ? 'bg-accent' : 'bg-border';
 
     return (
         <main className="workspace-content relative" data-page="grabadora">
@@ -678,16 +678,16 @@ export default function Grabadora() {
             </header>
 
             <section
-                className="relative mt-6 overflow-hidden rounded-[2.5rem] border border-white/10 bg-white/[0.03] px-5 py-8 shadow-[0_40px_120px_-60px_rgba(147,101,242,0.9)] backdrop-blur-2xl sm:px-8 sm:py-10"
+                className="relative mt-6 overflow-hidden rounded-[2.5rem] border border-white/10 bg-white/[0.03] px-5 py-8 shadow-[0_40px_120px_-60px_rgba(63,132,197,0.9)] backdrop-blur-2xl sm:px-8 sm:py-10"
                 aria-label="Grabación de audio"
             >
                 <div
                     aria-hidden="true"
-                    className="pointer-events-none absolute -right-20 -top-24 h-64 w-64 rounded-full bg-[#9365f2]/20 blur-3xl"
+                    className="pointer-events-none absolute -right-20 -top-24 h-64 w-64 rounded-full bg-accent/20 blur-3xl"
                 />
                 <div
                     aria-hidden="true"
-                    className="pointer-events-none absolute -bottom-28 left-6 h-60 w-60 rounded-full bg-[#e34ba6]/15 blur-3xl"
+                    className="pointer-events-none absolute -bottom-28 left-6 h-60 w-60 rounded-full bg-accent-soft/15 blur-3xl"
                 />
                 <div
                     aria-hidden="true"
@@ -703,22 +703,22 @@ export default function Grabadora() {
                         disabled={grabando}
                         aria-label="Grabar"
                         title={grabando ? 'Grabación en curso' : 'Grabar'}
-                        className="relative grid h-28 w-28 shrink-0 place-items-center rounded-full border-2 border-white/25 bg-gradient-to-br from-[#ff5a6e] to-[#c81e4a] text-white shadow-[0_0_0_8px_rgba(227,75,166,0.08),0_24px_60px_-18px_rgba(200,30,74,0.9)] transition hover:scale-[1.02] hover:brightness-110 active:scale-95 disabled:cursor-not-allowed disabled:opacity-80 motion-reduce:transform-none sm:h-32 sm:w-32"
+                        className="relative grid h-28 w-28 shrink-0 place-items-center rounded-full border-2 border-white/25 bg-gradient-to-br from-[#ff5a6e] to-[#c81e4a] text-white shadow-[0_0_0_8px_rgba(143,188,230,0.08),0_24px_60px_-18px_rgba(200,30,74,0.9)] transition hover:scale-[1.02] hover:brightness-110 active:scale-95 disabled:cursor-not-allowed disabled:opacity-80 motion-reduce:transform-none sm:h-32 sm:w-32"
                     >
                         <Mic className="h-10 w-10 sm:h-11 sm:w-11" aria-hidden="true" />
                         {grabando && (
                             <>
                                 <span
                                     aria-hidden="true"
-                                    className="pointer-events-none absolute -inset-2 animate-ping rounded-full border border-[#e34ba6]/40 motion-reduce:animate-none"
+                                    className="pointer-events-none absolute -inset-2 animate-ping rounded-full border border-accent-soft/40 motion-reduce:animate-none"
                                 />
                                 <span
                                     aria-hidden="true"
-                                    className="pointer-events-none absolute -inset-5 animate-ping rounded-full border border-[#9365f2]/30 [animation-delay:0.6s] motion-reduce:animate-none"
+                                    className="pointer-events-none absolute -inset-5 animate-ping rounded-full border border-accent/30 [animation-delay:0.6s] motion-reduce:animate-none"
                                 />
                                 <span
                                     aria-hidden="true"
-                                    className="pointer-events-none absolute -inset-8 animate-glow rounded-full bg-[#e34ba6]/15 blur-2xl motion-reduce:animate-none"
+                                    className="pointer-events-none absolute -inset-8 animate-glow rounded-full bg-accent-soft/15 blur-2xl motion-reduce:animate-none"
                                 />
                             </>
                         )}
@@ -749,12 +749,12 @@ export default function Grabadora() {
                             aria-describedby="solicitud-ayuda"
                             className={`mt-2 flex w-full items-center justify-between gap-3 rounded-2xl border px-3.5 py-3 text-left transition duration-300 motion-reduce:transition-none disabled:cursor-not-allowed disabled:opacity-60 ${
                                 selectorAbierto
-                                    ? 'border-accent/60 bg-accent/[0.08] shadow-[0_0_0_3px_rgba(147,101,242,0.12)]'
+                                    ? 'border-accent/60 bg-accent/[0.08] shadow-[0_0_0_3px_rgba(63,132,197,0.12)]'
                                     : 'border-border bg-gradient-to-r from-white/[0.06] to-white/[0.02] hover:border-accent/45'
                             }`}
                         >
                             <span className="flex min-w-0 items-center gap-3">
-                                <span className="grid h-10 w-10 shrink-0 place-items-center rounded-xl border border-accent/25 bg-gradient-to-br from-accent/20 to-magenta/10 text-accent-soft">
+                                <span className="grid h-10 w-10 shrink-0 place-items-center rounded-xl border border-accent/25 bg-accent/10 text-accent-soft">
                                     <Link2 className="h-4 w-4" aria-hidden="true" />
                                 </span>
                                 <span className="min-w-0">
@@ -782,7 +782,7 @@ export default function Grabadora() {
                                 id="solicitud-opciones"
                                 role="listbox"
                                 aria-labelledby="solicitud-etiqueta"
-                                className="mt-2 max-h-64 overflow-y-auto rounded-2xl border border-accent/20 bg-[#171527]/95 p-1.5 shadow-[0_30px_80px_-40px_rgba(147,101,242,0.9)] backdrop-blur-xl"
+                                className="mt-2 max-h-64 overflow-y-auto rounded-2xl border border-accent/20 bg-surface/95 p-1.5 shadow-[0_30px_80px_-40px_rgba(63,132,197,0.9)] backdrop-blur-xl"
                             >
                                 <button
                                     type="button"
@@ -861,7 +861,7 @@ export default function Grabadora() {
                             aria-live="polite"
                             title={errorSolicitudes ?? undefined}
                             className={`mt-1.5 min-h-4 text-[10px] leading-4 ${
-                                errorSolicitudes ? 'text-[#e34ba6]' : 'text-sutil'
+                                errorSolicitudes ? 'text-accent-soft' : 'text-sutil'
                             }`}
                         >
                             {cargandoSolicitudes
@@ -877,14 +877,14 @@ export default function Grabadora() {
                     <div className="w-full max-w-md">
                         <div className="flex items-center justify-between text-[10px] font-bold uppercase tracking-[0.25em] text-sutil">
                             <span>Nivel</span>
-                            <span className={grabando ? 'text-[#e34ba6]' : 'text-sutil'}>
+                            <span className={grabando ? 'text-accent-soft' : 'text-sutil'}>
                                 {grabando ? 'En vivo' : 'En espera'}
                             </span>
                         </div>
                         <div className="mt-2 h-1.5 overflow-hidden rounded-full bg-white/10" aria-hidden="true">
                             <div
                                 ref={medidorRef}
-                                className="h-full w-0 rounded-full bg-gradient-to-r from-[#9365f2] via-[#c457c4] to-[#e34ba6] transition-[width] duration-75 ease-out motion-reduce:transition-none"
+                                className="h-full w-0 rounded-full bg-gradient-to-r from-accent via-accent to-accent-soft transition-[width] duration-75 ease-out motion-reduce:transition-none"
                             />
                         </div>
                     </div>
@@ -921,16 +921,16 @@ export default function Grabadora() {
             </section>
 
             <section
-                className="relative mt-5 overflow-hidden rounded-[2.5rem] border border-white/10 bg-white/[0.04] p-4 shadow-[0_40px_120px_-70px_rgba(227,75,166,0.9)] backdrop-blur-2xl sm:p-6"
+                className="relative mt-5 overflow-hidden rounded-[2.5rem] border border-white/10 bg-white/[0.04] p-4 shadow-[0_40px_120px_-70px_rgba(143,188,230,0.9)] backdrop-blur-2xl sm:p-6"
                 aria-label="Monitor en vivo"
             >
                 <div
                     aria-hidden="true"
-                    className="pointer-events-none absolute -left-20 top-0 h-48 w-48 rounded-full bg-[#9365f2]/15 blur-3xl"
+                    className="pointer-events-none absolute -left-20 top-0 h-48 w-48 rounded-full bg-accent/15 blur-3xl"
                 />
                 <div
                     aria-hidden="true"
-                    className="pointer-events-none absolute -bottom-24 right-0 h-56 w-56 rounded-full bg-[#e34ba6]/15 blur-3xl"
+                    className="pointer-events-none absolute -bottom-24 right-0 h-56 w-56 rounded-full bg-accent-soft/15 blur-3xl"
                 />
 
                 <div className="relative flex flex-wrap items-center justify-between gap-3">
@@ -941,7 +941,7 @@ export default function Grabadora() {
                     <span className="inline-flex items-center gap-2 text-[10px] font-bold uppercase tracking-[0.25em] text-sutil">
                         <span
                             className={`h-1.5 w-1.5 rounded-full ${
-                                grabando ? 'animate-pulse bg-[#e34ba6]' : 'bg-border'
+                                grabando ? 'animate-pulse bg-accent-soft' : 'bg-border'
                             }`}
                             aria-hidden="true"
                         />
@@ -949,10 +949,10 @@ export default function Grabadora() {
                     </span>
                 </div>
 
-                <div className="relative mt-4 h-48 overflow-hidden rounded-[1.75rem] border border-white/10 bg-[#0b0813]/75 sm:h-64 lg:h-72">
+                <div className="relative mt-4 h-48 overflow-hidden rounded-[1.75rem] border border-white/10 bg-bg/75 sm:h-64 lg:h-72">
                     <div
                         aria-hidden="true"
-                        className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_50%_115%,rgba(147,101,242,0.22),transparent_62%)]"
+                        className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_50%_115%,rgba(63,132,197,0.22),transparent_62%)]"
                     />
                     <div
                         aria-hidden="true"
@@ -982,11 +982,11 @@ export default function Grabadora() {
                     <div className="relative mt-4 overflow-hidden rounded-[2rem] border border-white/10 bg-white/[0.03] px-6 py-12 text-center backdrop-blur-xl">
                         <div
                             aria-hidden="true"
-                            className="pointer-events-none absolute -right-14 -top-16 h-44 w-44 rounded-full bg-[#9365f2]/15 blur-3xl"
+                            className="pointer-events-none absolute -right-14 -top-16 h-44 w-44 rounded-full bg-accent/15 blur-3xl"
                         />
                         <div
                             aria-hidden="true"
-                            className="pointer-events-none absolute -bottom-16 left-6 h-40 w-40 rounded-full bg-[#e34ba6]/15 blur-3xl"
+                            className="pointer-events-none absolute -bottom-16 left-6 h-40 w-40 rounded-full bg-accent-soft/15 blur-3xl"
                         />
                         <div className="relative mx-auto grid max-w-md gap-4">
                             <span className="mx-auto grid h-14 w-14 animate-float place-items-center rounded-full border border-accent/40 bg-accent/10 text-accent-soft motion-reduce:animate-none">
@@ -1001,7 +1001,7 @@ export default function Grabadora() {
                             </div>
                             <div
                                 aria-hidden="true"
-                                className="flex h-24 items-center justify-center gap-1.5 rounded-2xl border border-white/10 bg-[#0b0813]/80 px-4"
+                                className="flex h-24 items-center justify-center gap-1.5 rounded-2xl border border-white/10 bg-bg/80 px-4"
                             >
                                 {ALTURAS_ESTADO_VACIO.map((altura, indice) => (
                                     <span
@@ -1009,7 +1009,7 @@ export default function Grabadora() {
                                         className="w-1.5 rounded-full opacity-60"
                                         style={{
                                             height: `${altura}%`,
-                                            backgroundImage: 'linear-gradient(180deg, #9365f2, #e34ba6)',
+                                            backgroundImage: 'linear-gradient(180deg, #3F84C5, #8FBCE6)',
                                         }}
                                     />
                                 ))}
@@ -1029,14 +1029,14 @@ export default function Grabadora() {
                                     key={toma.id}
                                     className={`relative overflow-hidden rounded-[1.75rem] border p-4 backdrop-blur transition-all duration-300 motion-reduce:transform-none sm:p-5 ${
                                         activa
-                                            ? 'border-accent/50 bg-surface/70 shadow-[0_0_0_1px_rgba(147,101,242,0.2),0_30px_70px_-40px_rgba(227,75,166,0.75)]'
+                                            ? 'border-accent/50 bg-surface/70 shadow-[0_0_0_1px_rgba(63,132,197,0.2),0_30px_70px_-40px_rgba(143,188,230,0.75)]'
                                             : 'border-border/70 bg-surface/40 hover:-translate-y-0.5 hover:border-accent/35 hover:bg-surface/60'
                                     }`}
                                 >
                                     {activa && (
                                         <span
                                             aria-hidden="true"
-                                            className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-[#e34ba6]/70 to-transparent"
+                                            className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-accent-soft/70 to-transparent"
                                         />
                                     )}
 
@@ -1047,7 +1047,7 @@ export default function Grabadora() {
                                                     aria-hidden="true"
                                                     className={`h-2.5 w-2.5 shrink-0 rounded-full ${
                                                         sonando
-                                                            ? 'animate-pulse bg-[#e34ba6] shadow-[0_0_12px_rgba(227,75,166,0.85)]'
+                                                            ? 'animate-pulse bg-accent-soft shadow-[0_0_12px_rgba(143,188,230,0.85)]'
                                                             : activa
                                                               ? 'bg-accent'
                                                               : 'bg-border'
@@ -1097,7 +1097,7 @@ export default function Grabadora() {
                                                 title={sonando ? 'Pausar' : 'Reproducir'}
                                                 className={`grid h-11 w-11 shrink-0 place-items-center rounded-full border transition duration-300 motion-reduce:transition-none ${
                                                     sonando
-                                                        ? 'border-transparent bg-gradient-to-br from-[#9365f2] to-[#e34ba6] text-white shadow-[0_12px_30px_-12px_rgba(227,75,166,0.9)]'
+                                                        ? 'border-transparent bg-primario text-texto shadow-[0_12px_30px_-12px_rgba(11,41,223,0.9)]'
                                                         : activa
                                                           ? 'border-accent/40 bg-accent/10 text-accent-soft hover:border-accent/60'
                                                           : 'border-border bg-white/[0.04] text-texto hover:border-accent/60 hover:text-accent'
@@ -1125,14 +1125,14 @@ export default function Grabadora() {
                                                 onClick={() => borrarToma(toma)}
                                                 aria-label={`Borrar toma ${toma.numeroToma}`}
                                                 title="Borrar"
-                                                className="grid h-11 w-11 shrink-0 place-items-center rounded-full border border-border bg-white/[0.04] text-sutil transition duration-300 hover:border-[#e34ba6]/50 hover:bg-[#e34ba6]/10 hover:text-[#e34ba6] motion-reduce:transition-none"
+                                                className="grid h-11 w-11 shrink-0 place-items-center rounded-full border border-border bg-white/[0.04] text-sutil transition duration-300 hover:border-accent-soft/50 hover:bg-accent-soft/10 hover:text-accent-soft motion-reduce:transition-none"
                                             >
                                                 <Trash2 className="h-4 w-4" aria-hidden="true" />
                                             </button>
                                         </div>
                                     </div>
 
-                                    <div className="mt-4 min-w-0 overflow-hidden rounded-2xl border border-white/10 bg-[#0b0813]/80 p-2.5 sm:p-3">
+                                    <div className="mt-4 min-w-0 overflow-hidden rounded-2xl border border-white/10 bg-bg/80 p-2.5 sm:p-3">
                                         <OndaToma
                                             picos={toma.picos}
                                             progreso={activa ? progreso : 0}

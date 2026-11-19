@@ -68,13 +68,13 @@ function Barra({ valor, max, onCambiar, etiqueta }: BarraProps) {
         <div className="group/barra relative h-5 w-24 sm:w-28">
             <div className="absolute inset-x-0 top-1/2 h-1.5 -translate-y-1/2 overflow-hidden rounded-full bg-white/10">
                 <div
-                    className="h-full rounded-full bg-gradient-to-r from-[#9365f2] to-[#e34ba6]"
+                    className="h-full rounded-full bg-gradient-to-r from-accent to-accent-soft"
                     style={{ width: `${porcentaje}%` }}
                 />
             </div>
             <span
                 aria-hidden="true"
-                className="pointer-events-none absolute top-1/2 h-3.5 w-3.5 -translate-x-1/2 -translate-y-1/2 rounded-full border-2 border-white bg-[#e34ba6] opacity-0 shadow-lg transition group-hover/barra:opacity-100"
+                className="pointer-events-none absolute top-1/2 h-3.5 w-3.5 -translate-x-1/2 -translate-y-1/2 rounded-full border-2 border-white bg-accent-soft opacity-0 shadow-lg transition group-hover/barra:opacity-100"
                 style={{ left: `${porcentaje}%` }}
             />
             <input
@@ -174,7 +174,7 @@ function Onda({ valores, progreso, duracion, onSeek, sonando }: OndaProps) {
                         key={indice}
                         className={`flex-1 rounded-full transition-colors duration-150 ${
                             activo
-                                ? `bg-gradient-to-t from-[#9365f2] to-[#e34ba6] ${sonando ? 'shadow-[0_0_8px_rgba(227,75,166,0.5)]' : ''}`
+                                ? `bg-gradient-to-t from-accent to-accent-soft ${sonando ? 'shadow-[0_0_8px_rgba(143,188,230,0.5)]' : ''}`
                                 : 'bg-white/[0.12] hover:bg-white/20'
                         }`}
                         style={{ height: `${Math.round(altura * 100)}%` }}
@@ -198,7 +198,7 @@ function Ecualizador({ activo, referencia, barras = 5 }: EcualizadorProps) {
                 <span
                     key={indice}
                     data-eq
-                    className="w-1 origin-bottom rounded-full bg-gradient-to-t from-[#e34ba6] to-[#9365f2]"
+                    className="w-1 origin-bottom rounded-full bg-gradient-to-t from-accent-soft to-accent"
                     style={{ height: '100%', transform: `scaleY(${activo ? 0.35 : 0.2})` }}
                 />
             ))}
@@ -547,13 +547,13 @@ export default function Escuchar() {
         <main className="workspace-content relative" data-page="estudio">
             <div
                 aria-hidden="true"
-                className={`pointer-events-none absolute -top-24 left-1/4 h-72 w-72 animate-aurora rounded-full bg-[#9365f2]/20 blur-3xl transition-opacity duration-1000 ${
+                className={`pointer-events-none absolute -top-24 left-1/4 h-72 w-72 animate-aurora rounded-full bg-accent/20 blur-3xl transition-opacity duration-1000 ${
                     reproduciendo ? 'opacity-100' : 'opacity-40'
                 }`}
             />
             <div
                 aria-hidden="true"
-                className={`pointer-events-none absolute right-0 top-40 h-64 w-64 animate-aurora rounded-full bg-[#e34ba6]/15 blur-3xl transition-opacity duration-1000 [animation-delay:-7s] ${
+                className={`pointer-events-none absolute right-0 top-40 h-64 w-64 animate-aurora rounded-full bg-accent-soft/15 blur-3xl transition-opacity duration-1000 [animation-delay:-7s] ${
                     reproduciendo ? 'opacity-100' : 'opacity-40'
                 }`}
             />
@@ -620,14 +620,14 @@ export default function Escuchar() {
                                             aria-pressed={activo}
                                             className={`group flex w-full items-center gap-3 rounded-2xl border p-2.5 text-left transition ${
                                                 activo
-                                                    ? 'border-accent/60 bg-gradient-to-r from-[#5b418f]/50 to-transparent'
+                                                    ? 'border-accent/60 bg-accent/10'
                                                     : 'border-transparent bg-white/[0.03] hover:border-accent/30 hover:bg-white/[0.06]'
                                             }`}
                                         >
                                             <span className="relative shrink-0">
                                                 <span
                                                     className={`grid h-11 w-11 place-items-center overflow-hidden rounded-full ${
-                                                        activo ? 'bg-gradient-to-br from-[#9365f2] to-[#e34ba6] p-[2px]' : 'border border-border'
+                                                        activo ? 'bg-primario p-[2px]' : 'border border-border'
                                                     }`}
                                                 >
                                                     <img
@@ -643,7 +643,7 @@ export default function Escuchar() {
                                             </span>
                                             <span className="min-w-0 flex-1">
                                                 <span className="block truncate text-sm font-bold text-texto-soft">{item.artista}</span>
-                                                <span className={`block truncate text-xs ${activo ? 'text-accent-soft' : 'text-[#c8c1d7]'}`}>
+                                                <span className={`block truncate text-xs ${activo ? 'text-accent-soft' : 'text-sutil'}`}>
                                                     {activo && reproduciendo ? 'Sonando ahora' : `${item.canciones.length} canciones`}
                                                 </span>
                                             </span>
@@ -667,35 +667,35 @@ export default function Escuchar() {
                             aria-hidden="true"
                             className="absolute inset-0 h-full w-full scale-125 object-cover opacity-30 blur-3xl"
                         />
-                        <div className="absolute inset-0 bg-gradient-to-br from-[#0c0914]/88 via-[#0d0a17]/85 to-[#0d0a17]/96" />
+                        <div className="absolute inset-0 bg-gradient-to-br from-bg/88 via-bg-2/85 to-bg-2/96" />
                         <div
                             className="pointer-events-none absolute inset-0"
                             style={{
                                 background:
-                                    'radial-gradient(ellipse at 85% 0%, rgba(214, 70, 169, 0.24), transparent 45%), radial-gradient(ellipse at 5% 100%, rgba(111, 75, 187, 0.3), transparent 50%)',
+                                    'radial-gradient(ellipse at 85% 0%, rgba(143, 188, 230, 0.24), transparent 45%), radial-gradient(ellipse at 5% 100%, rgba(63, 132, 197, 0.3), transparent 50%)',
                             }}
                         />
                         <div
                             aria-hidden="true"
                             className={`pointer-events-none absolute inset-0 transition-opacity duration-700 ${reproduciendo && !menosMovimiento ? 'opacity-100' : 'opacity-0'}`}
                         >
-                            <span className="absolute -left-10 top-1/3 h-56 w-56 -translate-y-1/2 rounded-full bg-[#9365f2]/30 blur-3xl animate-[deriva_9s_ease-in-out_infinite]" />
-                            <span className="absolute -right-10 top-1/2 h-64 w-64 -translate-y-1/2 rounded-full bg-[#e34ba6]/25 blur-3xl animate-[deriva_11s_ease-in-out_infinite_reverse]" />
+                            <span className="absolute -left-10 top-1/3 h-56 w-56 -translate-y-1/2 rounded-full bg-accent/30 blur-3xl animate-[deriva_9s_ease-in-out_infinite]" />
+                            <span className="absolute -right-10 top-1/2 h-64 w-64 -translate-y-1/2 rounded-full bg-accent-soft/25 blur-3xl animate-[deriva_11s_ease-in-out_infinite_reverse]" />
                         </div>
                         <div
                             aria-hidden="true"
-                            className="pointer-events-none absolute inset-0 opacity-0 transition-opacity duration-500 group-hover/hero:opacity-100 [background:radial-gradient(420px_circle_at_var(--mx,50%)_var(--my,50%),rgba(240,79,166,0.22),transparent_62%)]"
+                            className="pointer-events-none absolute inset-0 opacity-0 transition-opacity duration-500 group-hover/hero:opacity-100 [background:radial-gradient(420px_circle_at_var(--mx,50%)_var(--my,50%),rgba(143,188,230,0.22),transparent_62%)]"
                         />
 
                         <div className="relative grid gap-8 p-6 sm:p-8 md:grid-cols-[auto_1fr] md:items-center">
                             <div className="relative mx-auto w-fit rounded-full">
-                                <div className="absolute inset-0 rounded-full bg-[#9365f2]/30 blur-2xl" aria-hidden="true" />
+                                <div className="absolute inset-0 rounded-full bg-accent/30 blur-2xl" aria-hidden="true" />
                                 <div
                                     aria-hidden="true"
                                     className={`absolute -inset-4 rounded-full blur-xl transition-opacity duration-700 ${reproduciendo && !menosMovimiento ? 'opacity-100' : 'opacity-0'}`}
                                     style={{
                                         background:
-                                            'conic-gradient(from 0deg, transparent 0deg, rgba(147,101,242,0.55) 90deg, rgba(227,75,166,0.55) 200deg, transparent 320deg)',
+                                            'conic-gradient(from 0deg, transparent 0deg, rgba(63,132,197,0.55) 90deg, rgba(143,188,230,0.55) 200deg, transparent 320deg)',
                                         animation: 'halo 6s linear infinite',
                                     }}
                                 />
@@ -704,16 +704,16 @@ export default function Escuchar() {
                                         menosMovimiento ? '' : 'animate-spin'
                                     }`}
                                     style={{
-                                        background: 'repeating-radial-gradient(circle at center, #1b1528 0 3px, #0a0712 3px 7px)',
+                                        background: 'repeating-radial-gradient(circle at center, #04192B 0 3px, #000C15 3px 7px)',
                                         animationDuration: '14s',
                                         animationPlayState: reproduciendo ? 'running' : 'paused',
                                     }}
                                     aria-hidden="true"
                                 >
-                                    <span className="absolute h-28 w-28 overflow-hidden rounded-full border-4 border-[#0a0712] shadow-[0_0_25px_rgba(0,0,0,0.6)] sm:h-32 sm:w-32">
+                                    <span className="absolute h-28 w-28 overflow-hidden rounded-full border-4 border-[#000C15] shadow-[0_0_25px_rgba(0,0,0,0.6)] sm:h-32 sm:w-32">
                                         <img src={artista.imagen} alt="" className="h-full w-full object-cover" />
                                     </span>
-                                    <span className="absolute h-3 w-3 rounded-full bg-[#0a0712] ring-2 ring-white/10" />
+                                    <span className="absolute h-3 w-3 rounded-full bg-[#000C15] ring-2 ring-white/10" />
                                     <span
                                         className="pointer-events-none absolute right-1 top-1 origin-top-right"
                                         style={{
@@ -722,9 +722,9 @@ export default function Escuchar() {
                                         }}
                                     >
                                         <span className="flex flex-col items-center">
-                                            <span className="h-4 w-4 rounded-full border border-white/20 bg-[#e6dcff] shadow-lg" />
-                                            <span className="h-24 w-1.5 rounded-b-full bg-gradient-to-b from-[#e6dcff] via-[#b7a6e6] to-[#6b5aa0]" />
-                                            <span className="h-3 w-3 rotate-45 rounded-sm bg-[#e34ba6]" />
+                                            <span className="h-4 w-4 rounded-full border border-white/20 bg-[#D6F3EB] shadow-lg" />
+                                            <span className="h-24 w-1.5 rounded-b-full bg-gradient-to-b from-[#D6F3EB] via-[#8FBCE6] to-[#3F84C5]" />
+                                            <span className="h-3 w-3 rotate-45 rounded-sm bg-accent-soft" />
                                         </span>
                                     </span>
                                 </div>
@@ -738,13 +738,13 @@ export default function Escuchar() {
                                 <h2 className="mt-2 line-clamp-2 text-2xl font-extrabold tracking-tight sm:text-3xl">
                                     <span className="texto-degradado">{cancion.titulo}</span>
                                 </h2>
-                                <p className="mt-1 text-sm text-[#c8c1d7]">
+                                <p className="mt-1 text-sm text-sutil">
                                     {artista.artista} · {artista.origen}
                                 </p>
 
                                 <div className="mt-5">
                                     <Onda valores={ondas} progreso={progreso} duracion={duracion} onSeek={buscar} sonando={reproduciendo} />
-                                    <div className="mt-1 flex items-center justify-between text-xs tabular-nums text-[#c8c1d7]">
+                                    <div className="mt-1 flex items-center justify-between text-xs tabular-nums text-sutil">
                                         <span>{formatearTiempo(progreso)}</span>
                                         <span>
                                             Pista {indiceCancion + 1} de {totalCanciones}
@@ -764,7 +764,7 @@ export default function Escuchar() {
                                             className={`grid h-10 w-10 place-items-center rounded-full border transition ${
                                                 aleatorio
                                                     ? 'border-accent/60 bg-accent/15 text-accent'
-                                                    : 'border-border bg-white/[0.05] text-[#c8c1d7] hover:border-accent/60 hover:text-accent'
+                                                    : 'border-border bg-white/[0.05] text-sutil hover:border-accent/60 hover:text-accent'
                                             }`}
                                         >
                                             <Shuffle className="h-4 w-4" aria-hidden="true" />
@@ -782,7 +782,7 @@ export default function Escuchar() {
                                             {reproduciendo && !menosMovimiento && (
                                                 <span
                                                     aria-hidden="true"
-                                                    className="pointer-events-none absolute inset-0 rounded-full bg-[#9365f2]/40 animate-ping [animation-duration:2.4s]"
+                                                    className="pointer-events-none absolute inset-0 rounded-full bg-accent/40 animate-ping [animation-duration:2.4s]"
                                                 />
                                             )}
                                             <button
@@ -793,9 +793,9 @@ export default function Escuchar() {
                                                 }}
                                                 aria-label={reproduciendo ? 'Pausar' : 'Reproducir'}
                                                 title="Reproducir / Pausar (Espacio)"
-                                                className={`relative grid h-16 w-16 place-items-center rounded-full bg-gradient-to-r from-[#9365f2] to-[#e34ba6] text-white transition hover:scale-105 ${
+                                                className={`relative grid h-16 w-16 place-items-center rounded-full bg-primario text-texto transition hover:scale-105 ${
                                                     reproduciendo
-                                                        ? 'shadow-[0_0_55px_rgba(147,101,242,0.65)] animate-[latido-luz_3s_ease-in-out_infinite]'
+                                                        ? 'shadow-[0_0_55px_rgba(63,132,197,0.65)] animate-[latido-luz_3s_ease-in-out_infinite]'
                                                         : 'shadow-xl shadow-accent/30'
                                                 }`}
                                             >
@@ -820,7 +820,7 @@ export default function Escuchar() {
                                             className={`grid h-10 w-10 place-items-center rounded-full border transition ${
                                                 repetir !== 'off'
                                                     ? 'border-accent/60 bg-accent/15 text-accent'
-                                                    : 'border-border bg-white/[0.05] text-[#c8c1d7] hover:border-accent/60 hover:text-accent'
+                                                    : 'border-border bg-white/[0.05] text-sutil hover:border-accent/60 hover:text-accent'
                                             }`}
                                         >
                                             {repetir === 'una' ? <Repeat1 className="h-4 w-4" aria-hidden="true" /> : <Repeat className="h-4 w-4" aria-hidden="true" />}
@@ -834,7 +834,7 @@ export default function Escuchar() {
                                             aria-label={silenciado ? 'Activar sonido' : 'Silenciar'}
                                             aria-pressed={silenciado}
                                             title={silenciado ? 'Activar sonido' : 'Silenciar'}
-                                            className="grid h-9 w-9 place-items-center rounded-full text-[#c8c1d7] transition hover:text-accent"
+                                            className="grid h-9 w-9 place-items-center rounded-full text-sutil transition hover:text-accent"
                                         >
                                             <IconoVolumen className="h-5 w-5" aria-hidden="true" />
                                         </button>
@@ -897,7 +897,7 @@ export default function Escuchar() {
                                         <div
                                             className={`flex items-center gap-3 rounded-2xl border px-3 py-2.5 transition ${
                                                 activa
-                                                    ? `border-accent/60 bg-white/[0.05] ${activa && reproduciendo ? 'shadow-[0_0_28px_-10px_rgba(147,101,242,0.85)]' : ''}`
+                                                    ? `border-accent/60 bg-white/[0.05] ${activa && reproduciendo ? 'shadow-[0_0_28px_-10px_rgba(63,132,197,0.85)]' : ''}`
                                                     : 'border-transparent bg-white/[0.02] hover:border-border hover:bg-white/[0.045]'
                                             }`}
                                         >
@@ -907,13 +907,13 @@ export default function Escuchar() {
                                                 aria-label={activa && reproduciendo ? `Pausar ${pista.titulo}` : `Reproducir ${pista.titulo}`}
                                                 className={`grid h-9 w-9 shrink-0 place-items-center rounded-full transition ${
                                                     activa
-                                                        ? 'bg-gradient-to-br from-[#9365f2] to-[#e34ba6] text-white'
-                                                        : 'bg-white/[0.06] text-[#c8c1d7] hover:bg-white/10 hover:text-texto'
+                                                        ? 'bg-primario text-texto'
+                                                        : 'bg-white/[0.06] text-sutil hover:bg-white/10 hover:text-texto'
                                                 }`}
                                             >
                                                 {activa && reproduciendo ? <Pause className="h-4 w-4" aria-hidden="true" /> : <Play className="ml-0.5 h-4 w-4" aria-hidden="true" />}
                                             </button>
-                                            <span className="w-5 shrink-0 text-center text-xs tabular-nums text-[#c8c1d7]">{indice + 1}</span>
+                                            <span className="w-5 shrink-0 text-center text-xs tabular-nums text-sutil">{indice + 1}</span>
                                             <span className={`min-w-0 flex-1 truncate text-sm font-semibold ${activa ? 'text-texto-soft' : 'text-texto'}`}>
                                                 {pista.titulo}
                                             </span>
@@ -928,7 +928,7 @@ export default function Escuchar() {
                                                     ))}
                                                 </span>
                                             )}
-                                            <span className="shrink-0 text-xs tabular-nums text-[#c8c1d7]">{dur ? formatearTiempo(dur) : '--:--'}</span>
+                                            <span className="shrink-0 text-xs tabular-nums text-sutil">{dur ? formatearTiempo(dur) : '--:--'}</span>
                                         </div>
                                     </li>
                                 );

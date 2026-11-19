@@ -23,7 +23,7 @@ function sumarHoras(hora: string, horas: number) {
 
 const CAMPO =
     'w-full min-h-[42px] rounded-lg border border-border bg-surface-2 px-3 py-2 text-sm text-texto outline-none transition placeholder:text-sutil focus:border-accent focus:ring-2 focus:ring-accent/40 [&>option]:bg-surface-3 [&>option]:text-texto';
-const ETIQUETA = 'mb-1 block text-xs font-semibold text-[#e5e0ef]';
+const ETIQUETA = 'mb-1 block text-xs font-semibold text-[#D6F3EB]';
 const AYUDA = 'font-normal text-sutil';
 const FILA = 'grid gap-3 sm:grid-cols-2';
 
@@ -96,7 +96,7 @@ export default function FormularioSesion({ salas, colaboradores }: FormularioSes
                     <p className="workspace-eyebrow">NUEVA RESERVA</p>
                     <h2 className="text-xl font-bold tracking-tight text-texto-soft">Crear sesión</h2>
                 </div>
-                <span className="grid h-10 w-10 shrink-0 place-items-center rounded-2xl bg-gradient-to-br from-[#9365f2] to-[#e34ba6] text-white shadow-lg" aria-hidden="true">
+                <span className="grid h-10 w-10 shrink-0 place-items-center rounded-2xl bg-secundario text-texto shadow-lg" aria-hidden="true">
                     ◷
                 </span>
             </div>
@@ -211,7 +211,7 @@ export default function FormularioSesion({ salas, colaboradores }: FormularioSes
                 )}
 
                 <button
-                    className="min-h-[44px] rounded-lg bg-gradient-to-r from-[#9365f2] to-[#e34ba6] px-4 text-sm font-bold text-white transition hover:brightness-110"
+                    className="min-h-[44px] rounded-lg bg-primario px-4 text-sm font-bold text-texto transition hover:bg-texto hover:text-bg"
                     type="submit"
                 >
                     Guardar sesión

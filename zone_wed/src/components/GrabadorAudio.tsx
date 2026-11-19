@@ -4,8 +4,8 @@ import { GrabacionService } from '../services/grabacionService.ts';
 import { OndaEstatica, OndaGrabacion, extraerPeaks, peaksDeDataUrl } from './OndaAudio.tsx';
 import '../styles/tailwind.css';
 
-const ACENTO_GRABACION = '#e2687d';
-const ACENTO_AUDIO = '#a477ff';
+const ACENTO_GRABACION = '#ff5a6e';
+const ACENTO_AUDIO = '#8FBCE6';
 
 interface ClipAudio {
     url: string;

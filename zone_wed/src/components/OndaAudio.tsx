@@ -2,7 +2,7 @@
 import { useCallback, useEffect, useRef } from 'react';
 import '../styles/tailwind.css';
 
-const ACENTO_DEFECTO = '#a477ff';
+const ACENTO_DEFECTO = '#8FBCE6';
 const VACIO = 'rgba(255, 255, 255, 0.14)';
 
 function prepararLienzo(canvas: HTMLCanvasElement) {

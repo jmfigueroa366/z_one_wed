@@ -6,7 +6,7 @@ import anime from 'animejs';
 const MENOS_MOVIMIENTO = () =>
     typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-export const PALETA = ['#a477ff', '#f04fa6', '#7be0b0', '#c9b6ff', '#f2a4b1', '#8f6fd8'];
+export const PALETA = ['#8FBCE6', '#8FBCE6', '#7be0b0', '#8FBCE6', '#f2a4b1', '#3F84C5'];
 
 interface DatoGrafico {
     etiqueta: string;
@@ -56,7 +56,7 @@ interface MapaCalorProps {
 
 function colorDe(estado: string, indice: number): string {
     if (['completada', 'confirmada', 'pagada', 'aceptada'].includes(estado)) return '#7be0b0';
-    if (['solicitada', 'pendiente', 'facturada'].includes(estado)) return '#c9b6ff';
+    if (['solicitada', 'pendiente', 'facturada'].includes(estado)) return '#8FBCE6';
     if (['cancelada', 'rechazada'].includes(estado)) return '#ff8a8a';
     return PALETA[indice % PALETA.length];
 }
@@ -190,7 +190,7 @@ export function BarrasHorizontales({ datos, sufijo = '' }: BarrasHorizontalesPro
                             className="block h-full rounded-full"
                             style={{
                                 width: `${(dato.valor / maximo) * 100}%`,
-                                background: `linear-gradient(90deg, ${dato.color ?? colorDe(dato.estado ?? '', indice)}, ${dato.colorB ?? '#f04fa6'})`,
+                                background: `linear-gradient(90deg, ${dato.color ?? colorDe(dato.estado ?? '', indice)}, ${dato.colorB ?? '#8FBCE6'})`,
                             }}
                         />
                     </div>
@@ -232,9 +232,9 @@ export function ColumnasDias({ datos }: ColumnasDiasProps) {
                                 style={{
                                     height: `${Math.max(6, (dato.valor / maximo) * 100)}%`,
                                     background: pico
-                                        ? 'linear-gradient(180deg, #f04fa6, #9365f2)'
-                                        : 'linear-gradient(180deg, rgba(164,119,255,0.55), rgba(164,119,255,0.12))',
-                                    boxShadow: pico ? '0 0 22px rgba(240,79,166,0.45)' : 'none',
+                                        ? 'linear-gradient(180deg, #8FBCE6, #3F84C5)'
+                                        : 'linear-gradient(180deg, rgba(143,188,230,0.55), rgba(143,188,230,0.12))',
+                                    boxShadow: pico ? '0 0 22px rgba(143,188,230,0.45)' : 'none',
                                 }}
                             />
                         </div>
@@ -275,8 +275,8 @@ export function Anillo({ valor, etiqueta, subetiqueta, tamano = 200, grosor = 16
                 <svg width={tamano} height={tamano} viewBox={`0 0 ${tamano} ${tamano}`} role="img" aria-label={etiqueta}>
                     <defs>
                         <linearGradient id="anillo-grad" x1="0" y1="0" x2="1" y2="1">
-                            <stop offset="0%" stopColor="#9365f2" />
-                            <stop offset="100%" stopColor="#f04fa6" />
+                            <stop offset="0%" stopColor="#3F84C5" />
+                            <stop offset="100%" stopColor="#8FBCE6" />
                         </linearGradient>
                     </defs>
                     <circle cx={centro} cy={centro} r={radio} fill="none" stroke="rgba(255,255,255,0.06)" strokeWidth={grosor} />
@@ -362,12 +362,12 @@ export function MapaCalor({ filas, columnas, celdas, max, grande = false }: Mapa
                                     }
                                     style={
                                         vacio
-                                            ? { background: 'rgba(255,255,255,0.03)', borderColor: 'rgba(255,255,255,0.05)', color: '#7c7490' }
+                                            ? { background: 'rgba(255,255,255,0.03)', borderColor: 'rgba(255,255,255,0.05)', color: '#8CA5A2' }
                                             : {
-                                                background: `linear-gradient(135deg, rgba(147,101,242,${0.22 + intensidad * 0.7}), rgba(240,79,166,${0.16 + intensidad * 0.74}))`,
-                                                borderColor: 'rgba(192,148,255,0.4)',
-                                                color: intensidad > 0.45 ? '#ffffff' : '#e8e2ff',
-                                                boxShadow: intensidad > 0.6 ? '0 0 18px rgba(240,79,166,0.4)' : 'none',
+                                                background: `linear-gradient(135deg, rgba(63,132,197,${0.22 + intensidad * 0.7}), rgba(143,188,230,${0.16 + intensidad * 0.74}))`,
+                                                borderColor: 'rgba(143,188,230,0.4)',
+                                                color: intensidad > 0.45 ? '#ffffff' : '#D6F3EB',
+                                                boxShadow: intensidad > 0.6 ? '0 0 18px rgba(143,188,230,0.4)' : 'none',
                                             }
                                     }
                                 >

@@ -59,7 +59,7 @@ function Interruptor({ activo, onCambiar, etiqueta, descripcion }: InterruptorPr
                 aria-label={etiqueta}
                 onClick={() => onCambiar(!activo)}
                 className={`relative inline-flex h-6 w-11 shrink-0 items-center rounded-full border transition ${
-                    activo ? 'border-accent/60 bg-gradient-to-r from-[#9365f2] to-[#e34ba6]' : 'border-border bg-surface-3'
+                    activo ? 'border-primario bg-primario' : 'border-border bg-surface-3'
                 }`}
             >
                 <span
@@ -106,7 +106,7 @@ export default function Configuracion() {
 
     return (
         <main className="workspace-content" data-page="configuracion">
-            <header className="page-heading border-l-4 border-[#9ba8c8] pl-4">
+            <header className="page-heading border-l-4 border-[#3F84C5] pl-4">
                 <p className="workspace-eyebrow">CONFIGURACIÓN</p>
                 <h1>Ajustes de la cuenta</h1>
                 <p>Administra tu perfil, tus preferencias y la seguridad de tu cuenta en Z-ONE.</p>
@@ -116,14 +116,14 @@ export default function Configuracion() {
                 className="relative mt-6 overflow-hidden rounded-[2rem] border border-accent/25 p-6 sm:p-7"
                 style={{
                     background:
-                        'radial-gradient(ellipse at 90% 8%, rgba(227, 75, 166, 0.24), transparent 46%), radial-gradient(ellipse at 4% 100%, rgba(111, 75, 187, 0.34), transparent 50%), linear-gradient(120deg, rgba(111, 75, 187, 0.34), rgba(23, 19, 34, 0.97) 72%)',
+                        'radial-gradient(ellipse at 90% 8%, rgba(143, 188, 230, 0.24), transparent 46%), radial-gradient(ellipse at 4% 100%, rgba(63, 132, 197, 0.34), transparent 50%), linear-gradient(120deg, rgba(63, 132, 197, 0.34), rgba(0, 12, 21, 0.97) 72%)',
                 }}
             >
-                <div aria-hidden="true" className="pointer-events-none absolute -right-12 -top-24 h-60 w-60 animate-aurora rounded-full bg-[#e34ba6]/20 blur-3xl" />
+                <div aria-hidden="true" className="pointer-events-none absolute -right-12 -top-24 h-60 w-60 animate-aurora rounded-full bg-accent-soft/20 blur-3xl" />
                 <ShieldCheck aria-hidden="true" className="pointer-events-none absolute right-8 top-1/2 hidden h-40 w-40 -translate-y-1/2 text-white/[0.05] lg:block" />
                 <div className="relative flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
                     <div className="flex items-center gap-4">
-                        <span className="grid h-16 w-16 shrink-0 place-items-center rounded-2xl bg-gradient-to-br from-[#9365f2] to-[#e34ba6] text-xl font-black text-white shadow-lg shadow-accent/25">
+                        <span className="grid h-16 w-16 shrink-0 place-items-center rounded-2xl bg-secundario text-xl font-black text-texto shadow-lg shadow-secundario/25">
                             {iniciales(usuario?.nombre)}
                         </span>
                         <div className="min-w-0">
@@ -155,7 +155,7 @@ export default function Configuracion() {
             <section ref={contenedorRef} className="mt-6 grid gap-5 lg:grid-cols-2">
                 <article data-tarjeta className="rounded-3xl border border-border bg-surface/70 p-6 lg:col-span-2">
                     <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
-                        <span className="grid h-16 w-16 shrink-0 place-items-center rounded-2xl bg-gradient-to-br from-[#9365f2] to-[#e34ba6] text-xl font-black text-white">
+                        <span className="grid h-16 w-16 shrink-0 place-items-center rounded-2xl bg-secundario text-xl font-black text-texto">
                             {iniciales(usuario?.nombre)}
                         </span>
                         <div className="min-w-0">
@@ -219,7 +219,7 @@ export default function Configuracion() {
                         </label>
                         <button
                             type="submit"
-                            className="inline-flex min-h-[44px] items-center justify-center rounded-xl bg-gradient-to-r from-[#9365f2] to-[#e34ba6] px-4 text-sm font-bold text-white shadow-lg shadow-accent/20 transition hover:brightness-110"
+                            className="inline-flex min-h-[44px] items-center justify-center rounded-xl bg-primario px-4 text-sm font-bold text-texto shadow-lg shadow-primario/20 transition hover:bg-texto hover:text-bg"
                         >
                             Guardar cambios
                         </button>

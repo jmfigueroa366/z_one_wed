@@ -89,7 +89,7 @@ export default function CuandoSuena() {
     return (
         <main className="workspace-content" data-page="cuando-suena">
             <header className="page-heading relative border-l-4 border-accent pl-4">
-                <div aria-hidden="true" className="pointer-events-none absolute -top-20 right-10 h-56 w-56 animate-aurora rounded-full bg-[#f04fa6]/20 blur-3xl" />
+                <div aria-hidden="true" className="pointer-events-none absolute -top-20 right-10 h-56 w-56 animate-aurora rounded-full bg-accent-soft/20 blur-3xl" />
                 <p className="workspace-eyebrow">RITMO · Z-ONE</p>
                 <h1>Cuándo suena el estudio</h1>
                 <p>La distribución de la operación por día y franja horaria, como un latido de calor.</p>
@@ -103,11 +103,11 @@ export default function CuandoSuena() {
                     className="group/hero relative overflow-hidden rounded-[2.25rem] border border-accent/25 p-6 sm:p-8"
                     style={{
                         background:
-                            'radial-gradient(ellipse at 88% 4%, rgba(240, 79, 166, 0.32), transparent 48%), radial-gradient(ellipse at 4% 100%, rgba(111, 75, 187, 0.36), transparent 52%), linear-gradient(120deg, rgba(111, 75, 187, 0.38), rgba(23, 19, 34, 0.97) 72%)',
+                            'radial-gradient(ellipse at 88% 4%, rgba(143, 188, 230, 0.32), transparent 48%), radial-gradient(ellipse at 4% 100%, rgba(63, 132, 197, 0.36), transparent 52%), linear-gradient(120deg, rgba(63, 132, 197, 0.38), rgba(0, 12, 21, 0.97) 72%)',
                     }}
                 >
-                    <FondoHero acento="#f04fa6" />
-                    <div aria-hidden="true" className="pointer-events-none absolute -right-10 -top-24 h-64 w-64 animate-aurora rounded-full bg-[#e34ba6]/25 blur-3xl" />
+                    <FondoHero acento="#8FBCE6" />
+                    <div aria-hidden="true" className="pointer-events-none absolute -right-10 -top-24 h-64 w-64 animate-aurora rounded-full bg-accent-soft/25 blur-3xl" />
                     <div aria-hidden="true" className="pointer-events-none absolute right-8 top-1/2 hidden -translate-y-1/2 select-none text-[11rem] font-black leading-none tracking-tighter text-white/[0.04] lg:block">
                         Z·1
                     </div>
@@ -182,7 +182,7 @@ export default function CuandoSuena() {
                             />
                             <div className="mt-5 flex items-center justify-end gap-2 text-xs font-semibold text-sutil">
                                 <span>Menos activo</span>
-                                <span aria-hidden="true" className="h-2 w-28 rounded-full bg-gradient-to-r from-white/[0.06] via-[#9365f2] to-[#e34ba6]" />
+                                <span aria-hidden="true" className="h-2 w-28 rounded-full bg-gradient-to-r from-white/[0.06] via-accent to-accent-soft" />
                                 <span>Más activo</span>
                             </div>
                         </>
@@ -200,7 +200,7 @@ export default function CuandoSuena() {
                                     : 'Sin picos todavía',
                             Icono: CalendarDays,
                             detalle: lecturas.diaPico.valor,
-                            tono: 'from-[#9365f2] to-[#6f4bbb]',
+                            tono: 'from-accent to-[#3F84C5]',
                         },
                         {
                             etiqueta: 'Franja más caliente',
@@ -211,7 +211,7 @@ export default function CuandoSuena() {
                                     : 'Sin franja dominante',
                             Icono: Clock,
                             detalle: lecturas.franjaPico.valor,
-                            tono: 'from-[#f04fa6] to-[#b1306f]',
+                            tono: 'from-accent-soft to-[#3F84C5]',
                         },
                         {
                             etiqueta: 'Celdas activas',
@@ -219,7 +219,7 @@ export default function CuandoSuena() {
                             nota: 'Franjas con al menos una sesión',
                             Icono: Activity,
                             detalle: lecturas.celdasActivas,
-                            tono: 'from-[#c9b6ff] to-[#8f6fd8]',
+                            tono: 'from-[#8FBCE6] to-[#3F84C5]',
                         },
                         {
                             etiqueta: 'Ritmo semanal',
@@ -237,7 +237,7 @@ export default function CuandoSuena() {
                         >
                             <span
                                 aria-hidden="true"
-                                className="pointer-events-none absolute -right-10 -top-10 h-28 w-28 rounded-full bg-[#9365f2]/20 blur-2xl transition duration-300 group-hover:bg-[#e34ba6]/30"
+                                className="pointer-events-none absolute -right-10 -top-10 h-28 w-28 rounded-full bg-accent/20 blur-2xl transition duration-300 group-hover:bg-accent-soft/30"
                             />
                             <div className="relative flex items-center justify-between">
                                 <span className="text-sm text-sutil">{tarjeta.etiqueta}</span>
@@ -249,13 +249,13 @@ export default function CuandoSuena() {
                                 {tarjeta.valor}
                             </strong>
                             <span className="relative mt-1 block text-xs text-sutil/80">{tarjeta.nota}</span>
-                            <span aria-hidden="true" className="relative mt-3 block h-1 rounded-full bg-gradient-to-r from-[#9365f2] to-[#e34ba6] opacity-70" />
+                            <span aria-hidden="true" className="relative mt-3 block h-1 rounded-full bg-gradient-to-r from-accent to-accent-soft opacity-70" />
                         </article>
                     ))}
                 </section>
 
                 <section data-aparece className={`${TARJETA} flex flex-col`}>
-                    <div aria-hidden="true" className="pointer-events-none absolute -bottom-16 -left-10 h-52 w-52 animate-aurora rounded-full bg-[#e34ba6]/20 blur-3xl [animation-delay:-5s]" />
+                    <div aria-hidden="true" className="pointer-events-none absolute -bottom-16 -left-10 h-52 w-52 animate-aurora rounded-full bg-accent-soft/20 blur-3xl [animation-delay:-5s]" />
                     <p className="workspace-eyebrow relative flex items-center gap-2">
                         <Sparkles className="h-3.5 w-3.5" aria-hidden="true" /> LECTURA
                     </p>

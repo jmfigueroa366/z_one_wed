@@ -46,7 +46,7 @@ interface EcualizadorProps {
     alto?: number;
 }
 
-export function Ecualizador({ desde = '#e34ba6', hasta = '#9365f2', alto = 32 }: EcualizadorProps) {
+export function Ecualizador({ desde = '#8FBCE6', hasta = '#3F84C5', alto = 32 }: EcualizadorProps) {
     const ref = useRef<HTMLSpanElement>(null);
 
     useEffect(() => {
@@ -86,7 +86,7 @@ interface FondoHeroProps {
     acento?: string;
 }
 
-export function FondoHero({ acento = '#f04fa6' }: FondoHeroProps) {
+export function FondoHero({ acento = '#8FBCE6' }: FondoHeroProps) {
     const particulas = [
         { t: '14%', l: '64%', d: '0s', s: 4 },
         { t: '72%', l: '80%', d: '1.4s', s: 3 },
@@ -102,7 +102,7 @@ export function FondoHero({ acento = '#f04fa6' }: FondoHeroProps) {
             />
             <div
                 aria-hidden="true"
-                className="pointer-events-none absolute inset-0 opacity-0 transition-opacity duration-500 group-hover/hero:opacity-100 [background:radial-gradient(360px_circle_at_var(--mx,50%)_var(--my,50%),var(--hero-spot,rgba(240,79,166,0.25)),transparent_62%)]"
+                className="pointer-events-none absolute inset-0 opacity-0 transition-opacity duration-500 group-hover/hero:opacity-100 [background:radial-gradient(360px_circle_at_var(--mx,50%)_var(--my,50%),var(--hero-spot,rgba(143,188,230,0.25)),transparent_62%)]"
                 style={{ '--hero-spot': `${acento}40` } as CSSProperties & Record<'--hero-spot', string>}
             />
             {particulas.map((p, indice) => (

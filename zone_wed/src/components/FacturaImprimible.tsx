@@ -138,15 +138,15 @@ export default function FacturaImprimible({ orden, cliente, proyecto, cancion, o
                 </div>
 
                 <article className="factura-papel overflow-hidden rounded-2xl bg-white text-slate-900 shadow-2xl">
-                    <header className="flex flex-wrap items-start justify-between gap-4 border-b-4 border-violet-600 bg-slate-50 p-6 sm:p-8">
+                    <header className="flex flex-wrap items-start justify-between gap-4 border-b-4 border-primario bg-slate-50 p-6 sm:p-8">
                         <div>
                             <div className="flex items-center gap-3">
-                                <span className="grid h-11 w-11 place-items-center rounded-xl bg-gradient-to-br from-violet-600 to-fuchsia-600 text-lg font-black text-white" aria-hidden="true">
+                                <span className="grid h-11 w-11 place-items-center rounded-xl bg-primario text-lg font-black text-texto" aria-hidden="true">
                                     Z
                                 </span>
                                 <div>
                                     <h2 className="text-xl font-black tracking-tight text-slate-900">{ESTUDIO.nombre}</h2>
-                                    <p className="text-xs font-semibold uppercase tracking-[0.14em] text-violet-600">Estudio de grabaci��n</p>
+                                    <p className="text-xs font-semibold uppercase tracking-[0.14em] text-accent">Estudio de grabaci��n</p>
                                 </div>
                             </div>
                             <ul className="mt-3 grid gap-0.5 text-xs text-slate-500">
@@ -156,7 +156,7 @@ export default function FacturaImprimible({ orden, cliente, proyecto, cancion, o
                         <div className="text-right">
                             <p className="text-xs font-bold uppercase tracking-[0.18em] text-slate-400">Factura de venta</p>
                             <p className="text-2xl font-black tracking-tight text-slate-900">{orden.numero || '�?"'}</p>
-                            <span className="mt-2 inline-block rounded-full border border-violet-300 bg-violet-50 px-3 py-1 text-xs font-bold text-violet-700">
+                            <span className="mt-2 inline-block rounded-full border border-accent/30 bg-accent/10 px-3 py-1 text-xs font-bold text-accent">
                                 {ESTADO_TEXTO[orden.estado] ?? orden.estado}
                             </span>
                         </div>
@@ -241,7 +241,7 @@ export default function FacturaImprimible({ orden, cliente, proyecto, cancion, o
                     {Number(orden.pagado) > 0 && <Celda etiqueta="Pagado" valor={orden.pagado} />}
                     {Number(orden.saldo_favor) > 0 && <Celda etiqueta="Saldo a favor" valor={orden.saldo_favor} />}
                     {Number(orden.cargo_cancelacion) > 0 && <Celda etiqueta="Cargo por cancelaci��n" valor={orden.cargo_cancelacion} />}
-                            <div className="mt-3 flex items-baseline justify-between gap-4 rounded-lg bg-violet-600 px-4 py-3 text-white">
+                            <div className="mt-3 flex items-baseline justify-between gap-4 rounded-lg bg-primario px-4 py-3 text-texto">
                                 <span className="text-xs font-bold uppercase tracking-[0.1em]">Saldo pendiente</span>
                                 <span className="text-lg font-black tabular-nums">{formatearMoneda(Math.max(0, orden.saldo))}</span>
                             </div>

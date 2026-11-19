@@ -113,7 +113,7 @@ export default function VinylDisc({ titulo = 'Z-ONE', artista = 'Studio', compac
         >
             <span
                 aria-hidden="true"
-                className="pointer-events-none absolute h-[140%] w-[140%] rounded-full bg-gradient-to-r from-[#8b5cf6]/10 via-[#ec4899]/12 to-[#8b5cf6]/8 opacity-70 blur-[130px] transition-opacity duration-500 group-hover:opacity-100 [animation:pulse_3.4s_ease-in-out_infinite]"
+                className="pointer-events-none absolute h-[140%] w-[140%] rounded-full bg-gradient-to-r from-accent/10 via-accent-soft/12 to-accent/8 opacity-70 blur-[130px] transition-opacity duration-500 group-hover:opacity-100 [animation:pulse_3.4s_ease-in-out_infinite]"
             />
             <svg
                 ref={ondasRef}
@@ -121,9 +121,9 @@ export default function VinylDisc({ titulo = 'Z-ONE', artista = 'Studio', compac
                 className="pointer-events-none absolute h-[190%] w-[190%] opacity-70"
                 viewBox="0 0 420 420"
             >
-                <circle cx="210" cy="210" r="72" fill="none" stroke="#ec4899" strokeWidth="1.2" />
-                <circle cx="210" cy="210" r="72" fill="none" stroke="#8b5cf6" strokeWidth="1.2" />
-                <circle cx="210" cy="210" r="72" fill="none" stroke="#a855f7" strokeWidth="1.2" />
+                <circle cx="210" cy="210" r="72" fill="none" stroke="#8FBCE6" strokeWidth="1.2" />
+                <circle cx="210" cy="210" r="72" fill="none" stroke="#3F84C5" strokeWidth="1.2" />
+                <circle cx="210" cy="210" r="72" fill="none" stroke="#3F84C5" strokeWidth="1.2" />
             </svg>
 
             <div
@@ -150,9 +150,9 @@ export default function VinylDisc({ titulo = 'Z-ONE', artista = 'Studio', compac
                 >
                     <defs>
                         <radialGradient id="viniloBase" cx="50%" cy="50%" r="50%">
-                            <stop offset="0%" stopColor="#211d33" />
-                            <stop offset="52%" stopColor="#0f0a1b" />
-                            <stop offset="100%" stopColor="#04030a" />
+                            <stop offset="0%" stopColor="#061F33" />
+                            <stop offset="52%" stopColor="#000C15" />
+                            <stop offset="100%" stopColor="#000C15" />
                         </radialGradient>
                         <radialGradient id="viniloSurco" cx="50%" cy="50%" r="50%">
                             <stop offset="0%" stopColor="#ffffff" stopOpacity="0" />
@@ -162,18 +162,18 @@ export default function VinylDisc({ titulo = 'Z-ONE', artista = 'Studio', compac
                             <stop offset="100%" stopColor="#ffffff" stopOpacity="0.012" />
                         </radialGradient>
                         <linearGradient id="viniloBorde" x1="0" y1="0" x2="1" y2="1">
-                            <stop offset="0%" stopColor="#8b5cf6" stopOpacity="0.14" />
-                            <stop offset="50%" stopColor="#ec4899" stopOpacity="0.12" />
-                            <stop offset="100%" stopColor="#8b5cf6" stopOpacity="0.14" />
+                            <stop offset="0%" stopColor="#3F84C5" stopOpacity="0.14" />
+                            <stop offset="50%" stopColor="#8FBCE6" stopOpacity="0.12" />
+                            <stop offset="100%" stopColor="#3F84C5" stopOpacity="0.14" />
                         </linearGradient>
                         <linearGradient id="viniloEtiqueta" x1="0" y1="0" x2="1" y2="1">
-                            <stop offset="0%" stopColor="#8b5cf6" />
-                            <stop offset="100%" stopColor="#ec4899" />
+                            <stop offset="0%" stopColor="#3F84C5" />
+                            <stop offset="100%" stopColor="#8FBCE6" />
                         </linearGradient>
                         <radialGradient id="viniloMetal" cx="50%" cy="50%" r="50%">
-                            <stop offset="0%" stopColor="#f5f3ff" />
-                            <stop offset="56%" stopColor="#d8d2ff" />
-                            <stop offset="100%" stopColor="#a69ebd" />
+                            <stop offset="0%" stopColor="#D6F3EB" />
+                            <stop offset="56%" stopColor="#8FBCE6" />
+                            <stop offset="100%" stopColor="#8CA5A2" />
                         </radialGradient>
                         <clipPath id="viniloClip">
                             <circle cx="210" cy="210" r="208" />
@@ -207,10 +207,10 @@ export default function VinylDisc({ titulo = 'Z-ONE', artista = 'Studio', compac
                         ))}
                     </g>
                     <circle cx="210" cy="210" r="208" fill="url(#viniloSurco)" clipPath="url(#viniloClip)" />
-                    <circle cx="210" cy="210" r="148" fill="#080612" stroke="#ffffff" strokeOpacity="0.09" strokeWidth="0.8" />
+                    <circle cx="210" cy="210" r="148" fill="#000C15" stroke="#ffffff" strokeOpacity="0.09" strokeWidth="0.8" />
                     <g mask="url(#viniloReborde)">
-                        <circle cx="210" cy="210" r="152" fill="none" stroke="#ec4899" strokeWidth="3" strokeDasharray="18 16" opacity="0.36" />
-                        <circle cx="210" cy="210" r="138" fill="none" stroke="#8b5cf6" strokeWidth="2.6" strokeDasharray="16 14" opacity="0.32" />
+                        <circle cx="210" cy="210" r="152" fill="none" stroke="#8FBCE6" strokeWidth="3" strokeDasharray="18 16" opacity="0.36" />
+                        <circle cx="210" cy="210" r="138" fill="none" stroke="#3F84C5" strokeWidth="2.6" strokeDasharray="16 14" opacity="0.32" />
                     </g>
                     <circle cx="210" cy="210" r="73" fill="url(#viniloEtiqueta)" />
                     <text
@@ -248,8 +248,8 @@ export default function VinylDisc({ titulo = 'Z-ONE', artista = 'Studio', compac
                     >
                         {acortar(artista, 30)}
                     </text>
-                    <circle cx="210" cy="210" r="7" fill="url(#viniloMetal)" stroke="#a69ebd" strokeWidth="1.2" />
-                    <circle cx="210" cy="210" r="3.2" fill="#05040a" />
+                    <circle cx="210" cy="210" r="7" fill="url(#viniloMetal)" stroke="#8CA5A2" strokeWidth="1.2" />
+                    <circle cx="210" cy="210" r="3.2" fill="#000C15" />
                 </svg>
 
                 <svg
@@ -276,7 +276,7 @@ export default function VinylDisc({ titulo = 'Z-ONE', artista = 'Studio', compac
 
             <span
                 aria-hidden="true"
-                className="pointer-events-none absolute -bottom-16 h-[40%] w-[70%] rounded-full bg-[#8b5cf6]/14 opacity-70 blur-[70px] transition-opacity duration-500 group-hover:opacity-100"
+                className="pointer-events-none absolute -bottom-16 h-[40%] w-[70%] rounded-full bg-accent/14 opacity-70 blur-[70px] transition-opacity duration-500 group-hover:opacity-100"
             />
         </div>
     );

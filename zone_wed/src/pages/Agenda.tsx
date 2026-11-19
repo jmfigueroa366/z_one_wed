@@ -40,7 +40,7 @@ const BORDE_EVENTO = {
 };
 
 const FILTRO_BASE = 'rounded-full border px-3.5 py-2 text-xs font-semibold transition';
-const FILTRO_ACTIVO = `${FILTRO_BASE} border-accent/60 bg-gradient-to-r from-[#9365f2]/40 to-[#e34ba6]/30 text-white`;
+const FILTRO_ACTIVO = `${FILTRO_BASE} border-primario bg-primario text-texto`;
 const FILTRO_INACTIVO = `${FILTRO_BASE} border-border bg-white/[0.035] text-sutil hover:border-accent/50 hover:text-texto`;
 
 function fechaHoy() {
@@ -213,7 +213,7 @@ export default function Agenda() {
     }, [colaboradores, eventosAgenda]);
 
     const resumen: Array<{ etiqueta: string; valor: number; tono: string; texto: string; icono: ComponentType<{ className?: string; 'aria-hidden'?: boolean }> }> = [
-        { etiqueta: 'Actividades en agenda', valor: eventosAgenda.length, tono: 'from-[#5b418f]/50 to-surface/30', texto: 'text-accent-soft', icono: Sparkles },
+        { etiqueta: 'Actividades en agenda', valor: eventosAgenda.length, tono: 'from-secundario/30 to-surface/30', texto: 'text-accent-soft', icono: Sparkles },
         { etiqueta: 'Confirmadas', valor: eventosAgenda.filter((sesion) => sesion.estado === 'confirmada').length, tono: 'from-exito/25 to-surface/30', texto: 'text-exito-soft', icono: CheckCircle2 },
         { etiqueta: 'Completadas', valor: sesiones.filter((sesion) => sesion.estado === 'completada').length, tono: 'from-[#5393da]/25 to-surface/30', texto: 'text-info', icono: CalendarCheck },
     ];
@@ -221,7 +221,7 @@ export default function Agenda() {
     return (
         <main className="workspace-content" data-page="agenda">
             <header className="relative overflow-hidden rounded-[2rem] border border-border bg-gradient-to-br from-surface-2/80 via-surface/60 to-surface/20 p-6 sm:p-8">
-                <div aria-hidden="true" className="pointer-events-none absolute -top-24 -right-10 h-64 w-64 animate-aurora rounded-full bg-[#9365f2]/25 blur-3xl" />
+                <div aria-hidden="true" className="pointer-events-none absolute -top-24 -right-10 h-64 w-64 animate-aurora rounded-full bg-accent/25 blur-3xl" />
                 <div aria-hidden="true" className="pointer-events-none absolute -bottom-24 left-8 h-56 w-56 animate-aurora rounded-full bg-magenta/20 blur-3xl" />
                 <div className="relative">
                     <p className="workspace-eyebrow">PLANIFICACIÓN DEL ESTUDIO</p>
@@ -241,11 +241,11 @@ export default function Agenda() {
                     className="group/hero relative mt-6 overflow-hidden rounded-[2rem] border border-accent/25 p-6 sm:p-8"
                     style={{
                         background:
-                            'radial-gradient(ellipse at 90% 8%, rgba(240, 79, 166, 0.4), transparent 48%), radial-gradient(ellipse at 8% 92%, rgba(147, 101, 242, 0.34), transparent 52%), linear-gradient(120deg, rgba(111, 75, 187, 0.55), rgba(30, 25, 48, 0.96) 72%)',
+                            'radial-gradient(ellipse at 90% 8%, rgba(143, 188, 230, 0.4), transparent 48%), radial-gradient(ellipse at 8% 92%, rgba(63, 132, 197, 0.34), transparent 52%), linear-gradient(120deg, rgba(63, 132, 197, 0.55), rgba(4, 25, 43, 0.96) 72%)',
                     }}
                 >
-                    <FondoHero acento="#9365f2" />
-                    <div aria-hidden="true" className="pointer-events-none absolute -right-12 -top-20 h-56 w-56 animate-aurora rounded-full bg-[#9365f2]/30 blur-3xl" />
+                    <FondoHero acento="#3F84C5" />
+                    <div aria-hidden="true" className="pointer-events-none absolute -right-12 -top-20 h-56 w-56 animate-aurora rounded-full bg-accent/30 blur-3xl" />
                     <div className="relative flex flex-wrap items-center justify-between gap-5">
                         <div className="flex flex-wrap items-center gap-6">
                             <div className="grid place-items-center rounded-3xl border border-white/10 bg-black/25 px-5 py-4 text-center">
@@ -314,7 +314,7 @@ export default function Agenda() {
                             const pct = Math.round((horas / ocupacion.maxHoras) * 100);
                             const libre = horas === 0;
                             const cargado = pct >= 70;
-                            const acento = libre ? '#6b6480' : cargado ? '#f04fa6' : '#a477ff';
+                            const acento = libre ? '#8CA5A2' : cargado ? '#8FBCE6' : '#8FBCE6';
                             return (
                                 <article
                                     key={colaborador.id}
@@ -322,8 +322,7 @@ export default function Agenda() {
                                 >
                                     <div className="flex items-center gap-3">
                                         <span
-                                            className="grid h-11 w-11 shrink-0 place-items-center rounded-xl text-sm font-black text-white"
-                                            style={{ background: `linear-gradient(135deg, ${acento}, #5b418f)` }}
+                                            className="grid h-11 w-11 shrink-0 place-items-center rounded-xl bg-secundario text-sm font-black text-texto"
                                             aria-hidden="true"
                                         >
                                             {iniciales(colaborador.nombre)}
@@ -334,7 +333,7 @@ export default function Agenda() {
                                         </div>
                                         <span
                                             className="shrink-0 rounded-full border px-2 py-0.5 text-[0.62rem] font-bold"
-                                            style={{ borderColor: `${acento}66`, background: `${acento}1f`, color: '#f2effb' }}
+                                            style={{ borderColor: `${acento}66`, background: `${acento}1f`, color: '#D6F3EB' }}
                                         >
                                             {libre ? 'Libre' : cargado ? 'Alta' : 'Media'}
                                         </span>
@@ -342,7 +341,7 @@ export default function Agenda() {
                                     <div className="mt-3 h-1.5 overflow-hidden rounded-full bg-white/[0.06]">
                                         <span
                                             className="block h-full rounded-full transition-all duration-700"
-                                            style={{ width: `${Math.max(pct, libre ? 4 : 10)}%`, background: `linear-gradient(90deg, ${acento}, #e34ba6)` }}
+                                            style={{ width: `${Math.max(pct, libre ? 4 : 10)}%`, background: `linear-gradient(90deg, ${acento}, #8FBCE6)` }}
                                         />
                                     </div>
                                     <div className="mt-2 flex items-center justify-between text-xs text-sutil">

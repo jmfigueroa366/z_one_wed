@@ -60,7 +60,7 @@ function Seccion({ Icono, eyebrow, titulo, children }: SeccionProps) {
     return (
         <section data-tile className={TARJETA}>
             <div className="mb-5 flex items-center gap-3">
-                <span className="grid h-10 w-10 shrink-0 place-items-center rounded-2xl bg-gradient-to-br from-[#9365f2] to-[#e34ba6] text-white shadow-lg" aria-hidden="true">
+                <span className="grid h-10 w-10 shrink-0 place-items-center rounded-2xl bg-secundario text-texto shadow-lg" aria-hidden="true">
                     <Icono className="h-4 w-4" />
                 </span>
                 <div>
@@ -148,7 +148,7 @@ export default function Precios() {
     return (
         <main className="workspace-content" data-page="precios">
             <header className="page-heading relative border-l-4 border-accent pl-4">
-                <div aria-hidden="true" className="pointer-events-none absolute -top-20 right-24 h-52 w-52 animate-aurora rounded-full bg-[#9365f2]/18 blur-3xl" />
+                <div aria-hidden="true" className="pointer-events-none absolute -top-20 right-24 h-52 w-52 animate-aurora rounded-full bg-accent/18 blur-3xl" />
                 <p className="workspace-eyebrow">ADMINISTRACIÓN · TARIFAS</p>
                 <h1>Precios del estudio</h1>
                 <p>Configura las tarifas y reglas que usa el sistema para facturar. El cambio aplica solo a facturas nuevas.</p>
@@ -166,11 +166,11 @@ export default function Precios() {
                         className="group/hero relative overflow-hidden rounded-[2.25rem] border border-accent/25 p-6 sm:p-8"
                         style={{
                             background:
-                                'radial-gradient(ellipse at 88% 4%, rgba(147, 101, 242, 0.32), transparent 46%), radial-gradient(ellipse at 4% 100%, rgba(111, 75, 187, 0.34), transparent 50%), linear-gradient(120deg, rgba(111, 75, 187, 0.36), rgba(23, 19, 34, 0.97) 72%)',
+                                'radial-gradient(ellipse at 88% 4%, rgba(63, 132, 197, 0.32), transparent 46%), radial-gradient(ellipse at 4% 100%, rgba(63, 132, 197, 0.34), transparent 50%), linear-gradient(120deg, rgba(63, 132, 197, 0.36), rgba(0, 12, 21, 0.97) 72%)',
                         }}
                     >
-                        <FondoHero acento="#9365f2" />
-                        <div aria-hidden="true" className="pointer-events-none absolute -right-10 -top-24 h-64 w-64 animate-aurora rounded-full bg-[#9365f2]/25 blur-3xl" />
+                        <FondoHero acento="#3F84C5" />
+                        <div aria-hidden="true" className="pointer-events-none absolute -right-10 -top-24 h-64 w-64 animate-aurora rounded-full bg-accent/25 blur-3xl" />
                         <div aria-hidden="true" className="pointer-events-none absolute right-6 top-1/2 hidden -translate-y-1/2 select-none text-[11rem] font-black leading-none tracking-tighter text-white/[0.04] lg:block">
                             ₮
                         </div>

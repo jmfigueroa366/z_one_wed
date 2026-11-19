@@ -90,30 +90,30 @@ export default function Estadisticas() {
     }, [datos]);
 
     const kpis = [
-        { etiqueta: 'Sesiones totales', valor: datos.kpis.totalSesiones, nota: `${datos.kpis.confirmadas} confirmadas`, Icono: Activity, tono: 'from-[#9365f2] to-[#6f4bbb]' },
+        { etiqueta: 'Sesiones totales', valor: datos.kpis.totalSesiones, nota: `${datos.kpis.confirmadas} confirmadas`, Icono: Activity, tono: 'from-accent to-[#3F84C5]' },
         { etiqueta: 'Sesiones completadas', valor: datos.kpis.completadas, nota: 'Cierre exitoso', Icono: CheckCircle2, tono: 'from-[#7be0b0] to-[#3fae82]' },
-        { etiqueta: 'Ocupación semanal', valor: datos.kpis.ocupacion, sufijo: '%', nota: 'Sobre capacidad operativa', Icono: Gauge, tono: 'from-[#f04fa6] to-[#b1306f]' },
-        { etiqueta: 'Solicitudes abiertas', valor: datos.kpis.solicitudesAbiertas, nota: 'Esperando respuestas', Icono: Inbox, tono: 'from-[#c9b6ff] to-[#8f6fd8]' },
+        { etiqueta: 'Ocupación semanal', valor: datos.kpis.ocupacion, sufijo: '%', nota: 'Sobre capacidad operativa', Icono: Gauge, tono: 'from-accent-soft to-[#3F84C5]' },
+        { etiqueta: 'Solicitudes abiertas', valor: datos.kpis.solicitudesAbiertas, nota: 'Esperando respuestas', Icono: Inbox, tono: 'from-[#8FBCE6] to-[#3F84C5]' },
     ];
 
     const datosSala = datos.porSala.map((sala, indice) => ({
         etiqueta: sala.nombre,
         valor: sala.sesiones,
-        color: indice === 0 ? '#f04fa6' : '#a477ff',
-        colorB: indice === 0 ? '#a477ff' : '#6f4bbb',
+        color: indice === 0 ? '#8FBCE6' : '#8FBCE6',
+        colorB: indice === 0 ? '#8FBCE6' : '#3F84C5',
     }));
 
     const datosColaborador = datos.porColaborador.map((item) => ({
         etiqueta: item.nombre,
         valor: item.valor,
-        color: '#c9b6ff',
-        colorB: '#a477ff',
+        color: '#8FBCE6',
+        colorB: '#8FBCE6',
     }));
 
     const totalIngresos = datos.ordenes.total || 1;
     const segmentosIngreso = [
         { etiqueta: 'Cobrado', valor: datos.ordenes.cobrado, color: '#7be0b0' },
-        { etiqueta: 'Por cobrar', valor: datos.ordenes.porCobrar, color: '#c9b6ff' },
+        { etiqueta: 'Por cobrar', valor: datos.ordenes.porCobrar, color: '#8FBCE6' },
         { etiqueta: 'En borrador', valor: datos.ordenes.borrador, color: '#f2a4b1' },
     ];
 
@@ -126,7 +126,7 @@ export default function Estadisticas() {
     return (
         <main className="workspace-content" data-page="estadisticas">
             <header className="page-heading relative border-l-4 border-accent pl-4">
-                <div aria-hidden="true" className="pointer-events-none absolute -top-20 right-10 h-56 w-56 animate-aurora rounded-full bg-[#9365f2]/20 blur-3xl" />
+                <div aria-hidden="true" className="pointer-events-none absolute -top-20 right-10 h-56 w-56 animate-aurora rounded-full bg-accent/20 blur-3xl" />
                 <p className="workspace-eyebrow">OBSERVATORIO · Z-ONE</p>
                 <h1>Estadísticas</h1>
                 <p>Lectura viva del pulso del estudio: ocupación, tendencias y señales que conviene notar.</p>
@@ -140,11 +140,11 @@ export default function Estadisticas() {
                     className="group/hero relative overflow-hidden rounded-[2.25rem] border border-accent/25 p-6 sm:p-8"
                     style={{
                         background:
-                            'radial-gradient(ellipse at 88% 4%, rgba(240, 79, 166, 0.3), transparent 46%), radial-gradient(ellipse at 4% 100%, rgba(111, 75, 187, 0.34), transparent 50%), linear-gradient(120deg, rgba(111, 75, 187, 0.36), rgba(23, 19, 34, 0.97) 72%)',
+                            'radial-gradient(ellipse at 88% 4%, rgba(143, 188, 230, 0.3), transparent 46%), radial-gradient(ellipse at 4% 100%, rgba(63, 132, 197, 0.34), transparent 50%), linear-gradient(120deg, rgba(63, 132, 197, 0.36), rgba(0, 12, 21, 0.97) 72%)',
                     }}
                 >
-                    <FondoHero acento="#f04fa6" />
-                    <div aria-hidden="true" className="pointer-events-none absolute -right-10 -top-24 h-64 w-64 animate-aurora rounded-full bg-[#e34ba6]/25 blur-3xl" />
+                    <FondoHero acento="#8FBCE6" />
+                    <div aria-hidden="true" className="pointer-events-none absolute -right-10 -top-24 h-64 w-64 animate-aurora rounded-full bg-accent-soft/25 blur-3xl" />
                     <div aria-hidden="true" className="pointer-events-none absolute right-6 top-1/2 hidden -translate-y-1/2 select-none text-[11rem] font-black leading-none tracking-tighter text-white/[0.04] lg:block">
                         Z·1
                     </div>
@@ -181,7 +181,7 @@ export default function Estadisticas() {
                             data-tile
                             className={`${TARJETA} group hover:-translate-y-1 hover:shadow-2xl hover:shadow-black/40`}
                         >
-                            <span aria-hidden="true" className="pointer-events-none absolute -right-10 -top-10 h-28 w-28 rounded-full bg-[#9365f2]/20 blur-2xl transition duration-300 group-hover:bg-[#e34ba6]/30" />
+                            <span aria-hidden="true" className="pointer-events-none absolute -right-10 -top-10 h-28 w-28 rounded-full bg-accent/20 blur-2xl transition duration-300 group-hover:bg-accent-soft/30" />
                             <div className="relative flex items-center justify-between">
                                 <span className="text-sm text-sutil">{etiqueta}</span>
                                 <span className={`grid h-9 w-9 place-items-center rounded-xl bg-gradient-to-br ${tono} text-white shadow-lg`}>
@@ -192,7 +192,7 @@ export default function Estadisticas() {
                                 <Contador valor={valor} sufijo={sufijo} />
                             </strong>
                             <span className="relative mt-1 block text-xs text-sutil/80">{nota}</span>
-                            <span aria-hidden="true" className="relative mt-3 block h-1 rounded-full bg-gradient-to-r from-[#9365f2] to-[#e34ba6] opacity-70" />
+                            <span aria-hidden="true" className="relative mt-3 block h-1 rounded-full bg-gradient-to-r from-accent to-accent-soft opacity-70" />
                         </article>
                     ))}
                 </section>
@@ -216,7 +216,7 @@ export default function Estadisticas() {
                     </article>
 
                     <article data-tile className={`${TARJETA} flex flex-col`}>
-                        <div aria-hidden="true" className="pointer-events-none absolute -bottom-16 -left-10 h-52 w-52 animate-aurora rounded-full bg-[#e34ba6]/20 blur-3xl [animation-delay:-5s]" />
+                        <div aria-hidden="true" className="pointer-events-none absolute -bottom-16 -left-10 h-52 w-52 animate-aurora rounded-full bg-accent-soft/20 blur-3xl [animation-delay:-5s]" />
                         <p className="workspace-eyebrow relative flex items-center gap-2">
                             <Sparkles className="h-3.5 w-3.5" aria-hidden="true" /> SÍNTESIS
                         </p>
@@ -232,7 +232,7 @@ export default function Estadisticas() {
                                     <div key={titulo} className="flex items-center gap-3">
                                         <span className="w-24 shrink-0 text-xs text-sutil">{titulo}</span>
                                         <span className="h-1.5 flex-1 overflow-hidden rounded-full bg-white/[0.06]">
-                                            <span className="block h-full rounded-full bg-gradient-to-r from-[#9365f2] to-[#e34ba6]" style={{ width: `${valor}%` }} />
+                                            <span className="block h-full rounded-full bg-gradient-to-r from-accent to-accent-soft" style={{ width: `${valor}%` }} />
                                         </span>
                                         <span className="w-9 shrink-0 text-right text-xs font-bold tabular-nums text-texto-soft">{valor}</span>
                                     </div>

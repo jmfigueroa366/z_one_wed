@@ -8,13 +8,13 @@ import { artistasDestacados } from '../data/artistasDestacados.ts';
 import '../styles/tailwind.css';
 
 const ARTISTA_FALLBACK =
-    'radial-gradient(circle at 30% 20%, rgba(240, 79, 166, 0.38), transparent 55%), linear-gradient(150deg, #3a2a52, #171322 82%)';
+    'radial-gradient(circle at 30% 20%, rgba(143, 188, 230, 0.38), transparent 55%), linear-gradient(150deg, #061F33, #000C15 82%)';
 
 export const authCampo =
     'w-full min-h-[50px] rounded-2xl border border-border/80 bg-surface-2/80 px-4 text-sm text-texto outline-none transition [color-scheme:dark] placeholder:text-sutil/60 shadow-[inset_0_1px_0_rgba(255,255,255,0.04)] focus:border-accent/70 focus:bg-surface-2 focus:ring-4 focus:ring-accent/15 [&>option]:bg-surface-3 [&>option]:text-texto';
 export const authEtiqueta = 'mb-2 block text-[0.68rem] font-bold uppercase tracking-[0.18em] text-sutil';
 export const authBoton =
-    'group relative inline-flex min-h-[52px] w-full items-center justify-center gap-2 overflow-hidden rounded-2xl bg-gradient-to-r from-[#9365f2] via-[#b857d1] to-[#e34ba6] px-4 text-sm font-bold text-white shadow-[0_18px_40px_-18px_rgba(227,75,166,0.9)] transition hover:-translate-y-0.5 hover:brightness-110 active:translate-y-0 disabled:cursor-not-allowed disabled:opacity-70 disabled:hover:translate-y-0 motion-reduce:transform-none';
+    'group relative inline-flex min-h-[52px] w-full items-center justify-center gap-2 overflow-hidden rounded-2xl bg-primario px-4 text-sm font-bold text-texto shadow-lg shadow-primario/25 transition hover:-translate-y-0.5 hover:bg-texto hover:text-bg active:translate-y-0 disabled:cursor-not-allowed disabled:opacity-70 disabled:hover:translate-y-0 motion-reduce:transform-none';
 export const authSelect = `${authCampo} appearance-none pr-11`;
 
 function obtenerMetricas() {
@@ -107,7 +107,7 @@ export default function AuthLayout({ titulo, subtitulo, children }: AuthLayoutPr
                 className="relative hidden flex-col justify-between gap-10 overflow-hidden border-r border-border p-10 lg:flex xl:p-14"
                 style={{
                     background:
-                        'radial-gradient(ellipse at 15% 0%, rgba(164, 119, 255, 0.22), transparent 46%), radial-gradient(ellipse at 92% 100%, rgba(240, 79, 166, 0.16), transparent 46%), linear-gradient(160deg, #100d1b 0%, #140f23 55%, #0d0a16 100%)',
+                        'radial-gradient(ellipse at 15% 0%, rgba(143, 188, 230, 0.22), transparent 46%), radial-gradient(ellipse at 92% 100%, rgba(143, 188, 230, 0.16), transparent 46%), linear-gradient(160deg, #000C15 0%, #04192B 55%, #000C15 100%)',
                 }}
             >
                 <div className="flex items-center gap-3" data-anim>
@@ -153,7 +153,7 @@ export default function AuthLayout({ titulo, subtitulo, children }: AuthLayoutPr
                         )}
                     </div>
                     <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-bg via-bg/45 to-transparent" aria-hidden="true" />
-                    <div className="pointer-events-none absolute inset-0 bg-[#6b4bd6]/25 mix-blend-multiply" aria-hidden="true" />
+                    <div className="pointer-events-none absolute inset-0 bg-[#0B29DF]/25 mix-blend-multiply" aria-hidden="true" />
                     <figcaption className="absolute inset-x-0 bottom-0 p-5">
                         <p className="text-[0.68rem] font-bold uppercase tracking-[0.22em] text-accent-soft">
                             Artista destacado
@@ -213,34 +213,34 @@ export default function AuthLayout({ titulo, subtitulo, children }: AuthLayoutPr
             <section className="relative flex items-center justify-center overflow-hidden p-4 sm:p-8 lg:p-10">
                 <div
                     aria-hidden="true"
-                    className="pointer-events-none absolute -right-24 top-8 h-72 w-72 rounded-full bg-[#9365f2]/20 blur-3xl"
+                    className="pointer-events-none absolute -right-24 top-8 h-72 w-72 rounded-full bg-accent/20 blur-3xl"
                 />
                 <div
                     aria-hidden="true"
-                    className="pointer-events-none absolute -bottom-24 -left-20 h-72 w-72 rounded-full bg-[#e34ba6]/15 blur-3xl"
+                    className="pointer-events-none absolute -bottom-24 -left-20 h-72 w-72 rounded-full bg-accent-soft/15 blur-3xl"
                 />
                 <div
                     aria-hidden="true"
-                    className="pointer-events-none absolute inset-0 bg-[linear-gradient(rgba(164,119,255,0.055)_1px,transparent_1px),linear-gradient(90deg,rgba(164,119,255,0.055)_1px,transparent_1px)] [background-size:42px_42px] [mask-image:radial-gradient(ellipse_at_center,black,transparent_78%)]"
+                    className="pointer-events-none absolute inset-0 bg-[linear-gradient(rgba(143,188,230,0.055)_1px,transparent_1px),linear-gradient(90deg,rgba(143,188,230,0.055)_1px,transparent_1px)] [background-size:42px_42px] [mask-image:radial-gradient(ellipse_at_center,black,transparent_78%)]"
                 />
 
                 <div
                     ref={tarjetaRef}
-                    className="relative w-full max-w-md overflow-hidden rounded-[2rem] border border-white/10 bg-surface/60 p-6 shadow-[0_40px_120px_-60px_rgba(147,101,242,0.95)] backdrop-blur-2xl sm:p-8"
+                    className="relative w-full max-w-md overflow-hidden rounded-[2rem] border border-white/10 bg-surface/60 p-6 shadow-[0_40px_120px_-60px_rgba(63,132,197,0.95)] backdrop-blur-2xl sm:p-8"
                 >
                     <div
                         aria-hidden="true"
-                        className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-[#e34ba6]/60 to-transparent"
+                        className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-accent-soft/60 to-transparent"
                     />
                     <div
                         aria-hidden="true"
-                        className="pointer-events-none absolute -right-16 -top-20 h-44 w-44 rounded-full bg-[#9365f2]/15 blur-3xl"
+                        className="pointer-events-none absolute -right-16 -top-20 h-44 w-44 rounded-full bg-accent/15 blur-3xl"
                     />
 
                     <div className="relative">
                         <div className="mb-7 flex items-center justify-between gap-3">
                             <div className="flex items-center gap-2.5">
-                                <span className="grid h-10 w-10 place-items-center rounded-2xl bg-gradient-to-br from-[#9365f2] to-[#e34ba6] text-sm font-black text-white shadow-lg shadow-accent/30">
+                                <span className="grid h-10 w-10 place-items-center rounded-2xl bg-primario text-sm font-black text-texto shadow-lg shadow-primario/30">
                                     Z
                                 </span>
                                 <span className="text-sm font-extrabold tracking-[0.18em] text-texto-soft lg:hidden">
@@ -261,7 +261,7 @@ export default function AuthLayout({ titulo, subtitulo, children }: AuthLayoutPr
                             {titulo}
                         </h1>
                         <p className="mt-2 text-sm leading-6 text-sutil">{subtitulo}</p>
-                        <div className="mt-3 h-1 w-14 rounded-full bg-gradient-to-r from-[#9365f2] to-[#e34ba6]" />
+                        <div className="mt-3 h-1 w-14 rounded-full bg-gradient-to-r from-accent to-accent-soft" />
 
                         <div className="mt-7">{children}</div>
                     </div>

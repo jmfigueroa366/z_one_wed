@@ -32,7 +32,7 @@ export default function WorkspaceLayout() {
             }`}
             style={{
                 background:
-                    'radial-gradient(ellipse at 72% 0%, rgba(93, 49, 170, 0.2), transparent 38%), linear-gradient(145deg, #100d1b 0%, #151023 52%, #110d19 100%)',
+                    'radial-gradient(ellipse at 72% 0%, rgba(63, 132, 197, 0.2), transparent 38%), linear-gradient(145deg, #000C15 0%, #04192B 52%, #000C15 100%)',
             }}
         >
             <Sidebar
@@ -42,7 +42,7 @@ export default function WorkspaceLayout() {
                 onCerrarMovil={() => setMovilAbierto(false)}
             />
             <div className="flex min-w-0 flex-col lg:h-screen lg:overflow-hidden">
-                <div className="lg:sticky lg:top-0 lg:z-30 lg:bg-[#100d1b]">
+                <div className="lg:sticky lg:top-0 lg:z-30 lg:bg-bg">
                     <Header onAbrirMenu={() => setMovilAbierto(true)} />
                 </div>
                 <main className="scrollbar-discreta min-h-0 flex-1 overflow-y-auto">

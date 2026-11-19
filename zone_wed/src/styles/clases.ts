@@ -5,10 +5,10 @@ export const CAMPO =
 export const ETIQUETA = 'mb-1.5 block text-xs font-bold uppercase tracking-wider text-sutil';
 
 export const BOTON_PRIMARIO =
-    'inline-flex min-h-[44px] items-center justify-center rounded-xl bg-gradient-to-r from-[#9365f2] to-[#e34ba6] px-4 text-sm font-bold text-white shadow-lg shadow-accent/20 transition hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-70';
+    'inline-flex min-h-[44px] items-center justify-center rounded-xl bg-primario px-4 text-sm font-bold text-texto shadow-lg shadow-primario/20 transition hover:bg-texto hover:text-bg disabled:cursor-not-allowed disabled:opacity-70';
 
 export const BOTON_SECUNDARIO =
-    'inline-flex min-h-[40px] items-center justify-center rounded-xl border border-border bg-white/[0.04] px-4 text-sm font-semibold text-texto transition hover:border-accent/60 hover:text-accent';
+    'inline-flex min-h-[40px] items-center justify-center rounded-xl border border-texto/35 px-4 text-sm font-semibold text-texto transition hover:border-texto/60 hover:bg-texto/10 hover:text-texto-soft';
 
 export const BOTON_PELIGRO =
     'inline-flex min-h-[40px] items-center justify-center rounded-xl border border-peligro/50 px-4 text-sm font-semibold text-peligro-soft transition hover:bg-peligro/10';

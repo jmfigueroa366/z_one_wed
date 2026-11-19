@@ -33,11 +33,11 @@ const PILL =
     'inline-flex items-center justify-center whitespace-nowrap rounded-full border px-2.5 py-1.5 text-xs font-bold capitalize';
 
 const ESTADO_META = {
-    borrador: { etiqueta: 'Borrador', clase: 'border-border bg-surface-3 text-sutil', acento: '#8b849c', Icono: Receipt },
+    borrador: { etiqueta: 'Borrador', clase: 'border-border bg-surface-3 text-sutil', acento: '#8CA5A2', Icono: Receipt },
     facturada: { etiqueta: 'Por pagar', clase: 'border-aviso/25 bg-aviso/10 text-aviso-soft', acento: '#f0b24f', Icono: Clock },
     parcial: { etiqueta: 'Pago parcial', clase: 'border-aviso/25 bg-aviso/10 text-aviso-soft', acento: '#f0b24f', Icono: Clock },
     pagada: { etiqueta: 'Pagada', clase: 'border-exito/25 bg-exito/10 text-exito-soft', acento: '#5fce9c', Icono: CheckCircle2 },
-    cancelada: { etiqueta: 'Cancelada', clase: 'border-peligro/25 bg-peligro/10 text-peligro-soft', acento: '#e2687d', Icono: X },
+    cancelada: { etiqueta: 'Cancelada', clase: 'border-peligro/25 bg-peligro/10 text-peligro-soft', acento: '#ff5a6e', Icono: X },
 };
 
 type EstadoOrden = keyof typeof ESTADO_META;
@@ -393,16 +393,16 @@ export default function Pagos() {
     ];
 
     const tarjetas = [
-        { etiqueta: 'Total facturado', valor: resumen.facturado, nota: 'Servicios del estudio', Icono: Receipt, tono: 'from-[#9365f2] to-[#6f4bbb]' },
+        { etiqueta: 'Total facturado', valor: resumen.facturado, nota: 'Servicios del estudio', Icono: Receipt, tono: 'from-accent to-[#3F84C5]' },
         { etiqueta: 'Por pagar', valor: resumen.porPagar, nota: 'Saldo pendiente', Icono: Clock, tono: 'from-[#f0b24f] to-[#c98a2f]' },
         { etiqueta: 'Pagado', valor: resumen.pagado, nota: 'Recaudado', Icono: Wallet, tono: 'from-[#7be0b0] to-[#3fae82]' },
-        { etiqueta: 'Saldo a favor', valor: resumen.saldoFavor, nota: 'Crédito disponible', Icono: Coins, tono: 'from-[#f04fa6] to-[#b1306f]' },
+        { etiqueta: 'Saldo a favor', valor: resumen.saldoFavor, nota: 'Crédito disponible', Icono: Coins, tono: 'from-accent-soft to-[#3F84C5]' },
     ];
 
     return (
         <main className="workspace-content" data-page="pagos">
             <header className="page-heading relative border-l-4 border-accent pl-4">
-                <div aria-hidden="true" className="pointer-events-none absolute -top-20 right-24 h-52 w-52 animate-aurora rounded-full bg-[#e34ba6]/15 blur-3xl" />
+                <div aria-hidden="true" className="pointer-events-none absolute -top-20 right-24 h-52 w-52 animate-aurora rounded-full bg-accent-soft/15 blur-3xl" />
                 <p className="workspace-eyebrow">FACTURACIÓN · ESTUDIO</p>
                 <h1>{esAdmin ? 'Facturación' : 'Mis pagos'}</h1>
                 <p>{esAdmin ? 'Emite, controla y registra los pagos de todos los clientes del estudio.' : 'Revisa el desglose de tus sesiones y registra tus pagos.'}</p>
@@ -419,11 +419,11 @@ export default function Pagos() {
                     className="group/hero relative overflow-hidden rounded-[2.25rem] border border-accent/25 p-6 sm:p-8"
                     style={{
                         background:
-                            'radial-gradient(ellipse at 88% 4%, rgba(240, 79, 166, 0.3), transparent 46%), radial-gradient(ellipse at 4% 100%, rgba(111, 75, 187, 0.34), transparent 50%), linear-gradient(120deg, rgba(111, 75, 187, 0.36), rgba(23, 19, 34, 0.97) 72%)',
+                            'radial-gradient(ellipse at 88% 4%, rgba(143, 188, 230, 0.3), transparent 46%), radial-gradient(ellipse at 4% 100%, rgba(63, 132, 197, 0.34), transparent 50%), linear-gradient(120deg, rgba(63, 132, 197, 0.36), rgba(0, 12, 21, 0.97) 72%)',
                     }}
                 >
-                    <FondoHero acento="#e34ba6" />
-                    <div aria-hidden="true" className="pointer-events-none absolute -right-10 -top-24 h-64 w-64 animate-aurora rounded-full bg-[#e34ba6]/25 blur-3xl" />
+                    <FondoHero acento="#8FBCE6" />
+                    <div aria-hidden="true" className="pointer-events-none absolute -right-10 -top-24 h-64 w-64 animate-aurora rounded-full bg-accent-soft/25 blur-3xl" />
                     <div aria-hidden="true" className="pointer-events-none absolute right-6 top-1/2 hidden -translate-y-1/2 select-none text-[11rem] font-black leading-none tracking-tighter text-white/[0.04] lg:block">
                         $
                     </div>
@@ -466,7 +466,7 @@ export default function Pagos() {
                         const Icono = item.Icono;
                         return (
                             <article key={item.etiqueta} data-tile className={`${TARJETA} group hover:-translate-y-1 hover:shadow-2xl hover:shadow-black/40`}>
-                                <span aria-hidden="true" className="pointer-events-none absolute -right-10 -top-10 h-28 w-28 rounded-full bg-[#9365f2]/20 blur-2xl transition duration-300 group-hover:bg-[#e34ba6]/30" />
+                                <span aria-hidden="true" className="pointer-events-none absolute -right-10 -top-10 h-28 w-28 rounded-full bg-accent/20 blur-2xl transition duration-300 group-hover:bg-accent-soft/30" />
                                 <div className="relative flex items-center justify-between">
                                     <span className="text-sm text-sutil">{item.etiqueta}</span>
                                     <span className={`grid h-9 w-9 place-items-center rounded-xl bg-gradient-to-br ${item.tono} text-white shadow-lg`}>
@@ -477,7 +477,7 @@ export default function Pagos() {
                                     <MonedaContador valor={item.valor} />
                                 </strong>
                                 <span className="relative mt-1 block text-xs text-sutil/80">{item.nota}</span>
-                                <span aria-hidden="true" className="relative mt-3 block h-1 rounded-full bg-gradient-to-r from-[#9365f2] to-[#e34ba6] opacity-70" />
+                                <span aria-hidden="true" className="relative mt-3 block h-1 rounded-full bg-gradient-to-r from-accent to-accent-soft opacity-70" />
                             </article>
                         );
                     })}
@@ -569,8 +569,7 @@ export default function Pagos() {
                                         <div className="relative flex flex-wrap items-start justify-between gap-4">
                                             <div className="flex min-w-0 items-start gap-4">
                                                 <span
-                                                    className="grid h-12 w-12 shrink-0 place-items-center rounded-2xl text-white shadow-lg"
-                                                    style={{ background: `linear-gradient(135deg, ${meta.acento}, #e34ba6)` }}
+                                                    className="grid h-12 w-12 shrink-0 place-items-center rounded-2xl bg-secundario text-texto shadow-lg"
                                                     aria-hidden="true"
                                                 >
                                                     <Icono className="h-5 w-5" />

@@ -14,7 +14,7 @@ import '../styles/tailwind.css';
 const MENOS_MOVIMIENTO = () =>
     typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-const ACENTOS = ['#f04fa6', '#a477ff', '#9ecbff', '#7be0b0', '#ffd166', '#f2a4b1'];
+const ACENTOS = ['#8FBCE6', '#8FBCE6', '#9ecbff', '#7be0b0', '#ffd166', '#f2a4b1'];
 const colorDeGenero = (genero: string, generos: string[]) => ACENTOS[Math.max(0, generos.indexOf(genero)) % ACENTOS.length];
 
 export default function Artistas() {
@@ -38,7 +38,7 @@ export default function Artistas() {
     }), [artistas, busqueda, filtroGenero]);
 
     const destacado = artistasFiltrados[0] ?? null;
-    const acentoDestacado = destacado ? colorDeGenero(destacado.especialidad, generos) : '#a477ff';
+    const acentoDestacado = destacado ? colorDeGenero(destacado.especialidad, generos) : '#8FBCE6';
 
     useEffect(() => {
         const grid = gridRef.current;
@@ -79,11 +79,11 @@ export default function Artistas() {
                 className="group/hero relative mt-6 overflow-hidden rounded-[2rem] border border-magenta/25 p-6 sm:p-8"
                 style={{
                     background:
-                        'radial-gradient(ellipse at 88% 8%, rgba(240, 79, 166, 0.32), transparent 48%), radial-gradient(ellipse at 6% 100%, rgba(111, 75, 187, 0.34), transparent 50%), linear-gradient(120deg, rgba(111, 75, 187, 0.34), rgba(23, 19, 34, 0.97) 72%)',
+                        'radial-gradient(ellipse at 88% 8%, rgba(143, 188, 230, 0.32), transparent 48%), radial-gradient(ellipse at 6% 100%, rgba(63, 132, 197, 0.34), transparent 50%), linear-gradient(120deg, rgba(63, 132, 197, 0.34), rgba(0, 12, 21, 0.97) 72%)',
                 }}
             >
-                <FondoHero acento="#f04fa6" />
-                <div aria-hidden="true" className="pointer-events-none absolute -right-12 -top-24 h-60 w-60 animate-aurora rounded-full bg-[#e34ba6]/25 blur-3xl" />
+                <FondoHero acento="#8FBCE6" />
+                <div aria-hidden="true" className="pointer-events-none absolute -right-12 -top-24 h-60 w-60 animate-aurora rounded-full bg-accent-soft/25 blur-3xl" />
                 <Mic2 aria-hidden="true" className="pointer-events-none absolute right-8 top-1/2 hidden h-40 w-40 -translate-y-1/2 text-white/[0.045] lg:block" />
                 <div className="relative flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
                     <div className="max-w-xl">
@@ -111,7 +111,7 @@ export default function Artistas() {
                     <div className="relative mt-6 flex flex-wrap gap-2">
                         {['Todos', ...generos].map((genero) => {
                             const activo = filtroGenero === genero;
-                            const acento = genero === 'Todos' ? '#a477ff' : colorDeGenero(genero, generos);
+                            const acento = genero === 'Todos' ? '#8FBCE6' : colorDeGenero(genero, generos);
                             return (
                                 <button
                                     key={genero}
@@ -122,7 +122,7 @@ export default function Artistas() {
                                     style={
                                         activo
                                             ? { borderColor: acento, background: `${acento}33`, color: '#fff', boxShadow: `0 0 18px ${acento}44` }
-                                            : { borderColor: 'var(--color-border, #2d2a45)', background: 'rgba(255,255,255,0.04)', color: '#a69ebd' }
+                                            : { borderColor: 'var(--color-border, #1E2C33)', background: 'rgba(255,255,255,0.04)', color: '#8CA5A2' }
                                     }
                                 >
                                     {genero}
@@ -136,13 +136,13 @@ export default function Artistas() {
             {destacado && (
                 <section
                     className="relative mt-5 overflow-hidden rounded-[2rem] border p-5 sm:p-6"
-                    style={{ borderColor: `${acentoDestacado}55`, background: 'linear-gradient(120deg, rgba(23,19,34,0.9), rgba(18,15,29,0.95))' }}
+                    style={{ borderColor: `${acentoDestacado}55`, background: 'linear-gradient(120deg, rgba(0,12,21,0.9), rgba(4,25,43,0.95))' }}
                     aria-label="Artista destacado"
                 >
                     <span aria-hidden="true" className="pointer-events-none absolute -left-16 top-1/2 h-56 w-56 -translate-y-1/2 rounded-full blur-3xl" style={{ background: `${acentoDestacado}33` }} />
                     <div className="relative flex flex-col items-center gap-5 sm:flex-row">
                         <span className="relative shrink-0">
-                            <span className="grid h-24 w-24 place-items-center overflow-hidden rounded-2xl text-4xl font-black text-white sm:h-28 sm:w-28" style={{ background: `linear-gradient(135deg, ${acentoDestacado}, #e34ba6)` }}>
+                            <span className="grid h-24 w-24 place-items-center overflow-hidden rounded-2xl bg-secundario text-4xl font-black text-texto sm:h-28 sm:w-28">
                                 {destacado.imagen ? (
                                     <img src={destacado.imagen} alt="" className="h-full w-full object-cover" />
                                 ) : (

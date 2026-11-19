@@ -286,7 +286,7 @@ export default function FormularioSolicitud({ onCreada }: FormularioSolicitudPro
                     </h2>
                 </div>
                 <span
-                    className="grid h-10 w-10 shrink-0 place-items-center rounded-2xl bg-gradient-to-br from-[#9365f2] to-[#e34ba6] text-white shadow-lg"
+                    className="grid h-10 w-10 shrink-0 place-items-center rounded-2xl bg-secundario text-texto shadow-lg"
                     aria-hidden="true"
                 >
                     <Send className="h-4 w-4" />
@@ -479,7 +479,7 @@ export default function FormularioSolicitud({ onCreada }: FormularioSolicitudPro
                                         >
                                             <input
                                                 type="checkbox"
-                                                className="h-4 w-4 shrink-0 accent-[#9365f2]"
+                                                className="h-4 w-4 shrink-0 accent-[var(--color-accent)]"
                                                 checked={seleccionado}
                                                 disabled={!seleccionado && limiteAlcanzado}
                                                 onChange={() => alternarColaborador(colaborador.id)}

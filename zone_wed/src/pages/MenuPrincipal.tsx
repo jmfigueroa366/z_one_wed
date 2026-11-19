@@ -151,18 +151,18 @@ export default function MenuPrincipal() {
                         className="group/hero relative flex flex-col overflow-hidden rounded-[2rem] border border-accent/25 p-7 sm:col-span-2 sm:p-9 lg:col-span-2 lg:row-span-2"
                         style={{
                             background:
-                                'radial-gradient(ellipse at 85% 10%, rgba(214, 70, 169, 0.28), transparent 45%), linear-gradient(120deg, rgba(111, 75, 187, 0.35), rgba(24, 19, 38, 0.96) 70%)',
+                                'radial-gradient(ellipse at 85% 10%, rgba(143, 188, 230, 0.28), transparent 45%), linear-gradient(120deg, rgba(63, 132, 197, 0.35), rgba(0, 12, 21, 0.96) 70%)',
                         }}
                     >
-                        <div aria-hidden="true" className="pointer-events-none absolute -right-16 -top-24 h-72 w-72 animate-aurora rounded-full bg-[#9365f2]/30 blur-3xl" />
-                        <div aria-hidden="true" className="pointer-events-none absolute -bottom-24 left-10 h-64 w-64 animate-aurora rounded-full bg-[#e34ba6]/25 blur-3xl [animation-delay:-6s]" />
+                        <div aria-hidden="true" className="pointer-events-none absolute -right-16 -top-24 h-72 w-72 animate-aurora rounded-full bg-accent/30 blur-3xl" />
+                        <div aria-hidden="true" className="pointer-events-none absolute -bottom-24 left-10 h-64 w-64 animate-aurora rounded-full bg-accent-soft/25 blur-3xl [animation-delay:-6s]" />
                         <div
                             aria-hidden="true"
                             className="pointer-events-none absolute inset-0 opacity-[0.14] [background-image:linear-gradient(rgba(255,255,255,0.06)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.06)_1px,transparent_1px)] [background-size:40px_40px] [mask-image:radial-gradient(ellipse_at_50%_50%,black,transparent_75%)]"
                         />
                         <div
                             aria-hidden="true"
-                            className="pointer-events-none absolute inset-0 opacity-0 transition-opacity duration-500 group-hover/hero:opacity-100 [background:radial-gradient(360px_circle_at_var(--mx,50%)_var(--my,50%),rgba(240,79,166,0.25),transparent_62%)]"
+                            className="pointer-events-none absolute inset-0 opacity-0 transition-opacity duration-500 group-hover/hero:opacity-100 [background:radial-gradient(360px_circle_at_var(--mx,50%)_var(--my,50%),rgba(143,188,230,0.25),transparent_62%)]"
                         />
 
                         {[
@@ -189,15 +189,15 @@ export default function MenuPrincipal() {
                             >
                                 <span className="absolute inset-[12%] rounded-full border border-white/[0.06]" />
                                 <span className="absolute inset-[26%] rounded-full border border-white/[0.05]" />
-                                <div className="grid h-24 w-24 place-items-center rounded-full border-[6px] border-[#27252b] bg-gradient-to-br from-[#db479b] to-[#8657c6] shadow-lg">
-                                    <span className="text-2xl font-black leading-none text-white">Z</span>
+                                <div className="grid h-24 w-24 place-items-center rounded-full border-[6px] border-[#27252b] bg-primario shadow-lg">
+                                    <span className="text-2xl font-black leading-none text-texto">Z</span>
                                 </div>
                             </div>
                             <div className="mt-5 flex h-12 items-end justify-center gap-1.5" aria-hidden="true">
                                 {[40, 70, 100, 55, 85, 45, 95, 60, 75, 35].map((altura, indice) => (
                                     <span
                                         key={indice}
-                                        className="w-1.5 origin-bottom rounded-full bg-gradient-to-t from-[#e34ba6] to-[#9365f2] [animation:ecu_1.4s_ease-in-out_infinite]"
+                                        className="w-1.5 origin-bottom rounded-full bg-gradient-to-t from-accent-soft to-accent [animation:ecu_1.4s_ease-in-out_infinite]"
                                         style={{ height: `${altura}%`, animationDelay: `${indice * 110}ms` }}
                                     />
                                 ))}
@@ -228,7 +228,7 @@ export default function MenuPrincipal() {
                                 {rutasPermitidas.includes(RUTAS.SESIONES) && (
                                     <Link
                                         to={`${RUTAS.SESIONES}#crear`}
-                                        className="inline-flex min-h-[46px] items-center justify-center rounded-xl bg-gradient-to-r from-[#9365f2] to-[#e34ba6] px-5 text-sm font-bold text-white shadow-lg shadow-accent/30 transition hover:-translate-y-0.5 hover:brightness-110"
+                                        className="inline-flex min-h-[46px] items-center justify-center rounded-xl bg-primario px-5 text-sm font-bold text-texto shadow-lg shadow-primario/30 transition hover:-translate-y-0.5 hover:bg-texto hover:text-bg"
                                     >
                                         Crear sesión
                                     </Link>
@@ -294,7 +294,7 @@ export default function MenuPrincipal() {
                                     <span className="mt-0.5 block text-xs text-sutil/80">{metrica.nota}</span>
                                 </div>
                                 {metrica.destacada && (
-                                    <span className="pointer-events-none absolute -right-10 -top-10 h-28 w-28 rounded-full bg-[#9365f2]/25 blur-2xl" />
+                                    <span className="pointer-events-none absolute -right-10 -top-10 h-28 w-28 rounded-full bg-accent/25 blur-2xl" />
                                 )}
                             </article>
                         );
@@ -317,7 +317,7 @@ export default function MenuPrincipal() {
                                     to={acceso.ruta}
                                     className="group/acceso flex items-center gap-3 rounded-2xl border border-border bg-white/[0.02] p-3.5 transition hover:-translate-y-0.5 hover:border-accent/50 hover:bg-white/[0.05]"
                                 >
-                                    <span className="grid h-11 w-11 shrink-0 place-items-center rounded-xl bg-gradient-to-br from-[#5b418f]/50 to-surface-2 text-accent-soft transition group-hover/acceso:from-[#9365f2]/60 group-hover/acceso:to-[#e34ba6]/40 group-hover/acceso:text-white">
+                                    <span className="grid h-11 w-11 shrink-0 place-items-center rounded-xl bg-secundario text-texto transition group-hover/acceso:bg-primario">
                                         <Icono className="h-5 w-5" aria-hidden="true" />
                                     </span>
                                     <span className="min-w-0">
@@ -344,7 +344,7 @@ export default function MenuPrincipal() {
                         <div className="flex w-max animate-marquee gap-4 px-2 group-hover:[animation-play-state:paused]">
                             {[...artistasDestacados, ...artistasDestacados].map((artista, indice) => (
                                 <div key={`${artista.nombre}-${indice}`} className="flex w-36 shrink-0 flex-col items-center gap-2 text-center">
-                                    <div className="rounded-full bg-gradient-to-br from-[#9365f2] to-[#e34ba6] p-[2px]">
+                                    <div className="rounded-full bg-secundario p-[2px]">
                                         <img
                                             src={artista.imagen}
                                             alt=""
@@ -379,7 +379,7 @@ export default function MenuPrincipal() {
                                     loading="lazy"
                                     className="h-52 w-full object-cover transition duration-500 group-hover:scale-110"
                                 />
-                                <div className="absolute inset-0 bg-gradient-to-t from-[#0b0812] via-[#0b0812]/30 to-transparent" />
+                                <div className="absolute inset-0 bg-gradient-to-t from-[#000C15] via-[#000C15]/30 to-transparent" />
                                 <div className="absolute inset-x-0 bottom-0 p-4">
                                     <h3 className="text-base font-bold text-texto-soft">{productor.nombre}</h3>
                                     <p className="mt-0.5 text-[0.72rem] text-sutil">{productor.origen}</p>

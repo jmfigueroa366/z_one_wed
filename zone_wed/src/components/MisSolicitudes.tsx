@@ -1,4 +1,4 @@
-﻿// CAPA: Presentación
+// CAPA: Presentación
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type { ReactNode } from 'react';
 import anime from 'animejs';
@@ -51,12 +51,12 @@ const MENOS_MOVIMIENTO = () =>
 const ACENTO_ESTADO: Record<string, string> = {
     confirmada: '#7be0b0',
     solicitada: '#ffd166',
-    por_autorizar: '#a477ff',
-    por_pagar: '#f04fa6',
+    por_autorizar: '#8FBCE6',
+    por_pagar: '#8FBCE6',
     rechazada: '#f2a4b1',
     cancelada: '#f2a4b1',
 };
-const acentoEstado = (estado: string): string => ACENTO_ESTADO[estado] ?? '#a477ff';
+const acentoEstado = (estado: string): string => ACENTO_ESTADO[estado] ?? '#8FBCE6';
 
 const ESTADOS_CANCELABLES = ['solicitada', 'por_autorizar', 'por_pagar'];
 
@@ -137,11 +137,11 @@ export default function MisSolicitudes() {
                 className="relative overflow-hidden rounded-[2rem] border border-accent/25 p-6 sm:p-8"
                 style={{
                     background:
-                        'radial-gradient(ellipse at 88% 6%, rgba(227, 75, 166, 0.30), transparent 46%), radial-gradient(ellipse at 0% 100%, rgba(111, 75, 187, 0.36), transparent 50%), linear-gradient(120deg, rgba(111, 75, 187, 0.38), rgba(23, 19, 34, 0.97) 72%)',
+                        'radial-gradient(ellipse at 88% 6%, rgba(143, 188, 230, 0.30), transparent 46%), radial-gradient(ellipse at 0% 100%, rgba(63, 132, 197, 0.36), transparent 50%), linear-gradient(120deg, rgba(63, 132, 197, 0.38), rgba(0, 12, 21, 0.97) 72%)',
                 }}
             >
-                <div aria-hidden="true" className="pointer-events-none absolute -right-14 -top-24 h-64 w-64 animate-aurora rounded-full bg-[#e34ba6]/25 blur-3xl" />
-                <div aria-hidden="true" className="pointer-events-none absolute -bottom-24 left-16 h-56 w-56 animate-aurora rounded-full bg-[#9365f2]/25 blur-3xl [animation-delay:-6s]" />
+                <div aria-hidden="true" className="pointer-events-none absolute -right-14 -top-24 h-64 w-64 animate-aurora rounded-full bg-accent-soft/25 blur-3xl" />
+                <div aria-hidden="true" className="pointer-events-none absolute -bottom-24 left-16 h-56 w-56 animate-aurora rounded-full bg-accent/25 blur-3xl [animation-delay:-6s]" />
                 <CalendarClock aria-hidden="true" className="pointer-events-none absolute right-8 top-1/2 hidden h-44 w-44 -translate-y-1/2 text-white/[0.05] xl:block" />
 
                 <div className="relative grid gap-7 lg:grid-cols-[1fr_auto] lg:items-center">

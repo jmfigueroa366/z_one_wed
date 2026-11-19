@@ -33,7 +33,7 @@ export default function ApiSalasDevPanel() {
                 type="button"
                 onClick={consultar}
                 disabled={cargando}
-                className="mt-2 w-full rounded-xl bg-gradient-to-r from-[#9365f2] to-[#e34ba6] px-4 py-2 text-sm font-bold text-white transition hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-60"
+                className="mt-2 w-full rounded-xl bg-primario px-4 py-2 text-sm font-bold text-texto transition hover:bg-texto hover:text-bg disabled:cursor-not-allowed disabled:opacity-60"
             >
                 {cargando ? 'Consultando...' : 'GET /publico/salas'}
             </button>

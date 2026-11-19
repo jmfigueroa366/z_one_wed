@@ -78,7 +78,7 @@ export default function OndaToma({ picos, progreso, duracion, onSeek, className 
             const avance = limitar(progreso);
 
             if (avance > 0) {
-                ctx.fillStyle = 'rgba(147, 101, 242, 0.08)';
+                ctx.fillStyle = 'rgba(63, 132, 197, 0.08)';
                 ctx.fillRect(0, 0, avance * ancho, alto);
             }
 
@@ -131,7 +131,7 @@ export default function OndaToma({ picos, progreso, duracion, onSeek, className 
                 ctx.beginPath();
                 dibujarBarras(0, corte);
                 ctx.save();
-                ctx.shadowColor = 'rgba(227, 75, 166, 0.55)';
+                ctx.shadowColor = 'rgba(143, 188, 230, 0.55)';
                 ctx.shadowBlur = 14;
                 ctx.fillStyle = gradiente;
                 ctx.fill();
@@ -140,7 +140,7 @@ export default function OndaToma({ picos, progreso, duracion, onSeek, className 
 
             const xProgreso = avance * ancho;
             ctx.save();
-            ctx.shadowColor = 'rgba(227, 75, 166, 0.9)';
+            ctx.shadowColor = 'rgba(143, 188, 230, 0.9)';
             ctx.shadowBlur = 18;
             ctx.fillStyle = '#f7f4ff';
             ctx.fillRect(xProgreso - 1, 0, 2, alto);
@@ -194,7 +194,7 @@ export default function OndaToma({ picos, progreso, duracion, onSeek, className 
         <div className={`w-full ${className}`}>
             <div
                 ref={contenedorRef}
-                className={`relative h-32 min-w-0 overflow-hidden rounded-2xl border border-white/10 bg-[#0b0813]/80 sm:h-40 ${
+                className={`relative h-32 min-w-0 overflow-hidden rounded-2xl border border-white/10 bg-bg/80 sm:h-40 ${
                     onSeek ? 'cursor-pointer' : ''
                 }`}
                 onClick={alHacerClic}
@@ -209,7 +209,7 @@ export default function OndaToma({ picos, progreso, duracion, onSeek, className 
             >
                 <div
                     aria-hidden="true"
-                    className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_50%_120%,rgba(147,101,242,0.12),transparent_62%)]"
+                    className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_50%_120%,rgba(63,132,197,0.12),transparent_62%)]"
                 />
                 <canvas ref={canvasRef} className="absolute inset-0 h-full w-full" aria-hidden="true" />
                 <div

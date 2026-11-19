@@ -13,10 +13,10 @@ export function iniciales(nombre?: string) {
 }
 
 const RETRATO = [
-    'radial-gradient(circle at 30% 18%, rgba(240, 79, 166, 0.34), transparent 55%), linear-gradient(150deg, #3a2a52, #171322 82%)',
-    'radial-gradient(circle at 72% 16%, rgba(79, 170, 210, 0.32), transparent 55%), linear-gradient(150deg, #25374a, #171322 82%)',
-    'radial-gradient(circle at 40% 20%, rgba(211, 166, 75, 0.3), transparent 55%), linear-gradient(150deg, #463629, #171322 82%)',
-    'radial-gradient(circle at 66% 18%, rgba(147, 101, 242, 0.36), transparent 55%), linear-gradient(150deg, #2e2547, #171322 82%)',
+    'radial-gradient(circle at 30% 18%, rgba(143, 188, 230, 0.34), transparent 55%), linear-gradient(150deg, #061F33, #000C15 82%)',
+    'radial-gradient(circle at 72% 16%, rgba(79, 170, 210, 0.32), transparent 55%), linear-gradient(150deg, #25374a, #000C15 82%)',
+    'radial-gradient(circle at 40% 20%, rgba(211, 166, 75, 0.3), transparent 55%), linear-gradient(150deg, #463629, #000C15 82%)',
+    'radial-gradient(circle at 66% 18%, rgba(63, 132, 197, 0.36), transparent 55%), linear-gradient(150deg, #061F33, #000C15 82%)',
 ];
 
 interface TarjetaArtistaProps {
@@ -26,11 +26,11 @@ interface TarjetaArtistaProps {
     destacado?: boolean;
 }
 
-export default function TarjetaArtista({ artista, index, acento = '#a477ff', destacado = false }: TarjetaArtistaProps) {
+export default function TarjetaArtista({ artista, index, acento = '#8FBCE6', destacado = false }: TarjetaArtistaProps) {
     return (
         <article
-            className="tarjeta-brillo group relative overflow-hidden rounded-[1.75rem] border bg-[#120f1d]/80 transition duration-300 hover:-translate-y-1.5 hover:shadow-2xl hover:shadow-black/50"
-            style={{ borderColor: destacado ? acento : 'var(--color-border, #2d2a45)' }}
+            className="tarjeta-brillo group relative overflow-hidden rounded-[1.75rem] border bg-[#000C15]/80 transition duration-300 hover:-translate-y-1.5 hover:shadow-2xl hover:shadow-black/50"
+            style={{ borderColor: destacado ? acento : 'var(--color-border, #1E2C33)' }}
         >
             <span
                 aria-hidden="true"
@@ -51,7 +51,7 @@ export default function TarjetaArtista({ artista, index, acento = '#a477ff', des
                         {iniciales(artista.nombre)}
                     </span>
                 )}
-                <div aria-hidden="true" className="absolute inset-0 bg-gradient-to-t from-[#0b0812] via-[#0b0812]/25 to-transparent" />
+                <div aria-hidden="true" className="absolute inset-0 bg-gradient-to-t from-[#000C15] via-[#000C15]/25 to-transparent" />
                 <span
                     className="absolute right-3 top-3 inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-xs font-bold backdrop-blur"
                     style={{ borderColor: `${acento}80`, background: 'rgba(0,0,0,0.45)', color: acento }}
@@ -63,7 +63,7 @@ export default function TarjetaArtista({ artista, index, acento = '#a477ff', des
                     <h3 className="mt-0.5 text-lg font-bold leading-tight tracking-tight text-texto-soft">{artista.nombre}</h3>
                     <span
                         className="mt-1 inline-block rounded-full border px-2.5 py-0.5 text-xs font-semibold"
-                        style={{ borderColor: `${acento}59`, background: `${acento}1f`, color: '#f2effb' }}
+                        style={{ borderColor: `${acento}59`, background: `${acento}1f`, color: '#D6F3EB' }}
                     >
                         {artista.especialidad || 'Artista'}
                     </span>
@@ -74,8 +74,7 @@ export default function TarjetaArtista({ artista, index, acento = '#a477ff', des
                     {artista.usuario_id ? 'Cuenta vinculada al estudio' : 'Perfil del estudio'}
                 </span>
                 <span
-                    className="grid h-9 w-9 shrink-0 place-items-center rounded-full text-white transition duration-300 group-hover:scale-110"
-                    style={{ background: `linear-gradient(135deg, ${acento}, #e34ba6)` }}
+                    className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-secundario text-texto transition duration-300 group-hover:scale-110"
                     aria-hidden="true"
                 >
                     <AudioLines className="h-4 w-4" />

@@ -18,22 +18,22 @@ const MENOS_MOVIMIENTO = () =>
 
 const SERVICIOS = [
     { nombre: 'Grabación', descripcion: 'Captura voces e instrumentos en una sesión de estudio.', icono: Mic, acento: '#9ecbff' },
-    { nombre: 'Producción musical', descripcion: 'Desarrolla arreglos, sonido y dirección para tus canciones.', icono: Wand2, acento: '#a477ff' },
-    { nombre: 'Mezcla', descripcion: 'Equilibra pistas y prepara la mezcla de tu proyecto.', icono: SlidersHorizontal, acento: '#f04fa6' },
+    { nombre: 'Producción musical', descripcion: 'Desarrolla arreglos, sonido y dirección para tus canciones.', icono: Wand2, acento: '#8FBCE6' },
+    { nombre: 'Mezcla', descripcion: 'Equilibra pistas y prepara la mezcla de tu proyecto.', icono: SlidersHorizontal, acento: '#8FBCE6' },
     { nombre: 'Masterización', descripcion: 'Da el acabado final y prepara el audio para su distribución.', icono: Disc3, acento: '#7be0b0' },
 ];
 
 const ARTE_SALA = [
     {
-        fondo: 'radial-gradient(ellipse at 78% 8%, rgba(240, 79, 166, 0.5), transparent 46%), radial-gradient(ellipse at 10% 96%, rgba(111, 75, 187, 0.5), transparent 52%), linear-gradient(150deg, #3a2456, #120c1e 82%)',
-        acento: '#f04fa6',
+        fondo: 'radial-gradient(ellipse at 78% 8%, rgba(143, 188, 230, 0.5), transparent 46%), radial-gradient(ellipse at 10% 96%, rgba(63, 132, 197, 0.5), transparent 52%), linear-gradient(150deg, #061F33, #000C15 82%)',
+        acento: '#8FBCE6',
     },
     {
-        fondo: 'radial-gradient(ellipse at 20% 12%, rgba(164, 119, 255, 0.5), transparent 48%), radial-gradient(ellipse at 88% 92%, rgba(83, 147, 218, 0.45), transparent 54%), linear-gradient(150deg, #2a1f4d, #120c1e 82%)',
-        acento: '#a477ff',
+        fondo: 'radial-gradient(ellipse at 20% 12%, rgba(143, 188, 230, 0.5), transparent 48%), radial-gradient(ellipse at 88% 92%, rgba(83, 147, 218, 0.45), transparent 54%), linear-gradient(150deg, #061F33, #000C15 82%)',
+        acento: '#8FBCE6',
     },
     {
-        fondo: 'radial-gradient(ellipse at 70% 14%, rgba(158, 203, 255, 0.42), transparent 48%), radial-gradient(ellipse at 12% 90%, rgba(240, 79, 166, 0.4), transparent 52%), linear-gradient(150deg, #233248, #120c1e 82%)',
+        fondo: 'radial-gradient(ellipse at 70% 14%, rgba(158, 203, 255, 0.42), transparent 48%), radial-gradient(ellipse at 12% 90%, rgba(143, 188, 230, 0.4), transparent 52%), linear-gradient(150deg, #04192B, #000C15 82%)',
         acento: '#9ecbff',
     },
 ];
@@ -82,12 +82,12 @@ export default function Catalogo() {
                     className="group/hero relative overflow-hidden rounded-[2.5rem] border border-accent/30 p-7 sm:p-10"
                     style={{
                         background:
-                            'radial-gradient(ellipse at 88% 4%, rgba(240, 79, 166, 0.34), transparent 44%), radial-gradient(ellipse at 6% 100%, rgba(111, 75, 187, 0.4), transparent 52%), linear-gradient(120deg, rgba(60, 40, 96, 0.55), rgba(18, 12, 30, 0.98) 72%)',
+                            'radial-gradient(ellipse at 88% 4%, rgba(143, 188, 230, 0.34), transparent 44%), radial-gradient(ellipse at 6% 100%, rgba(63, 132, 197, 0.4), transparent 52%), linear-gradient(120deg, rgba(4, 25, 43, 0.55), rgba(0, 12, 21, 0.98) 72%)',
                     }}
                 >
-                    <FondoHero acento="#f04fa6" />
-                    <div aria-hidden="true" className="pointer-events-none absolute -right-16 -top-24 h-72 w-72 animate-aurora rounded-full bg-[#e34ba6]/30 blur-3xl" />
-                    <div aria-hidden="true" className="pointer-events-none absolute -bottom-28 left-24 h-64 w-64 animate-aurora rounded-full bg-[#9365f2]/25 blur-3xl [animation-delay:-7s]" />
+                    <FondoHero acento="#8FBCE6" />
+                    <div aria-hidden="true" className="pointer-events-none absolute -right-16 -top-24 h-72 w-72 animate-aurora rounded-full bg-accent-soft/30 blur-3xl" />
+                    <div aria-hidden="true" className="pointer-events-none absolute -bottom-28 left-24 h-64 w-64 animate-aurora rounded-full bg-accent/25 blur-3xl [animation-delay:-7s]" />
                     <div aria-hidden="true" className="pointer-events-none absolute right-6 top-1/2 hidden -translate-y-1/2 select-none text-[11rem] font-black leading-none tracking-tighter text-white/[0.045] lg:block">
                         Z·1
                     </div>
@@ -130,7 +130,7 @@ export default function Catalogo() {
                                 <strong className="text-lg font-extrabold text-texto-soft"><Contador valor={SERVICIOS.length} pad={2} /></strong>
                                 <span className="text-xs text-sutil"> flujo integral</span>
                             </div>
-                            <Ecualizador desde="#f04fa6" hasta="#a477ff" alto={40} />
+                            <Ecualizador desde="#8FBCE6" hasta="#8FBCE6" alto={40} />
                         </div>
                     </div>
                 </section>
@@ -155,7 +155,7 @@ export default function Catalogo() {
                                 return (
                                     <article
                                         key={sala.id ?? sala.nombre}
-                                        className="tarjeta-brillo group relative overflow-hidden rounded-[1.75rem] border border-border bg-[#120c1e]/85 transition duration-300 hover:-translate-y-1.5 hover:border-accent/50 hover:shadow-2xl hover:shadow-black/50"
+                                        className="tarjeta-brillo group relative overflow-hidden rounded-[1.75rem] border border-border bg-[#000C15]/85 transition duration-300 hover:-translate-y-1.5 hover:border-accent/50 hover:shadow-2xl hover:shadow-black/50"
                                     >
                                         <div className="relative flex h-40 items-end justify-between overflow-hidden p-4" style={{ background: arte.fondo }}>
                                             <span className="text-xs font-extrabold tracking-[0.12em] text-white/60">
@@ -226,22 +226,16 @@ export default function Catalogo() {
                             return (
                                 <article
                                     key={servicio.nombre}
-                                    className="group relative min-h-[188px] overflow-hidden rounded-2xl border border-border bg-white/[0.025] p-5 transition duration-300 hover:-translate-y-1 hover:border-accent/50 hover:bg-white/[0.05]"
+                                    className="group relative min-h-[188px] overflow-hidden rounded-2xl border border-border bg-surface p-5 transition duration-300 hover:-translate-y-1 hover:border-accent/50 hover:bg-surface-2"
                                 >
-                                    <span
-                                        aria-hidden="true"
-                                        className="pointer-events-none absolute -right-10 -top-10 h-28 w-28 rounded-full opacity-0 blur-2xl transition duration-500 group-hover:opacity-60"
-                                        style={{ background: `${servicio.acento}55` }}
-                                    />
                                     <div className="relative flex items-center justify-between">
                                         <span
-                                            className="grid h-11 w-11 place-items-center rounded-xl text-white transition duration-500 group-hover:scale-110"
-                                            style={{ background: `linear-gradient(135deg, ${servicio.acento}, #5b418f)` }}
+                                            className="grid h-11 w-11 place-items-center rounded-xl bg-surface-3 text-accent transition duration-500 group-hover:scale-110"
                                             aria-hidden="true"
                                         >
                                             <Icono className="h-5 w-5" />
                                         </span>
-                                        <span className="text-xs font-extrabold tracking-[0.12em]" style={{ color: servicio.acento }}>
+                                        <span className="text-xs font-extrabold tracking-[0.12em] text-accent">
                                             {String(index + 1).padStart(2, '0')}
                                         </span>
                                     </div>

@@ -64,13 +64,7 @@ function pasoActual(estado: string): number {
     return 0;
 }
 
-const TONOS_AVATAR = [
-    'from-[#9365f2] to-[#e34ba6]',
-    'from-[#f04fa6] to-[#ffd166]',
-    'from-[#7be0b0] to-[#9ecbff]',
-    'from-[#9ecbff] to-[#a477ff]',
-    'from-[#ffd166] to-[#ff8a8a]',
-];
+const TONOS_AVATAR = ['bg-secundario'];
 
 function iniciales(nombre: string): string {
     const partes = nombre.trim().split(/\s+/).filter(Boolean);
@@ -191,7 +185,7 @@ function BandejaSolicitudes() {
     return (
         <main className="workspace-content" data-page="solicitudes">
             <header className="relative overflow-hidden rounded-[2rem] border border-border bg-gradient-to-br from-surface-2/80 via-surface/60 to-surface/20 p-6 sm:p-8">
-                <div aria-hidden="true" className="pointer-events-none absolute -top-24 -right-10 h-64 w-64 animate-aurora rounded-full bg-[#e34ba6]/20 blur-3xl" />
+                <div aria-hidden="true" className="pointer-events-none absolute -top-24 -right-10 h-64 w-64 animate-aurora rounded-full bg-accent-soft/20 blur-3xl" />
                 <div aria-hidden="true" className="pointer-events-none absolute -bottom-28 left-10 h-56 w-56 animate-aurora rounded-full bg-accent/20 blur-3xl" />
                 <div className="relative">
                     <p className="workspace-eyebrow">RESERVAS DEL ESTUDIO</p>
@@ -207,7 +201,7 @@ function BandejaSolicitudes() {
                         {PASOS_FLUJO.map((paso, indice, arreglo) => (
                             <li key={paso} className="flex items-center gap-2">
                                 <span className="group flex items-center gap-2 rounded-full border border-border bg-surface/70 px-3 py-1.5 font-semibold text-texto-soft transition hover:border-accent/50 hover:bg-accent/10">
-                                    <span className="grid h-5 w-5 place-items-center rounded-full bg-gradient-to-br from-accent to-magenta text-[0.62rem] font-black text-white shadow-sm shadow-accent/30">{indice + 1}</span>
+                                    <span className="grid h-5 w-5 place-items-center rounded-full bg-secundario text-[0.62rem] font-black text-texto shadow-sm shadow-secundario/30">{indice + 1}</span>
                                     {paso}
                                 </span>
                                 {indice < arreglo.length - 1 && <span aria-hidden="true" className="text-accent/50">→</span>}
@@ -239,7 +233,7 @@ function BandejaSolicitudes() {
             )}
 
             <section className="mt-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-4" aria-label="Resumen de solicitudes">
-                <KpiSolicitudes icono={Sparkles} etiqueta="Total de solicitudes" valor={solicitudes.length} degradado="from-[#5b418f]/45 to-surface/30" acento="text-accent-soft" />
+                <KpiSolicitudes icono={Sparkles} etiqueta="Total de solicitudes" valor={solicitudes.length} degradado="from-secundario/30 to-surface/30" acento="text-accent-soft" />
                 <KpiSolicitudes icono={Hourglass} etiqueta="Por aprobar" valor={porResponder} degradado="from-aviso/25 to-surface/30" acento="text-aviso-soft" />
                 <KpiSolicitudes icono={ThumbsUp} etiqueta="Esperando equipo" valor={porAutorizar} degradado="from-accent/25 to-surface/30" acento="text-accent-soft" />
                 <KpiSolicitudes icono={Check} etiqueta="Confirmadas" valor={grupos.confirmada.length} degradado="from-exito/25 to-surface/30" acento="text-exito-soft" />
@@ -259,7 +253,7 @@ function BandejaSolicitudes() {
                             onClick={() => setFiltro(opcion.clave)}
                             className={`inline-flex min-h-[38px] items-center gap-2 rounded-full border px-3.5 text-xs font-bold transition ${
                                 activo
-                                    ? 'border-accent/60 bg-gradient-to-r from-accent/20 to-magenta/15 text-accent-soft shadow-sm shadow-accent/20'
+                                    ? 'border-primario bg-primario text-texto shadow-sm shadow-primario/20'
                                     : 'border-border bg-white/[0.03] text-sutil hover:border-accent/40 hover:text-texto'
                             }`}
                         >
@@ -328,7 +322,7 @@ function BandejaSolicitudes() {
                                                 <span className={`absolute inset-x-0 top-0 h-[3px] bg-gradient-to-r ${columna.brillo} to-transparent`} aria-hidden="true" />
                                                 <div className="flex items-start justify-between gap-3">
                                                     <div className="flex min-w-0 items-start gap-3">
-                                                        <span className={`grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-gradient-to-br ${tonoAvatar(nombreSolicitante(solicitud))} text-sm font-black text-white shadow-md shadow-black/30`} aria-hidden="true">
+                                                        <span className={`grid h-10 w-10 shrink-0 place-items-center rounded-xl ${tonoAvatar(nombreSolicitante(solicitud))} text-sm font-black text-texto shadow-md shadow-black/30`} aria-hidden="true">
                                                             {iniciales(nombreSolicitante(solicitud))}
                                                         </span>
                                                         <div className="min-w-0">

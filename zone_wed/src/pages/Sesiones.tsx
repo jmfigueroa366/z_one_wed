@@ -145,7 +145,7 @@ export default function Sesiones() {
                 className="group/hero relative mt-6 overflow-hidden rounded-[2.25rem] border border-accent/25 p-6 sm:p-8"
                 style={{
                     background:
-                        'radial-gradient(ellipse at 88% 4%, rgba(83, 147, 218, 0.3), transparent 46%), radial-gradient(ellipse at 4% 100%, rgba(111, 75, 187, 0.34), transparent 50%), linear-gradient(120deg, rgba(83, 147, 218, 0.32), rgba(23, 19, 34, 0.97) 72%)',
+                        'radial-gradient(ellipse at 88% 4%, rgba(83, 147, 218, 0.3), transparent 46%), radial-gradient(ellipse at 4% 100%, rgba(63, 132, 197, 0.34), transparent 50%), linear-gradient(120deg, rgba(83, 147, 218, 0.32), rgba(0, 12, 21, 0.97) 72%)',
                 }}
             >
                 <FondoHero acento="#669fe8" />
@@ -219,7 +219,7 @@ export default function Sesiones() {
                                         aria-pressed={activo}
                                         className={
                                             activo
-                                                ? 'rounded-full border border-accent/70 bg-gradient-to-r from-[#9365f2]/40 to-[#e34ba6]/30 px-3.5 py-1.5 text-xs font-bold text-white transition'
+                                                ? 'rounded-full border border-primario bg-primario px-3.5 py-1.5 text-xs font-bold text-texto transition'
                                                 : 'rounded-full border border-border bg-white/[0.04] px-3.5 py-1.5 text-xs font-medium text-sutil transition hover:border-accent/50 hover:text-texto'
                                         }
                                     >

@@ -135,7 +135,7 @@ export default function Sidebar({ colapsado, onAlternar, movilAbierto, onCerrarM
             )}
 
             <aside
-                className={`fixed inset-y-0 left-0 z-50 flex w-[280px] flex-col border-r border-border bg-[#0d0a17]/95 p-4 backdrop-blur transition-transform duration-300 lg:sticky lg:top-0 lg:bottom-auto lg:left-auto lg:z-auto lg:h-screen lg:w-full lg:translate-x-0 lg:bg-[#0d0a17]/80 ${
+                className={`fixed inset-y-0 left-0 z-50 flex w-[280px] flex-col border-r border-border bg-bg-2/95 p-4 backdrop-blur transition-transform duration-300 lg:sticky lg:top-0 lg:bottom-auto lg:left-auto lg:z-auto lg:h-screen lg:w-full lg:translate-x-0 lg:bg-bg-2/80 ${
                     movilAbierto ? 'translate-x-0' : '-translate-x-full'
                 } ${colapsado ? 'lg:px-3' : ''}`}
             >
@@ -192,8 +192,8 @@ export default function Sidebar({ colapsado, onAlternar, movilAbierto, onCerrarM
                                                 className={({ isActive }) =>
                                                     `group relative flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-semibold transition ${colapsado ? 'lg:justify-center lg:px-2' : ''} ${
                                                         isActive
-                                                            ? 'bg-gradient-to-r from-[#7f55e2]/60 to-[#d73f9a]/40 text-white shadow-lg shadow-black/20'
-                                                            : 'text-[#c8c1d7] hover:bg-white/5 hover:text-white'
+                                                            ? 'bg-primario text-texto shadow-lg shadow-black/20'
+                                                            : 'text-sutil hover:bg-white/5 hover:text-texto'
                                                     }`
                                                 }
                                             >
@@ -202,14 +202,14 @@ export default function Sidebar({ colapsado, onAlternar, movilAbierto, onCerrarM
                                                         {isActive && (
                                                             <span
                                                                 aria-hidden="true"
-                                                                className="absolute inset-y-1.5 left-0 w-1 rounded-full bg-gradient-to-b from-[#9365f2] to-[#e34ba6]"
+                                                                className="absolute inset-y-1.5 left-0 w-1 rounded-full bg-gradient-to-b from-accent to-accent-soft"
                                                             />
                                                         )}
                                                         <Icono className="h-5 w-5 shrink-0" aria-hidden="true" />
                                                         <span className={`truncate ${colapsado ? 'lg:hidden' : ''}`}>{item.etiqueta}</span>
                                                         {item.badge > 0 && (
                                                             <>
-                                                                <span className={`ml-auto rounded-full bg-magenta px-2 py-0.5 text-[0.65rem] font-bold text-white ${colapsado ? 'lg:hidden' : ''}`}>
+                                                                <span className={`ml-auto rounded-full bg-secundario px-2 py-0.5 text-[0.65rem] font-bold text-texto ${colapsado ? 'lg:hidden' : ''}`}>
                                                                     {item.badge}
                                                                 </span>
                                                                 {colapsado && (
@@ -233,7 +233,7 @@ export default function Sidebar({ colapsado, onAlternar, movilAbierto, onCerrarM
 
                 <div className="mt-4 border-t border-border pt-4">
                     <div className="flex items-center gap-3 rounded-2xl border border-border bg-white/[0.03] p-3">
-                        <span className="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-gradient-to-br from-[#9365f2] to-[#e34ba6] text-sm font-black text-white">
+                        <span className="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-secundario text-sm font-black text-texto">
                             {iniciales(usuario?.nombre)}
                         </span>
                         <div className={`min-w-0 flex-1 ${colapsado ? 'lg:hidden' : ''}`}>

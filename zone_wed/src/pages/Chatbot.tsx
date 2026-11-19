@@ -100,7 +100,7 @@ export default function Chatbot() {
     return (
         <main className="workspace-content" data-page="chatbot">
             <header className="relative overflow-hidden rounded-[2rem] border border-border bg-gradient-to-br from-surface-2/80 via-surface/60 to-surface/20 p-6 sm:p-8">
-                <div aria-hidden="true" className="pointer-events-none absolute -top-24 -right-10 h-64 w-64 animate-aurora rounded-full bg-[#9365f2]/25 blur-3xl" />
+                <div aria-hidden="true" className="pointer-events-none absolute -top-24 -right-10 h-64 w-64 animate-aurora rounded-full bg-accent/25 blur-3xl" />
                 <div aria-hidden="true" className="pointer-events-none absolute -bottom-24 left-8 h-56 w-56 animate-aurora rounded-full bg-magenta/20 blur-3xl" />
                 <div className="relative">
                     <p className="workspace-eyebrow">ASISTENCIA</p>
@@ -117,15 +117,15 @@ export default function Chatbot() {
                 className="relative mt-6 overflow-hidden rounded-[2rem] border border-accent/30 p-6 sm:p-7"
                 style={{
                     background:
-                        'radial-gradient(ellipse at 90% 8%, rgba(240, 79, 166, 0.32), transparent 46%), radial-gradient(ellipse at 4% 100%, rgba(111, 75, 187, 0.42), transparent 50%), linear-gradient(120deg, rgba(111, 75, 187, 0.42), rgba(23, 19, 34, 0.96) 72%)',
+                        'radial-gradient(ellipse at 90% 8%, rgba(143, 188, 230, 0.32), transparent 46%), radial-gradient(ellipse at 4% 100%, rgba(63, 132, 197, 0.42), transparent 50%), linear-gradient(120deg, rgba(63, 132, 197, 0.42), rgba(0, 12, 21, 0.96) 72%)',
                 }}
             >
-                <div aria-hidden="true" className="pointer-events-none absolute -right-12 -top-24 h-60 w-60 animate-aurora rounded-full bg-[#e34ba6]/25 blur-3xl" />
+                <div aria-hidden="true" className="pointer-events-none absolute -right-12 -top-24 h-60 w-60 animate-aurora rounded-full bg-accent-soft/25 blur-3xl" />
                 <div className="relative flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between">
                     <div className="flex items-center gap-4">
-                        <span className="relative grid h-14 w-14 shrink-0 place-items-center rounded-2xl bg-gradient-to-br from-[#9365f2] to-[#e34ba6] text-white shadow-lg shadow-accent/30">
+                        <span className="relative grid h-14 w-14 shrink-0 place-items-center rounded-2xl bg-secundario text-texto shadow-lg shadow-secundario/30">
                             <Bot className="h-7 w-7" aria-hidden="true" />
-                            <span className="absolute -bottom-0.5 -right-0.5 h-4 w-4 animate-pulse rounded-full border-2 border-[#171322] bg-exito" aria-hidden="true" />
+                            <span className="absolute -bottom-0.5 -right-0.5 h-4 w-4 animate-pulse rounded-full border-2 border-[#000C15] bg-exito" aria-hidden="true" />
                         </span>
                         <div>
                             <p className="workspace-eyebrow flex items-center gap-2">
@@ -161,8 +161,8 @@ export default function Chatbot() {
                                 className={`flex gap-3 ${esUsuario ? 'flex-row-reverse' : ''}`}
                             >
                                 <span
-                                    className={`grid h-9 w-9 shrink-0 place-items-center rounded-xl text-white shadow-md shadow-black/30 ${
-                                        esUsuario ? 'bg-gradient-to-br from-[#9365f2] to-[#e34ba6]' : 'bg-gradient-to-br from-surface-3 to-surface-2'
+                                    className={`grid h-9 w-9 shrink-0 place-items-center rounded-xl text-texto shadow-md shadow-black/30 ${
+                                        esUsuario ? 'bg-primario text-texto' : 'bg-gradient-to-br from-surface-3 to-surface-2'
                                     }`}
                                     aria-hidden="true"
                                 >
@@ -175,14 +175,14 @@ export default function Chatbot() {
                                     </span>
                                     <div className={`relative rounded-2xl px-4 py-2.5 text-sm leading-6 ${
                                         esUsuario
-                                            ? 'rounded-br-md bg-gradient-to-r from-[#9365f2] to-[#e34ba6] text-white shadow-lg shadow-accent/20'
+                                            ? 'rounded-br-md bg-primario text-texto shadow-lg shadow-primario/20'
                                             : 'rounded-bl-md border border-border bg-surface/90 text-texto shadow-md shadow-black/20'
                                     }`}>
                                         {mensaje.texto}
                                         <span
                                             className={`absolute bottom-0 h-3 w-3 ${
                                                 esUsuario
-                                                    ? '-right-1 rounded-bl-full bg-[#e34ba6]'
+                                                    ? '-right-1 rounded-bl-full bg-primario'
                                                     : '-left-1 rounded-br-full border-b border-l border-border bg-surface/90'
                                             }`}
                                             aria-hidden="true"
@@ -195,7 +195,7 @@ export default function Chatbot() {
 
                     {escribiendo && (
                         <article data-mensaje className="flex gap-3">
-                            <span className="grid h-9 w-9 shrink-0 place-items-center rounded-xl bg-gradient-to-br from-surface-3 to-surface-2 text-white shadow-md shadow-black/30" aria-hidden="true">
+                            <span className="grid h-9 w-9 shrink-0 place-items-center rounded-xl bg-gradient-to-br from-surface-3 to-surface-2 text-texto shadow-md shadow-black/30" aria-hidden="true">
                                 <Bot className="h-4 w-4" />
                             </span>
                             <span className="flex items-center gap-1.5 rounded-2xl rounded-bl-md border border-border bg-surface/90 px-4 py-3 shadow-md shadow-black/20" aria-label="El asistente está escribiendo">
@@ -236,7 +236,7 @@ export default function Chatbot() {
                         />
                     </div>
                     <button
-                        className="inline-flex min-h-[44px] items-center gap-2 rounded-full bg-gradient-to-r from-[#9365f2] to-[#e34ba6] px-5 text-sm font-bold text-white shadow-lg shadow-accent/25 transition hover:brightness-110 active:scale-95 disabled:cursor-not-allowed disabled:opacity-60"
+                        className="inline-flex min-h-[44px] items-center gap-2 rounded-full bg-primario px-5 text-sm font-bold text-texto shadow-lg shadow-primario/25 transition hover:bg-texto hover:text-bg active:scale-95 disabled:cursor-not-allowed disabled:opacity-60"
                         type="submit"
                         disabled={!entrada.trim()}
                     >

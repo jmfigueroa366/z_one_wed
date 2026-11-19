@@ -18,16 +18,16 @@ const MENOS_MOVIMIENTO = () =>
 const ESPECIALIDADES = ['Grabación', 'Mezcla', 'Masterización', 'Producción musical'];
 const ACENTO_ESPECIALIDAD: Record<string, string> = {
     'Grabación': '#9ecbff',
-    'Mezcla': '#a477ff',
-    'Masterización': '#f04fa6',
+    'Mezcla': '#8FBCE6',
+    'Masterización': '#8FBCE6',
     'Producción musical': '#7be0b0',
 };
 
 const RETRATO = [
-    'radial-gradient(circle at 30% 18%, rgba(240, 79, 166, 0.34), transparent 55%), linear-gradient(150deg, #3a2a52, #171322 82%)',
-    'radial-gradient(circle at 72% 16%, rgba(79, 170, 210, 0.32), transparent 55%), linear-gradient(150deg, #25374a, #171322 82%)',
-    'radial-gradient(circle at 40% 20%, rgba(211, 166, 75, 0.3), transparent 55%), linear-gradient(150deg, #463629, #171322 82%)',
-    'radial-gradient(circle at 66% 18%, rgba(147, 101, 242, 0.36), transparent 55%), linear-gradient(150deg, #2e2547, #171322 82%)',
+    'radial-gradient(circle at 30% 18%, rgba(143, 188, 230, 0.34), transparent 55%), linear-gradient(150deg, #061F33, #000C15 82%)',
+    'radial-gradient(circle at 72% 16%, rgba(79, 170, 210, 0.32), transparent 55%), linear-gradient(150deg, #25374a, #000C15 82%)',
+    'radial-gradient(circle at 40% 20%, rgba(211, 166, 75, 0.3), transparent 55%), linear-gradient(150deg, #463629, #000C15 82%)',
+    'radial-gradient(circle at 66% 18%, rgba(63, 132, 197, 0.36), transparent 55%), linear-gradient(150deg, #061F33, #000C15 82%)',
 ];
 
 function iniciales(nombre: string | null | undefined) {
@@ -59,7 +59,7 @@ export default function Productores() {
         [productores, filtroEspecialidad]
     );
     const destacado = productoresFiltrados[0] ?? null;
-    const acentoDestacado = destacado ? (ACENTO_ESPECIALIDAD[destacado.especialidad] ?? '#a477ff') : '#a477ff';
+    const acentoDestacado = destacado ? (ACENTO_ESPECIALIDAD[destacado.especialidad] ?? '#8FBCE6') : '#8FBCE6';
 
     useEffect(() => {
         const grid = gridRef.current;
@@ -148,7 +148,7 @@ export default function Productores() {
                 className="group/hero relative mt-6 overflow-hidden rounded-[2rem] border border-[#9ecbff]/25 p-6 sm:p-8"
                 style={{
                     background:
-                        'radial-gradient(ellipse at 88% 8%, rgba(158, 203, 255, 0.26), transparent 48%), radial-gradient(ellipse at 6% 100%, rgba(111, 75, 187, 0.32), transparent 50%), linear-gradient(120deg, rgba(37, 55, 74, 0.5), rgba(23, 19, 34, 0.97) 72%)',
+                        'radial-gradient(ellipse at 88% 8%, rgba(158, 203, 255, 0.26), transparent 48%), radial-gradient(ellipse at 6% 100%, rgba(63, 132, 197, 0.32), transparent 50%), linear-gradient(120deg, rgba(37, 55, 74, 0.5), rgba(0, 12, 21, 0.97) 72%)',
                 }}
             >
                 <FondoHero acento="#9ecbff" />
@@ -180,7 +180,7 @@ export default function Productores() {
                     <div className="relative mt-6 flex flex-wrap gap-2">
                         {['Todas', ...especialidadesPresentes].map((especialidad) => {
                             const activo = filtroEspecialidad === especialidad;
-                            const acento = especialidad === 'Todas' ? '#a477ff' : (ACENTO_ESPECIALIDAD[especialidad] ?? '#a477ff');
+                            const acento = especialidad === 'Todas' ? '#8FBCE6' : (ACENTO_ESPECIALIDAD[especialidad] ?? '#8FBCE6');
                             return (
                                 <button
                                     key={especialidad}
@@ -191,7 +191,7 @@ export default function Productores() {
                                     style={
                                         activo
                                             ? { borderColor: acento, background: `${acento}33`, color: '#fff', boxShadow: `0 0 18px ${acento}44` }
-                                            : { borderColor: 'var(--color-border, #2d2a45)', background: 'rgba(255,255,255,0.04)', color: '#a69ebd' }
+                                            : { borderColor: 'var(--color-border, #1E2C33)', background: 'rgba(255,255,255,0.04)', color: '#8CA5A2' }
                                     }
                                 >
                                     {especialidad}
@@ -205,12 +205,12 @@ export default function Productores() {
             {destacado && (
                 <section
                     className="relative mt-5 overflow-hidden rounded-[2rem] border p-5 sm:p-6"
-                    style={{ borderColor: `${acentoDestacado}55`, background: 'linear-gradient(120deg, rgba(23,19,34,0.9), rgba(18,15,29,0.95))' }}
+                    style={{ borderColor: `${acentoDestacado}55`, background: 'linear-gradient(120deg, rgba(0,12,21,0.9), rgba(4,25,43,0.95))' }}
                     aria-label="Productor destacado"
                 >
                     <span aria-hidden="true" className="pointer-events-none absolute -left-16 top-1/2 h-56 w-56 -translate-y-1/2 rounded-full blur-3xl" style={{ background: `${acentoDestacado}33` }} />
                     <div className="relative flex flex-col items-center gap-5 sm:flex-row">
-                        <span className="grid h-24 w-24 shrink-0 place-items-center overflow-hidden rounded-2xl text-4xl font-black text-white sm:h-28 sm:w-28" style={{ background: `linear-gradient(135deg, ${acentoDestacado}, #7b3fd6)` }}>
+                        <span className="grid h-24 w-24 shrink-0 place-items-center overflow-hidden rounded-2xl bg-secundario text-4xl font-black text-texto sm:h-28 sm:w-28">
                             {destacado.imagen ? (
                                 <img src={destacado.imagen} alt="" className="h-full w-full object-cover" />
                             ) : (
@@ -224,7 +224,7 @@ export default function Productores() {
                             <h3 className="mt-1 text-2xl font-black tracking-tight text-texto-soft">{destacado.nombre}</h3>
                             <p className="mt-1 text-sm text-sutil">{destacado.especialidad} · {destacado.usuario_id ? 'Cuenta vinculada' : 'Perfil del estudio'}</p>
                         </div>
-                        <Ecualizador desde="#9365f2" hasta="#9ecbff" />
+                        <Ecualizador desde="#3F84C5" hasta="#9ecbff" />
                     </div>
                 </section>
             )}
@@ -245,13 +245,13 @@ export default function Productores() {
                 {productoresFiltrados.length > 0 ? (
                     <div className="mt-5 grid gap-4 sm:grid-cols-2 lg:grid-cols-3" ref={gridRef}>
                         {productoresFiltrados.map((productor, index) => {
-                            const acento = ACENTO_ESPECIALIDAD[productor.especialidad] ?? '#a477ff';
+                            const acento = ACENTO_ESPECIALIDAD[productor.especialidad] ?? '#8FBCE6';
                             const esDestacado = productor === destacado;
                             return (
                                 <article
                                     key={productor.id}
-                                    className="tarjeta-brillo group relative overflow-hidden rounded-[1.75rem] border bg-[#120f1d]/80 transition duration-300 hover:-translate-y-1.5 hover:shadow-2xl hover:shadow-black/50"
-                                    style={{ borderColor: esDestacado ? acento : 'var(--color-border, #2d2a45)' }}
+                                    className="tarjeta-brillo group relative overflow-hidden rounded-[1.75rem] border bg-[#000C15]/80 transition duration-300 hover:-translate-y-1.5 hover:shadow-2xl hover:shadow-black/50"
+                                    style={{ borderColor: esDestacado ? acento : 'var(--color-border, #1E2C33)' }}
                                 >
                                     <span
                                         aria-hidden="true"
@@ -272,13 +272,13 @@ export default function Productores() {
                                                 {iniciales(productor.nombre)}
                                             </span>
                                         )}
-                                        <div aria-hidden="true" className="absolute inset-0 bg-gradient-to-t from-[#0b0812] via-[#0b0812]/25 to-transparent" />
+                                        <div aria-hidden="true" className="absolute inset-0 bg-gradient-to-t from-[#000C15] via-[#000C15]/25 to-transparent" />
                                         <div className="absolute inset-x-0 bottom-0 p-4">
                                             <p className="text-[0.62rem] font-extrabold uppercase tracking-[0.14em]" style={{ color: acento }}>Productor</p>
                                             <h3 className="mt-0.5 text-lg font-bold leading-tight tracking-tight text-texto-soft">{productor.nombre}</h3>
                                             <span
                                                 className="mt-1 inline-block rounded-full border px-2.5 py-0.5 text-xs font-semibold"
-                                                style={{ borderColor: `${acento}59`, background: `${acento}1f`, color: '#f2effb' }}
+                                                style={{ borderColor: `${acento}59`, background: `${acento}1f`, color: '#D6F3EB' }}
                                             >
                                                 {productor.especialidad}
                                             </span>
@@ -307,7 +307,7 @@ export default function Productores() {
 
             <section className="mt-6 rounded-[2rem] border border-border bg-surface/60 p-6 backdrop-blur sm:p-7" aria-labelledby="producer-registration-title">
                 <div className="mb-5 flex items-center gap-3">
-                    <span className="grid h-11 w-11 place-items-center rounded-2xl bg-gradient-to-br from-[#9365f2] to-[#9ecbff] text-white" aria-hidden="true">
+                    <span className="grid h-11 w-11 place-items-center rounded-2xl bg-secundario text-texto" aria-hidden="true">
                         <SlidersHorizontal className="h-5 w-5" />
                     </span>
                     <div>

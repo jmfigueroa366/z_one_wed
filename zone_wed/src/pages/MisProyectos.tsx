@@ -28,7 +28,7 @@ import '../styles/tailwind.css';
 const MENOS_MOVIMIENTO = () =>
     typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-const ACENTOS_CARPETA = ['#a477ff', '#f04fa6', '#9ecbff', '#7be0b0', '#ffd166'];
+const ACENTOS_CARPETA = ['#8FBCE6', '#8FBCE6', '#9ecbff', '#7be0b0', '#ffd166'];
 
 function duracionTexto(cancion: Cancion) {
     if (!cancion.duracion) return 'Sin duración';
@@ -255,7 +255,7 @@ export default function MisProyectos() {
     return (
         <main className="workspace-content" data-page="mis-proyectos">
             <header className="page-heading relative border-l-4 border-accent pl-4">
-                <div aria-hidden="true" className="pointer-events-none absolute -top-20 right-20 h-52 w-52 animate-aurora rounded-full bg-[#9365f2]/18 blur-3xl" />
+                <div aria-hidden="true" className="pointer-events-none absolute -top-20 right-20 h-52 w-52 animate-aurora rounded-full bg-accent/18 blur-3xl" />
                 <p className="workspace-eyebrow">{esAdmin ? 'GESTIÓN DE PROYECTOS' : 'TU ESPACIO DE TRABAJO'}</p>
                 <h1>{esAdmin ? 'Proyectos' : 'Mis proyectos'}</h1>
                 <p>
@@ -274,11 +274,11 @@ export default function MisProyectos() {
                 className="group/hero relative mt-6 overflow-hidden rounded-[2rem] border border-accent/25 p-6 sm:p-7"
                 style={{
                     background:
-                        'radial-gradient(ellipse at 90% 8%, rgba(227, 75, 166, 0.28), transparent 46%), radial-gradient(ellipse at 4% 100%, rgba(111, 75, 187, 0.34), transparent 50%), linear-gradient(120deg, rgba(111, 75, 187, 0.34), rgba(23, 19, 34, 0.97) 72%)',
+                        'radial-gradient(ellipse at 90% 8%, rgba(143, 188, 230, 0.28), transparent 46%), radial-gradient(ellipse at 4% 100%, rgba(63, 132, 197, 0.34), transparent 50%), linear-gradient(120deg, rgba(63, 132, 197, 0.34), rgba(0, 12, 21, 0.97) 72%)',
                 }}
             >
-                <FondoHero acento="#e34ba6" />
-                <div aria-hidden="true" className="pointer-events-none absolute -right-12 -top-24 h-60 w-60 animate-aurora rounded-full bg-[#e34ba6]/25 blur-3xl" />
+                <FondoHero acento="#8FBCE6" />
+                <div aria-hidden="true" className="pointer-events-none absolute -right-12 -top-24 h-60 w-60 animate-aurora rounded-full bg-accent-soft/25 blur-3xl" />
                 <Music aria-hidden="true" className="pointer-events-none absolute right-8 top-1/2 hidden h-40 w-40 -translate-y-1/2 text-white/[0.05] lg:block" />
                 <div className="relative flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
                     <div className="max-w-xl">
@@ -368,7 +368,7 @@ export default function MisProyectos() {
                                         <div
                                             className={`group flex items-center justify-between gap-2 rounded-2xl border px-3 py-3 text-left transition ${
                                                 activa
-                                                    ? 'bg-gradient-to-r from-[#5b418f]/45 to-transparent'
+                                                    ? 'bg-secundario/20'
                                                     : 'border-border bg-white/[0.02] hover:border-accent/50'
                                             }`}
                                             style={activa ? { borderColor: `${acento}99` } : undefined}
@@ -386,7 +386,7 @@ export default function MisProyectos() {
                                                     className="grid h-9 w-9 shrink-0 place-items-center rounded-xl transition"
                                                     style={
                                                         activa
-                                                            ? { background: `linear-gradient(135deg, ${acento}, #e34ba6)`, color: '#fff', boxShadow: `0 0 16px ${acento}55` }
+                                                            ? { background: `linear-gradient(135deg, ${acento}, #8FBCE6)`, color: '#fff', boxShadow: `0 0 16px ${acento}55` }
                                                             : { background: 'rgba(255,255,255,0.05)', color: acento }
                                                     }
                                                     aria-hidden="true"
@@ -430,7 +430,7 @@ export default function MisProyectos() {
                         <>
                             <div className="mb-6 flex flex-wrap items-start justify-between gap-4">
                                 <div className="flex items-center gap-4">
-                                    <span className="grid h-14 w-14 shrink-0 place-items-center rounded-2xl bg-gradient-to-br from-[#9365f2] to-[#e34ba6] text-white" aria-hidden="true">
+                                    <span className="grid h-14 w-14 shrink-0 place-items-center rounded-2xl bg-secundario text-texto" aria-hidden="true">
                                         <Music className="h-6 w-6" />
                                     </span>
                                     <div>
@@ -470,7 +470,7 @@ export default function MisProyectos() {
                                 <label className="flex items-end gap-2 pb-2 text-xs text-sutil">
                                     <input
                                         type="checkbox"
-                                        className="h-4 w-4 accent-[#9365f2]"
+                                        className="h-4 w-4 accent-[var(--color-accent)]"
                                         checked={requiereEnsayo}
                                         onChange={(evento) => setRequiereEnsayo(evento.target.checked)}
                                     />
@@ -545,7 +545,7 @@ export default function MisProyectos() {
                         </>
                     ) : (
                         <div className="flex h-full min-h-48 flex-col items-center justify-center rounded-2xl border border-dashed border-border bg-surface/40 px-6 py-12 text-center">
-                            <span className="grid h-14 w-14 place-items-center rounded-2xl bg-gradient-to-br from-[#5b418f]/60 to-surface-2 text-accent-soft" aria-hidden="true"><FolderOpen className="h-6 w-6" /></span>
+                            <span className="grid h-14 w-14 place-items-center rounded-2xl bg-secundario text-texto" aria-hidden="true"><FolderOpen className="h-6 w-6" /></span>
                             <p className="mt-3 font-semibold text-texto-soft">Selecciona una carpeta</p>
                             <p className="text-sm text-sutil">Elige una carpeta para ver y nombrar sus canciones.</p>
                         </div>
