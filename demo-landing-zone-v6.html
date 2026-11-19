@@ -1,0 +1,281 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Z-One · Demo landing v3</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&family=DM+Sans:wght@400;500&family=JetBrains+Mono:wght@400&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#000C15;--mint:#D6F3EB;--sky:#3F84C5;--blue:#0B29DF;--violet:#500BA9;
+--head:'Bricolage Grotesque','Segoe UI',system-ui,sans-serif;--body:'DM Sans','Segoe UI',system-ui,sans-serif;--mono:'JetBrains Mono',Consolas,monospace}
+*{box-sizing:border-box;margin:0}
+html{scroll-behavior:smooth}
+body{background:var(--bg);color:var(--mint);font-family:var(--body);font-size:18px;line-height:1.65;overflow-x:hidden;-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility;font-kerning:normal}
+p{text-wrap:pretty}
+body::after{content:"";position:fixed;inset:0;pointer-events:none;opacity:.06;z-index:50;
+background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence baseFrequency='.9' numOctaves='2'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E")}
+nav{position:fixed;top:0;left:0;right:0;z-index:20;display:flex;justify-content:space-between;align-items:center;padding:20px clamp(20px,5vw,64px)}
+.logo{font-family:var(--head);font-weight:700;font-size:22px;letter-spacing:-.02em}
+.logo b{color:var(--sky)}
+.btn{display:inline-block;text-decoration:none;color:var(--mint);border:1px solid rgba(214,243,235,.35);padding:10px 20px;border-radius:999px;transition:.25s;font-size:15px}
+.btn:hover{background:var(--mint);color:var(--bg)}
+.btn.solid{background:var(--blue);border-color:var(--blue)}
+.btn.solid:hover{background:var(--mint);border-color:var(--mint);color:var(--bg)}
+
+/* ---------- DISCO DE VINILO ---------- */
+.vinyl{position:absolute;width:var(--d);height:var(--d);border-radius:50%;pointer-events:none;
+box-shadow:0 0 140px rgba(11,41,223,.35),0 0 0 1px rgba(214,243,235,.1)}
+.vinyl .disc{position:absolute;inset:0;border-radius:50%;animation:spin 16s linear infinite;
+background:
+ conic-gradient(from 0deg,transparent 0 6%,rgba(63,132,197,.22) 8%,transparent 11% 46%,rgba(80,11,169,.5) 49%,transparent 53% 78%,rgba(63,132,197,.14) 80%,transparent 83% 100%),
+ repeating-radial-gradient(circle at center,#010f1a 0 2px,#04192b 2px 3px),
+ #010f1a}
+/* anillos entre pistas */
+.vinyl .disc::before{content:"";position:absolute;inset:7%;border-radius:50%;border:1px solid rgba(214,243,235,.07);box-shadow:0 0 0 calc(var(--d)*.05) rgba(0,0,0,.18),inset 0 0 0 calc(var(--d)*.06) rgba(214,243,235,.03)}
+/* sello central */
+.vinyl .label{position:absolute;inset:33%;border-radius:50%;display:grid;place-items:center;
+background:conic-gradient(from 20deg,var(--blue),var(--violet),var(--sky),var(--blue));
+box-shadow:0 0 0 calc(var(--d)*.012) rgba(0,0,0,.35)}
+.vinyl .label span{font-family:var(--head);font-weight:800;font-size:calc(var(--d)*.045);letter-spacing:-.03em;color:var(--mint);transform:translateY(-70%)}
+.vinyl .label small{position:absolute;bottom:20%;font-family:var(--mono);font-size:calc(var(--d)*.016);letter-spacing:.2em;color:rgba(214,243,235,.75)}
+.vinyl .label::after{content:"";position:absolute;width:12%;aspect-ratio:1;border-radius:50%;background:var(--bg);box-shadow:inset 0 0 0 2px rgba(214,243,235,.25)}
+/* brillo de luz: queda FIJO mientras el disco gira */
+.vinyl::after{content:"";position:absolute;inset:0;border-radius:50%;mix-blend-mode:screen;opacity:.28;
+background:conic-gradient(from 35deg,transparent 0 10%,rgba(214,243,235,.55) 14%,transparent 19% 60%,rgba(214,243,235,.4) 64%,transparent 69% 100%)}
+@keyframes spin{to{transform:rotate(360deg)}}
+/* texto circular en el borde del disco (gira con él) */
+.vinyl .rim{position:absolute;inset:0;width:100%;height:100%;pointer-events:none}
+.vinyl .rim text{font-family:var(--mono);font-size:6px;fill:rgba(214,243,235,.42)}
+.hero .vinyl .rim text{fill:rgba(214,243,235,.16)}
+/* brazo del tocadiscos: baja, "reproduce" y se levanta en ciclo */
+.vinyl .arm{position:absolute;inset:0;width:100%;height:100%;overflow:visible;z-index:2;pointer-events:none;filter:drop-shadow(0 8px 12px rgba(0,0,0,.65))}
+.vinyl .arm .brazo{transform-box:view-box;transform-origin:96px -4px;animation:aguja 14s ease-in-out infinite}
+@keyframes aguja{0%{transform:rotate(24deg)}9%{transform:rotate(0deg)}87%{transform:rotate(0deg)}96%,100%{transform:rotate(24deg)}}
+/* fundido del disco hacia el pie de página */
+.final::after{content:"";position:absolute;left:0;right:0;bottom:0;height:90px;background:linear-gradient(transparent,var(--bg));pointer-events:none;z-index:1}
+
+
+/* ---------- HERO ---------- */
+.hero{min-height:100svh;display:flex;flex-direction:column;justify-content:center;padding:120px clamp(20px,5vw,64px) 230px;position:relative;overflow:hidden;
+background:radial-gradient(520px circle at var(--mx,70%) var(--my,30%),rgba(63,132,197,.18),transparent 70%),radial-gradient(60% 50% at 85% 15%,rgba(80,11,169,.45),transparent 70%),radial-gradient(50% 40% at 8% 95%,rgba(11,41,223,.3),transparent 70%)}
+.hero .vinyl{--d:min(100vw,150svh);right:calc(var(--d)/-2);top:50%;transform:translateY(-50%);z-index:0}
+.hero>.tag,.hero>h1,.hero>.lead,.hero>.cta{position:relative;z-index:2}
+.tag{font-family:var(--mono);font-size:12px;letter-spacing:.1em;text-transform:uppercase;color:var(--sky);margin-bottom:28px}
+h1{font-family:var(--head);font-weight:700;font-size:clamp(2.8rem,9vw,7.5rem);line-height:1;letter-spacing:-.03em;max-width:15ch;text-wrap:balance}
+.word{display:inline-block;white-space:nowrap}
+h1 .ch{display:inline-block;opacity:0;transform:translateY(.7em) rotate(4deg);animation:up .7s cubic-bezier(.2,.8,.2,1) forwards}
+@keyframes up{to{opacity:1;transform:none}}
+h1 em{font-style:normal;color:var(--sky);display:inline-block;border-bottom:.035em solid var(--sky);transition:opacity .25s;white-space:nowrap}
+.lead{max-width:44ch;margin-top:32px;font-size:1.15rem;color:rgba(214,243,235,.82)}
+.cta{display:flex;gap:14px;margin-top:36px;flex-wrap:wrap}
+#c{position:absolute;left:0;bottom:0;width:100%;height:200px;display:block;z-index:1}
+.facts{display:flex;gap:clamp(20px,5vw,64px);font-family:var(--mono);font-size:13px;color:rgba(214,243,235,.6);position:absolute;left:clamp(20px,5vw,64px);bottom:212px;flex-wrap:wrap;z-index:2}
+.facts b{color:var(--mint);font-weight:400}
+.marquee{border-block:1px solid rgba(214,243,235,.15);overflow:hidden;padding:22px 0;white-space:nowrap}
+.marquee div{display:inline-block;animation:mq 28s linear infinite;font-family:var(--head);font-weight:700;font-size:clamp(1.5rem,3.6vw,2.6rem);letter-spacing:-.015em}
+.marquee i{font-style:normal;color:var(--violet);margin:0 .6em}
+@keyframes mq{to{transform:translateX(-50%)}}
+section{padding:clamp(72px,12vw,150px) clamp(20px,5vw,64px)}
+h2{font-family:var(--head);font-weight:700;font-size:clamp(2.1rem,5.2vw,4.4rem);line-height:1.05;letter-spacing:-.025em;max-width:18ch;text-wrap:balance}
+.steps{margin-top:64px;border-top:1px solid rgba(214,243,235,.2)}
+.step{position:relative;display:grid;grid-template-columns:90px 1fr 1.2fr;gap:20px;align-items:center;padding:28px 0;border-bottom:1px solid rgba(214,243,235,.2);transition:opacity .5s,background .4s;opacity:.38}
+.step::before,.step::after{content:'';position:absolute;left:21px;top:50%;width:2px;height:100%}
+.step::before{background:rgba(214,243,235,.14)}
+.step::after{background:linear-gradient(var(--blue),var(--sky));transform:scaleY(0);transform-origin:top;transition:transform .9s ease}
+.step:last-child::before,.step:last-child::after{display:none}
+.step.done::after{transform:scaleY(1)}
+.step.done{opacity:.8}
+.step.on{opacity:1;background:linear-gradient(90deg,rgba(11,41,223,.22),transparent 70%)}
+.step span{position:relative;z-index:1;background:var(--bg);font-family:var(--mono);font-size:14px;width:44px;height:44px;border-radius:50%;display:grid;place-items:center;border:1px solid var(--sky);color:var(--sky);transition:.5s}
+.step.done span{background:var(--blue);border-color:var(--blue);color:var(--mint)}
+.step.on span{background:var(--blue);border-color:var(--blue);color:var(--mint);animation:pulso 1.6s ease-out infinite}
+@keyframes pulso{0%{box-shadow:0 0 0 0 rgba(63,132,197,.7)}100%{box-shadow:0 0 0 16px rgba(63,132,197,0)}}
+.step h3{font-family:var(--head);font-weight:700;font-size:clamp(1.3rem,2.6vw,2rem);letter-spacing:-.015em;line-height:1.15}
+.step p{color:rgba(214,243,235,.65)}
+.mix{display:grid;grid-template-columns:1.4fr 1fr;gap:clamp(20px,4vw,56px);margin-top:56px;align-items:stretch}
+.screen{border:1px solid rgba(214,243,235,.18);border-radius:24px;overflow:hidden;background:linear-gradient(180deg,rgba(80,11,169,.18),rgba(0,12,21,.6));min-height:340px;position:relative}
+.screen canvas{width:100%;height:100%;display:block;position:absolute;inset:0}
+.screen small{position:absolute;left:18px;top:14px;font-family:var(--mono);font-size:12px;color:var(--sky);letter-spacing:.12em;z-index:1}
+.faders{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;border:1px solid rgba(214,243,235,.18);border-radius:24px;padding:22px 14px 16px}
+.f{display:flex;flex-direction:column;align-items:center;gap:12px}
+.f label{font-family:var(--mono);font-size:11px;letter-spacing:.06em;text-align:center;color:rgba(214,243,235,.75);min-height:2.6em}
+.f output{font-family:var(--mono);font-size:12px;color:var(--sky)}
+.f input{-webkit-appearance:none;appearance:none;writing-mode:vertical-lr;direction:rtl;width:34px;height:220px;background:transparent;cursor:grab}
+.f input::-webkit-slider-runnable-track{width:6px;background:linear-gradient(var(--blue),var(--violet));border-radius:6px}
+.f input::-moz-range-track{width:6px;background:linear-gradient(var(--blue),var(--violet));border-radius:6px}
+.f input::-webkit-slider-thumb{-webkit-appearance:none;width:34px;height:18px;border-radius:5px;background:var(--mint);border:2px solid var(--bg);margin-left:-14px;box-shadow:0 2px 10px rgba(0,0,0,.5)}
+.f input::-moz-range-thumb{width:34px;height:18px;border-radius:5px;background:var(--mint);border:2px solid var(--bg)}
+.f input:focus-visible{outline:2px solid var(--sky);outline-offset:4px;border-radius:6px}
+.hint{margin-top:18px;font-family:var(--mono);font-size:12px;color:rgba(214,243,235,.5)}
+.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:16px;margin-top:56px}
+.card{border:1px solid rgba(214,243,235,.18);border-radius:20px;padding:28px;min-height:230px;display:flex;flex-direction:column;justify-content:space-between;transition:.3s}
+.card:hover{background:var(--violet);border-color:var(--violet);transform:translateY(-6px)}
+.card small{font-family:var(--mono);color:var(--sky)}
+.card:hover small{color:var(--mint)}
+.card h3{font-family:var(--head);font-weight:700;font-size:1.8rem;letter-spacing:-.02em;line-height:1.1}
+
+/* ---------- CIERRE (oscuro, con disco subiendo) ---------- */
+.final{position:relative;overflow:hidden;min-height:115svh;display:flex;flex-direction:column;align-items:center;justify-content:flex-start;text-align:center;padding-top:clamp(70px,12vh,130px);
+background:radial-gradient(70% 70% at 50% 100%,rgba(80,11,169,.6),transparent 70%),radial-gradient(40% 40% at 50% 0%,rgba(11,41,223,.2),transparent 70%),var(--bg)}
+.final .vinyl{--d:min(125vw,132svh);left:50%;bottom:calc(var(--d)*-.42);transform:translateX(-50%);z-index:0}
+.final>*:not(.vinyl){position:relative;z-index:2}
+.final h2{margin:0 auto 32px;max-width:12ch;font-size:clamp(2.8rem,8vw,7rem)}
+.final h2 span{color:var(--sky)}
+footer{padding:28px clamp(20px,5vw,64px);font-family:var(--mono);font-size:12px;color:rgba(214,243,235,.5);display:flex;justify-content:space-between}
+.rv{opacity:0;transform:translateY(24px);transition:.8s}
+.rv.on{opacity:1;transform:none}
+#cur{position:fixed;left:0;top:0;width:14px;height:14px;margin:-7px 0 0 -7px;border-radius:50%;background:var(--mint);mix-blend-mode:difference;pointer-events:none;z-index:100;transition:width .25s,height .25s,margin .25s;display:none}
+#cur.big{width:64px;height:64px;margin:-32px 0 0 -32px}
+@media(hover:hover) and (pointer:fine){#cur{display:block}}
+@media(max-width:800px){.mix{grid-template-columns:1fr}.step{grid-template-columns:56px 1fr}.step p{grid-column:2}.facts{bottom:215px}.hero .vinyl{opacity:.55}}
+@media(prefers-reduced-motion:reduce){.vinyl .arm .brazo{animation:none;transform:rotate(0deg)}.step.on span{animation:none}.step::after{transition:none}.marquee div{animation:none}.rv{opacity:1;transform:none;transition:none}h1 .ch{animation:none;opacity:1;transform:none}.step{opacity:1}.vinyl .disc{animation:none}}
+</style>
+</head>
+<body>
+<div id="cur" aria-hidden="true"></div>
+<nav><div class="logo">Z<b>·</b>ONE</div><a class="btn" href="#">Iniciar sesión</a></nav>
+
+<header class="hero" id="hero">
+  <div class="vinyl" aria-hidden="true"><div class="disc"><div class="label"><span>Z·ONE</span><small>SIDE A</small></div><svg class="rim" viewBox="0 0 200 200" aria-hidden="true"><defs><path id="rimH" d="M20,100 a80,80 0 1,1 160,0 a80,80 0 1,1 -160,0"/></defs><text textLength="500" lengthAdjust="spacing"><textPath href="#rimH" textLength="500" lengthAdjust="spacing">TU PRÓXIMO SONIDO ✦ EMPIEZA AQUÍ ✦ TU PRÓXIMO SONIDO ✦ EMPIEZA AQUÍ ✦ TU PRÓXIMO SONIDO ✦ EMPIEZA AQUÍ ✦ </textPath></text></svg></div></div>
+  <p class="tag">Estudio de grabación · Colombia</p>
+  <h1 aria-label="Tu próximo sonido empieza aquí.">
+    <span class="sp" aria-hidden="true">Tu próximo</span> <em id="w" aria-hidden="true">sonido</em> <span class="sp" aria-hidden="true">empieza aquí.</span>
+  </h1>
+  <p class="lead">Pide tu sesión, el equipo la aprueba y tú solo llegas a grabar.</p>
+  <div class="cta"><a class="btn solid" href="#">Crear cuenta</a><a class="btn" href="#proceso">Ver cómo funciona</a></div>
+  <div class="facts"><span><b>03</b> salas</span><span><b>04</b> servicios</span><span><b>Lun–Dom</b> horario</span></div>
+  <canvas id="c" aria-hidden="true"></canvas>
+</header>
+
+<div class="marquee" aria-hidden="true"><div>Grabación<i>✦</i>Producción<i>✦</i>Mezcla<i>✦</i>Masterización<i>✦</i>Grabación<i>✦</i>Producción<i>✦</i>Mezcla<i>✦</i>Masterización<i>✦</i></div></div>
+
+<section id="proceso">
+  <p class="tag rv">Cómo funciona</p>
+  <h2 class="rv">De la idea a la reserva en cinco pasos.</h2>
+  <div class="steps">
+    <div class="step"><span>01</span><h3>El cliente pide</h3><p>Describe su proyecto y elige el servicio.</p></div>
+    <div class="step"><span>02</span><h3>El admin aprueba</h3><p>Revisa la solicitud antes de que avance.</p></div>
+    <div class="step"><span>03</span><h3>El equipo acepta</h3><p>Los colaboradores confirman su participación.</p></div>
+    <div class="step"><span>04</span><h3>Se paga</h3><p>El cliente asegura la sesión con su anticipo.</p></div>
+    <div class="step"><span>05</span><h3>Se graba</h3><p>Reserva confirmada y a trabajar.</p></div>
+  </div>
+</section>
+
+<section id="mezcla">
+  <p class="tag rv">Juega con el sonido</p>
+  <h2 class="rv">Cuatro servicios. Una sola mezcla.</h2>
+  <div class="mix rv">
+    <div class="screen"><small>SEÑAL · EN VIVO</small><canvas id="m" aria-hidden="true"></canvas></div>
+    <div class="faders" role="group" aria-label="Mezcladora de ejemplo">
+      <div class="f"><label for="f1">GRABA<br>CIÓN</label><input id="f1" type="range" min="0" max="100" value="70"><output id="o1">70</output></div>
+      <div class="f"><label for="f2">PRODUC<br>CIÓN</label><input id="f2" type="range" min="0" max="100" value="55"><output id="o2">55</output></div>
+      <div class="f"><label for="f3">MEZCLA</label><input id="f3" type="range" min="0" max="100" value="40"><output id="o3">40</output></div>
+      <div class="f"><label for="f4">MASTER<br>IZACIÓN</label><input id="f4" type="range" min="0" max="100" value="60"><output id="o4">60</output></div>
+    </div>
+  </div>
+  <p class="hint rv">Es una demostración visual: mueve los faders y mira cómo cambia la onda.</p>
+</section>
+
+<section>
+  <p class="tag rv">Servicios</p>
+  <h2 class="rv">Lo que pasa dentro del estudio.</h2>
+  <div class="cards">
+    <div class="card rv"><small>01</small><h3>Grabación</h3></div>
+    <div class="card rv"><small>02</small><h3>Producción musical</h3></div>
+    <div class="card rv"><small>03</small><h3>Mezcla</h3></div>
+    <div class="card rv"><small>04</small><h3>Masterización</h3></div>
+  </div>
+</section>
+
+<section class="final">
+  <div class="vinyl" aria-hidden="true"><div class="disc"><div class="label"><span>Z·ONE</span><small>SIDE B</small></div><svg class="rim" viewBox="0 0 200 200" aria-hidden="true"><defs><path id="rimF" d="M20,100 a80,80 0 1,1 160,0 a80,80 0 1,1 -160,0"/></defs><text textLength="500" lengthAdjust="spacing"><textPath href="#rimF" textLength="500" lengthAdjust="spacing">HAGAMOS RUIDO ✦ Z·ONE ✦ ESTUDIO DE GRABACIÓN ✦ HAGAMOS RUIDO ✦ Z·ONE ✦ ESTUDIO DE GRABACIÓN ✦ </textPath></text></svg></div><svg class="arm" viewBox="0 0 100 100" aria-hidden="true"><g class="brazo"><line x1="99.5" y1="-7.5" x2="64" y2="28" stroke="rgba(214,243,235,.8)" stroke-width=".45" stroke-linecap="round"/><line x1="64" y1="28" x2="61.8" y2="30.2" stroke="#D6F3EB" stroke-width="1.1" stroke-linecap="round"/><line x1="96" y1="-4" x2="99.6" y2="-7.6" stroke="#D6F3EB" stroke-width="1.2" stroke-linecap="round"/><circle cx="96" cy="-4" r="2.4" fill="#04192b" stroke="rgba(214,243,235,.6)" stroke-width=".3"/><circle cx="96" cy="-4" r=".9" fill="#3F84C5"/></g></svg></div>
+  <p class="tag rv">¿Listo para grabar?</p>
+  <h2 class="rv">Hagamos <span>ruido.</span></h2>
+  <a class="btn solid rv" href="#">Crear cuenta</a>
+</section>
+<footer><span>Z-One · Estudio</span><span>Demo de diseño v6</span></footer>
+
+<script>
+const reduce=matchMedia('(prefers-reduced-motion:reduce)').matches;
+const $=s=>document.querySelector(s);
+
+/* titular: letra por letra, pero cada PALABRA es un bloque que no se parte */
+let n=0;
+document.querySelectorAll('h1 .sp').forEach(sp=>{
+  const palabras=sp.textContent.split(' ');sp.textContent='';
+  palabras.forEach((p,pi)=>{
+    const wd=document.createElement('span');wd.className='word';
+    [...p].forEach(c=>{const s=document.createElement('span');s.className='ch';s.textContent=c;s.style.animationDelay=(n++*35)+'ms';wd.appendChild(s)});
+    sp.appendChild(wd);
+    if(pi<palabras.length-1)sp.appendChild(document.createTextNode(' '));
+  });
+});
+const w=$('#w');w.style.opacity=0;
+setTimeout(()=>{w.style.opacity=1},n*35+100);
+const ws=['sonido','beat','disco','sencillo'];let wi=0;
+if(!reduce)setInterval(()=>{wi=(wi+1)%ws.length;w.style.opacity=0;setTimeout(()=>{w.textContent=ws[wi];w.style.opacity=1},250)},2600);
+
+/* luz + cursor propio */
+const hero=$('#hero'),cur=$('#cur');
+hero.addEventListener('pointermove',e=>{if(e.pointerType!=='mouse')return;const r=hero.getBoundingClientRect();hero.style.setProperty('--mx',(e.clientX-r.left)+'px');hero.style.setProperty('--my',(e.clientY-r.top)+'px')});
+addEventListener('pointermove',e=>{if(e.pointerType!=='mouse')return;cur.style.transform=`translate(${e.clientX}px,${e.clientY}px)`;
+  cur.classList.toggle('big',!!e.target.closest('a,button,.card,input'))});
+
+/* aparición + pasos */
+const io=new IntersectionObserver(e=>e.forEach(x=>{if(x.isIntersecting){x.target.classList.add('on');io.unobserve(x.target)}}),{threshold:.15});
+document.querySelectorAll('.rv').forEach(el=>io.observe(el));
+/* línea de tiempo en ciclo: avanza paso a paso, llena todo, se reinicia y vuelve a empezar */
+const steps=[...document.querySelectorAll('.step')];let paso=-1,timer=null;
+function setStep(i){steps.forEach((el,k)=>{el.classList.toggle('done',k<i);el.classList.toggle('on',k===i)})}
+function tick(){paso++;if(paso>steps.length)paso=-1;setStep(paso)}
+if(reduce){setStep(steps.length)}else{
+  const box=document.querySelector('.steps');
+  new IntersectionObserver(e=>{
+    if(e[0].isIntersecting){if(!timer){tick();timer=setInterval(tick,1900)}}
+    else{clearInterval(timer);timer=null}
+  },{threshold:.3}).observe(box);
+}
+
+/* canvas */
+function setup(cv){const ctx=cv.getContext('2d');const o={cv,ctx,W:0,H:0,g:null};
+  const f=()=>{const d=Math.min(devicePixelRatio||1,2);o.W=cv.clientWidth;o.H=cv.clientHeight;cv.width=o.W*d;cv.height=o.H*d;ctx.setTransform(d,0,0,d,0,0);
+    o.g=ctx.createLinearGradient(0,0,o.W,0);o.g.addColorStop(0,'#500BA9');o.g.addColorStop(.55,'#0B29DF');o.g.addColorStop(1,'#3F84C5')};
+  f();addEventListener('resize',f);o.vis=true;new IntersectionObserver(e=>o.vis=e[0].isIntersecting).observe(cv);return o}
+
+const A=setup($('#c'));let mx=-999;
+hero.addEventListener('pointermove',e=>{if(e.pointerType==='mouse')mx=e.clientX});
+hero.addEventListener('pointerleave',()=>mx=-999);
+function drawHero(t){const{ctx,W,H,g}=A;ctx.clearRect(0,0,W,H);ctx.fillStyle=g;
+  const n=Math.max(40,Math.floor(W/16)),gap=W/n,cy=H*.6;
+  for(let k=0;k<n;k++){const x=k*gap+gap/2;
+    let a=.35+.25*Math.sin(t/700+k*.35)+.2*Math.sin(t/330+k*.11);
+    const d=Math.abs(x-mx);if(d<160)a+=(1-d/160)*.7;
+    const h=Math.max(4,a*H*.7);ctx.beginPath();ctx.roundRect(x-gap*.3,cy-h*.6,gap*.6,h,gap*.3);ctx.fill()}}
+
+const M=setup($('#m'));
+const fd=[1,2,3,4].map(i=>{const el=$('#f'+i),out=$('#o'+i);el.addEventListener('input',()=>out.textContent=el.value);return el});
+const cur_=[.7,.55,.4,.6];
+function drawMix(t){const{ctx,W,H,g}=M;ctx.clearRect(0,0,W,H);
+  fd.forEach((el,i)=>cur_[i]+=(el.value/100-cur_[i])*.12);
+  const[gr,pr,mz,ms]=cur_;
+  const n=Math.max(36,Math.floor(W/14)),gap=W/n,cy=H/2;
+  ctx.fillStyle=g;
+  for(let k=0;k<n;k++){const x=k*gap+gap/2,p=k/n;
+    const base=Math.sin(t/600+k*.5)*.5+.5;
+    const ritmo=(Math.sin(t/260+k*1.7)*.5+.5)*pr;
+    const suave=1-mz*.65;
+    let a=(base*.55+ritmo*.55)*(.2+gr*.85);
+    a=a*suave+Math.sin(t/900+p*6)*.08*mz+.04;
+    const h=Math.max(4,a*H*.8*(.6+ms*.5));
+    ctx.globalAlpha=.55+ms*.45;
+    ctx.beginPath();ctx.roundRect(x-gap*.32,cy-h/2,gap*.64,h,gap*.3);ctx.fill()}
+  ctx.globalAlpha=1;
+  ctx.strokeStyle='rgba(214,243,235,.25)';ctx.setLineDash([4,6]);ctx.beginPath();ctx.moveTo(0,cy);ctx.lineTo(W,cy);ctx.stroke();ctx.setLineDash([])}
+
+function loop(t){if(!document.hidden){if(A.vis)drawHero(t);if(M.vis)drawMix(t)}requestAnimationFrame(loop)}
+if(reduce){drawHero(1000);drawMix(1000);fd.forEach(el=>el.addEventListener('input',()=>drawMix(1000)))}else requestAnimationFrame(loop);
+</script>
+</body>
+</html>

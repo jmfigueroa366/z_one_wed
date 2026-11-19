@@ -5,7 +5,8 @@ import { OndaEstatica, OndaGrabacion, extraerPeaks, peaksDeDataUrl } from './Ond
 import '../styles/tailwind.css';
 
 const ACENTO_GRABACION = '#ff5a6e';
-const ACENTO_AUDIO = '#8FBCE6';
+const ACENTO_AUDIO = '#D6F3EB';
+const CLAVE_DISPOSITIVO_AUDIO = 'grabadora-entrada-audio';
 
 interface ClipAudio {
     url: string;
@@ -26,6 +27,46 @@ const MIME_GRABADOR = (() => {
         MediaRecorder.isTypeSupported(tipo)
     ) ?? null;
 })();
+
+function nombreError(error: unknown): string {
+    if (error instanceof DOMException) return error.name;
+    if (typeof error === 'object' && error !== null && 'name' in error && typeof error.name === 'string') {
+        return error.name;
+    }
+    return '';
+}
+
+function dispositivoGuardado(): string {
+    if (typeof window === 'undefined') return '';
+    try {
+        return window.localStorage.getItem(CLAVE_DISPOSITIVO_AUDIO) ?? '';
+    } catch {
+        return '';
+    }
+}
+
+function restriccionesEntrada(deviceId?: string): MediaStreamConstraints {
+    return {
+        audio: {
+            ...(deviceId ? { deviceId: { exact: deviceId } } : {}),
+            echoCancellation: false,
+            noiseSuppression: false,
+            autoGainControl: false,
+        },
+    };
+}
+
+async function solicitarFlujoEntrada(): Promise<MediaStream> {
+    const deviceId = dispositivoGuardado();
+    try {
+        return await navigator.mediaDevices.getUserMedia(restriccionesEntrada(deviceId || undefined));
+    } catch (error) {
+        if (deviceId && ['OverconstrainedError', 'NotFoundError'].includes(nombreError(error))) {
+            return navigator.mediaDevices.getUserMedia(restriccionesEntrada());
+        }
+        throw error;
+    }
+}
 
 function formatearTiempo(segundos: number | null): string {
     const total = Math.max(0, Number(segundos) || 0);
@@ -95,7 +136,7 @@ export default function GrabadorAudio({ cancionId, parte = '', mostrarEtiqueta =
         }
 
         try {
-            const flujo = await navigator.mediaDevices.getUserMedia({ audio: true });
+            const flujo = await solicitarFlujoEntrada();
             const grabador = new MediaRecorder(flujo, MIME_GRABADOR ? { mimeType: MIME_GRABADOR } : undefined);
             partesRef.current = [];
             grabador.ondataavailable = (evento) => {
@@ -244,7 +285,7 @@ export default function GrabadorAudio({ cancionId, parte = '', mostrarEtiqueta =
                     {enGrabacion ? (
                         <span className="h-2.5 w-2.5 shrink-0 animate-pulse rounded-full bg-peligro" aria-hidden="true" />
                     ) : (
-                        <span className="text-sm text-accent" aria-hidden="true">🎙</span>
+                        <span className="text-sm text-texto" aria-hidden="true">🎙</span>
                     )}
                     {mostrarEtiqueta && (
                         <span className="truncate font-medium text-texto">{etiqueta}</span>
@@ -267,7 +308,7 @@ export default function GrabadorAudio({ cancionId, parte = '', mostrarEtiqueta =
                 <div className="flex gap-2">
                     {!enGrabacion ? (
                         <button
-                            className="rounded-lg bg-accent px-3 py-1.5 text-xs font-bold text-bg transition hover:brightness-110"
+                            className="rounded-lg bg-accent px-3 py-1.5 text-xs font-bold text-texto transition hover:brightness-110"
                             type="button"
                             onClick={iniciar}
                         >

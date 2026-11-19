@@ -42,9 +42,7 @@ export default function WorkspaceLayout() {
                 onCerrarMovil={() => setMovilAbierto(false)}
             />
             <div className="flex min-w-0 flex-col lg:h-screen lg:overflow-hidden">
-                <div className="lg:sticky lg:top-0 lg:z-30 lg:bg-bg">
-                    <Header onAbrirMenu={() => setMovilAbierto(true)} />
-                </div>
+                <Header onAbrirMenu={() => setMovilAbierto(true)} />
                 <main className="scrollbar-discreta min-h-0 flex-1 overflow-y-auto">
                     <div key={location.pathname} className="animate-rise">
                         <Outlet />

@@ -248,6 +248,7 @@ const ENLACES_NAV = [
 ];
 
 const modificadorReveal = (indice: number) => ({ 'data-revelar-delay': String(indice * 90) });
+const CLASE_CINTA_MARQUEE = 'overflow-hidden border-y border-texto/15 bg-primario py-[22px]';
 
 interface EtiquetaProps {
     children: React.ReactNode;
@@ -915,7 +916,7 @@ export default function LandingPage() {
                     <div aria-hidden="true" className="pointer-events-none absolute inset-x-0 top-0 h-24 bg-gradient-to-b from-bg to-transparent" />
                 </section>
 
-                <div className="overflow-hidden border-y border-texto/15 bg-bg py-[22px]" aria-hidden="true">
+                <div className={CLASE_CINTA_MARQUEE} aria-hidden="true">
                     <div className="flex w-max animate-marquee items-center whitespace-nowrap hover:[animation-play-state:paused] motion-reduce:animate-none" style={FUENTE_LANDING_HEAD}>
                         {[...BANDA_MARQUEE, ...BANDA_MARQUEE].map((elemento, indice) => (
                             <span
@@ -923,13 +924,13 @@ export default function LandingPage() {
                                 className="inline-flex items-center text-[clamp(1.5rem,3.6vw,2.6rem)] font-bold tracking-[-0.015em] text-texto"
                             >
                                 {elemento}
-                                <span className="mx-[0.6em] text-accent" aria-hidden="true">✦</span>
+                                <span className="mx-[0.6em] text-texto/70" aria-hidden="true">✦</span>
                             </span>
                         ))}
                     </div>
                 </div>
 
-                <section className="scroll-mt-24 border-b border-texto/15" id="proceso">
+                <section className="scroll-mt-24 border-b border-texto/15 bg-bg-2" id="proceso">
                     <div className="mx-auto max-w-[1280px] px-6 py-24 lg:px-10">
                         <div data-revelar {...modificadorReveal(0)} className="max-w-[42ch]">
                             <Etiqueta>Cómo funciona</Etiqueta>
@@ -964,7 +965,7 @@ export default function LandingPage() {
                     </div>
                 </section>
 
-                <section className="scroll-mt-24 border-b border-texto/15" id="mezcla">
+                <section className="scroll-mt-24 border-b border-texto/15 bg-bg" id="mezcla">
                     <div className="mx-auto max-w-[1280px] px-6 py-24 lg:px-10">
                         <div data-revelar {...modificadorReveal(0)} className="max-w-[46ch]">
                             <Etiqueta>Juega con el sonido</Etiqueta>
@@ -1060,7 +1061,7 @@ export default function LandingPage() {
                     </div>
                 </section>
 
-                <section className="scroll-mt-24 border-b border-texto/15" id="espacios">
+                <section className="scroll-mt-24 border-b border-texto/15 bg-bg" id="espacios">
                     <div className="mx-auto max-w-[1280px] px-6 py-24 lg:px-10">
                         <div className="flex flex-col justify-between gap-6 lg:flex-row lg:items-end">
                             <div data-revelar {...modificadorReveal(0)}>
@@ -1130,7 +1131,7 @@ export default function LandingPage() {
                 </section>
 
                 {(metricas.length > 0 || testimonios.length > 0) && (
-                <section className="scroll-mt-24 border-b border-texto/15" id="testimonios">
+                <section className="scroll-mt-24 border-b border-texto/15 bg-bg-2" id="testimonios">
                     <div className="mx-auto max-w-[1280px] px-6 py-24 lg:px-10">
                         <div className="flex flex-col justify-between gap-6 lg:flex-row lg:items-end">
                             <div data-revelar {...modificadorReveal(0)} className="max-w-[40ch]">

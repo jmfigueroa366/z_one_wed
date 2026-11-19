@@ -32,6 +32,63 @@ const MIME_PREFERIDOS = [
     'audio/mp4',
 ];
 
+const CLAVE_DISPOSITIVO_AUDIO = 'grabadora-entrada-audio';
+type CompasMetrónomo = '4/4' | '3/4' | '6/8';
+
+function esCompasMetrónomo(valor: string): valor is CompasMetrónomo {
+    return valor === '4/4' || valor === '3/4' || valor === '6/8';
+}
+
+function nombreError(error: unknown): string {
+    if (error instanceof DOMException) return error.name;
+    if (typeof error === 'object' && error !== null && 'name' in error && typeof error.name === 'string') {
+        return error.name;
+    }
+    return '';
+}
+
+function leerDispositivoGuardado(): string {
+    if (typeof window === 'undefined') return '';
+    try {
+        return window.localStorage.getItem(CLAVE_DISPOSITIVO_AUDIO) ?? '';
+    } catch {
+        return '';
+    }
+}
+
+function guardarDispositivo(deviceId: string): boolean {
+    if (typeof window === 'undefined') return false;
+    try {
+        if (deviceId) window.localStorage.setItem(CLAVE_DISPOSITIVO_AUDIO, deviceId);
+        else window.localStorage.removeItem(CLAVE_DISPOSITIVO_AUDIO);
+        return true;
+    } catch {
+        return false;
+    }
+}
+
+function restriccionesEntrada(deviceId?: string): MediaStreamConstraints {
+    return {
+        audio: {
+            ...(deviceId ? { deviceId: { exact: deviceId } } : {}),
+            echoCancellation: false,
+            noiseSuppression: false,
+            autoGainControl: false,
+        },
+    };
+}
+
+async function solicitarFlujoEntrada(deviceId?: string): Promise<MediaStream> {
+    try {
+        return await navigator.mediaDevices.getUserMedia(restriccionesEntrada(deviceId));
+    } catch (error) {
+        if (deviceId && ['OverconstrainedError', 'NotFoundError'].includes(nombreError(error))) {
+            return navigator.mediaDevices.getUserMedia(restriccionesEntrada());
+        }
+        throw error;
+    }
+}
+
 const BARRAS_ONDA = 180;
 const BARRAS_MONITOR = 48;
 const ALTURAS_ESTADO_VACIO = [12, 24, 16, 38, 28, 54, 36, 68, 46, 82, 58, 92, 66, 78, 50, 72, 40, 60, 30, 48, 22, 34, 16, 26];
@@ -162,6 +219,15 @@ export default function Grabadora() {
     const [error, setError] = useState('');
     const [solicitudSeleccionadaId, setSolicitudSeleccionadaId] = useState<number | null>(null);
     const [selectorAbierto, setSelectorAbierto] = useState(false);
+    const [entradasAudio, setEntradasAudio] = useState<MediaDeviceInfo[]>([]);
+    const [entradaAudioId, setEntradaAudioId] = useState(leerDispositivoGuardado);
+    const [selectorEntradaAbierto, setSelectorEntradaAbierto] = useState(false);
+    const [probandoEntrada, setProbandoEntrada] = useState(false);
+    const [usarMetronomo, setUsarMetronomo] = useState(false);
+    const [bpm, setBpm] = useState(100);
+    const [bpmEntrada, setBpmEntrada] = useState('100');
+    const [compas, setCompas] = useState<CompasMetrónomo>('4/4');
+    const [cuentaPreviaActiva, setCuentaPreviaActiva] = useState(false);
 
     const grabadorRef = useRef<MediaRecorder | null>(null);
     const streamRef = useRef<MediaStream | null>(null);
@@ -179,6 +245,13 @@ export default function Grabadora() {
     const medidorRef = useRef<HTMLDivElement | null>(null);
     const solicitudGrabacionRef = useRef<SolicitudToma | null>(null);
     const selectorSolicitudRef = useRef<HTMLDivElement | null>(null);
+    const metronomoIntervaloRef = useRef<number | null>(null);
+    const metronomoCuentaRef = useRef<number | null>(null);
+    const metronomoNodosRef = useRef<Set<OscillatorNode>>(new Set());
+    const tapsTempoRef = useRef<number[]>([]);
+    const preparandoCuentaRef = useRef(false);
+    const cuentaCanceladaRef = useRef(false);
+    const pruebaEntradaSolicitudRef = useRef(0);
 
     const cargarSolicitudes = useCallback(() => listarSolicitudes({ tamano: 100 }), []);
     const {
@@ -207,6 +280,33 @@ export default function Grabadora() {
         ? solicitudSeleccionada.titulo?.trim() || `Solicitud ${solicitudSeleccionada.id}`
         : 'Sin solicitud';
     const detalleSeleccionado = solicitudSeleccionada?.cliente ?? 'Grabación libre';
+    const entradaSeleccionada = entradasAudio.find((entrada) => entrada.deviceId === entradaAudioId);
+
+    const refrescarEntradasAudio = useCallback(async () => {
+        if (!navigator.mediaDevices?.enumerateDevices) return;
+        const dispositivos = await navigator.mediaDevices.enumerateDevices();
+        if (montadoRef.current) {
+            setEntradasAudio(dispositivos.filter((dispositivo) => dispositivo.kind === 'audioinput'));
+        }
+    }, []);
+
+    useEffect(() => {
+        let activo = true;
+        const actualizar = async () => {
+            try {
+                await refrescarEntradasAudio();
+            } catch {
+                if (activo) setError('No se pudo consultar la lista de entradas de audio.');
+            }
+        };
+        const mediaDevices = navigator.mediaDevices;
+        void actualizar();
+        mediaDevices?.addEventListener?.('devicechange', actualizar);
+        return () => {
+            activo = false;
+            mediaDevices?.removeEventListener?.('devicechange', actualizar);
+        };
+    }, [refrescarEntradasAudio]);
 
     useEffect(() => {
         if (!selectorAbierto) return undefined;
@@ -300,9 +400,9 @@ export default function Grabadora() {
         const anchoBarra = Math.max(2, Math.min(6, paso * 0.55));
         const alturaBase = Math.max(2, Math.min(7, alto * 0.05));
         const gradiente = ctx.createLinearGradient(0, 0, ancho, 0);
-        gradiente.addColorStop(0, '#9365f2');
-        gradiente.addColorStop(0.5, '#c457c4');
-        gradiente.addColorStop(1, '#e34ba6');
+        gradiente.addColorStop(0, '#8CA5A2');
+        gradiente.addColorStop(0.5, '#D6F3EB');
+        gradiente.addColorStop(1, '#8CA5A2');
 
         ctx.beginPath();
         for (let i = 0; i < BARRAS_MONITOR; i += 1) {
@@ -346,9 +446,9 @@ export default function Grabadora() {
         const anchoBarra = Math.max(2, Math.min(7, paso * 0.6));
         const alturaMax = Math.max(4, centro - 10);
         const gradiente = ctx.createLinearGradient(0, 0, ancho, 0);
-        gradiente.addColorStop(0, '#9365f2');
-        gradiente.addColorStop(0.5, '#c457c4');
-        gradiente.addColorStop(1, '#e34ba6');
+        gradiente.addColorStop(0, '#8CA5A2');
+        gradiente.addColorStop(0.5, '#D6F3EB');
+        gradiente.addColorStop(1, '#8CA5A2');
 
         ctx.strokeStyle = 'rgba(255, 255, 255, 0.05)';
         ctx.lineWidth = 1;
@@ -374,14 +474,14 @@ export default function Grabadora() {
             trazarCapsula(ctx, x, centro + hueco, anchoBarra, media);
         }
         ctx.save();
-        ctx.shadowColor = 'rgba(143, 188, 230, 0.55)';
+        ctx.shadowColor = 'rgba(214, 243, 235, 0.45)';
         ctx.shadowBlur = 16;
         ctx.fillStyle = gradiente;
         ctx.fill();
         ctx.restore();
     };
 
-    const arrancarMonitor = (analizador: AnalyserNode) => {
+    const arrancarMonitor = (analizador: AnalyserNode, actualizarTiempo = true) => {
         cancelarBucle();
         const datos = new Uint8Array(analizador.fftSize);
         let ultimoReloj = 0;
@@ -397,7 +497,7 @@ export default function Grabadora() {
             pintarNivel(Math.min(1, rms * 3.5));
             pintarOndaViva(datos);
 
-            if (marca - ultimoReloj >= 100) {
+            if (actualizarTiempo && marca - ultimoReloj >= 100) {
                 ultimoReloj = marca;
                 setElapsed((performance.now() - inicioRef.current) / 1000);
             }
@@ -405,6 +505,192 @@ export default function Grabadora() {
         };
 
         rafRef.current = requestAnimationFrame(cuadro);
+    };
+
+    const detenerPruebaEntrada = () => {
+        pruebaEntradaSolicitudRef.current += 1;
+        cancelarBucle();
+        liberarPistaEntrada();
+        setProbandoEntrada(false);
+        pintarNivel(0);
+        limpiarOndaViva();
+    };
+
+    const abrirSelectorEntrada = async () => {
+        if (selectorEntradaAbierto) {
+            setSelectorEntradaAbierto(false);
+            detenerPruebaEntrada();
+            return;
+        }
+        setSelectorEntradaAbierto(true);
+        setError('');
+        if (!navigator.mediaDevices?.getUserMedia) {
+            setError('Este navegador no permite consultar las entradas de audio.');
+            return;
+        }
+
+        let flujo: MediaStream | null = null;
+        try {
+            flujo = await solicitarFlujoEntrada();
+        } catch {
+            if (montadoRef.current) setError('No se pudo obtener permiso para mostrar los nombres de las entradas.');
+        } finally {
+            flujo?.getTracks().forEach((pista) => pista.stop());
+        }
+
+        if (!montadoRef.current) return;
+        try {
+            await refrescarEntradasAudio();
+        } catch {
+            setError('No se pudo consultar la lista de entradas de audio.');
+        }
+    };
+
+    const seleccionarEntrada = (deviceId: string) => {
+        detenerPruebaEntrada();
+        setEntradaAudioId(deviceId);
+        if (!guardarDispositivo(deviceId)) {
+            setError('La entrada quedó seleccionada, pero no se pudo recordar en este navegador.');
+        } else {
+            setError('');
+        }
+    };
+
+    const probarEntrada = async () => {
+        if (probandoEntrada) {
+            detenerPruebaEntrada();
+            return;
+        }
+        if (grabando || !navigator.mediaDevices?.getUserMedia) return;
+        setError('');
+        const solicitud = ++pruebaEntradaSolicitudRef.current;
+        try {
+            const flujo = await solicitarFlujoEntrada(entradaAudioId || undefined);
+            if (!montadoRef.current || solicitud !== pruebaEntradaSolicitudRef.current) {
+                flujo.getTracks().forEach((pista) => pista.stop());
+                return;
+            }
+            streamRef.current = flujo;
+            const deviceIdReal = flujo.getAudioTracks()[0]?.getSettings().deviceId ?? '';
+            if (deviceIdReal && deviceIdReal !== entradaAudioId) {
+                setEntradaAudioId(deviceIdReal);
+                if (!guardarDispositivo(deviceIdReal)) {
+                    setError('La entrada quedó seleccionada, pero no se pudo recordar en este navegador.');
+                }
+            }
+            const contexto = obtenerAudioContext();
+            if (!contexto) {
+                detenerPruebaEntrada();
+                setError('Este navegador no permite medir la entrada de audio.');
+                return;
+            }
+            const fuente = contexto.createMediaStreamSource(flujo);
+            const analizador = contexto.createAnalyser();
+            analizador.fftSize = 2048;
+            analizador.smoothingTimeConstant = 0.8;
+            fuente.connect(analizador);
+            fuenteRef.current = fuente;
+            analizadorRef.current = analizador;
+            setProbandoEntrada(true);
+            arrancarMonitor(analizador, false);
+        } catch (errorEntrada) {
+            if (!montadoRef.current) return;
+            detenerPruebaEntrada();
+            const nombre = nombreError(errorEntrada);
+            setError(nombre === 'NotAllowedError' || nombre === 'SecurityError'
+                ? 'No se pudo probar la entrada. Revisa el permiso del micrófono.'
+                : 'No se pudo iniciar la prueba de entrada.');
+        }
+    };
+
+    const detenerMetronomo = (actualizarEstado = true) => {
+        if (metronomoIntervaloRef.current !== null) {
+            window.clearInterval(metronomoIntervaloRef.current);
+            metronomoIntervaloRef.current = null;
+        }
+        if (metronomoCuentaRef.current !== null) {
+            window.clearTimeout(metronomoCuentaRef.current);
+            metronomoCuentaRef.current = null;
+        }
+        metronomoNodosRef.current.forEach((oscilador) => {
+            try {
+                oscilador.stop();
+            } catch {
+                // El oscilador puede haber terminado entre pulsos del planificador.
+            }
+        });
+        metronomoNodosRef.current.clear();
+        if (actualizarEstado) setCuentaPreviaActiva(false);
+    };
+
+    const iniciarMetronomoConCuenta = async (alTerminar: () => void) => {
+        cuentaCanceladaRef.current = false;
+        const contexto = obtenerAudioContext();
+        if (!contexto) throw new Error('AudioContext no disponible');
+        if (contexto.state === 'suspended') await contexto.resume();
+        if (cuentaCanceladaRef.current) return;
+        detenerMetronomo();
+
+        const pulsosPorCompas = compas === '4/4' ? 4 : compas === '3/4' ? 3 : 6;
+        const duracionPulso = compas === '6/8' ? 60 / bpm / 3 : 60 / bpm;
+        let siguientePulso = contexto.currentTime + 0.08;
+        let indicePulso = 0;
+        let pulsosCuenta = pulsosPorCompas;
+        setCuentaPreviaActiva(true);
+
+        const planificar = () => {
+            while (siguientePulso < contexto.currentTime + 0.12) {
+                const posicion = indicePulso % pulsosPorCompas;
+                const acentuado = compas === '6/8' ? posicion === 0 || posicion === 3 : posicion === 0;
+                const oscilador = contexto.createOscillator();
+                const ganancia = contexto.createGain();
+                oscilador.frequency.value = acentuado ? 1320 : 880;
+                ganancia.gain.setValueAtTime(0.0001, siguientePulso);
+                ganancia.gain.exponentialRampToValueAtTime(acentuado ? 0.18 : 0.1, siguientePulso + 0.003);
+                ganancia.gain.exponentialRampToValueAtTime(0.0001, siguientePulso + 0.045);
+                oscilador.connect(ganancia);
+                ganancia.connect(contexto.destination);
+                metronomoNodosRef.current.add(oscilador);
+                oscilador.onended = () => {
+                    metronomoNodosRef.current.delete(oscilador);
+                    oscilador.disconnect();
+                    ganancia.disconnect();
+                };
+                oscilador.start(siguientePulso);
+                oscilador.stop(siguientePulso + 0.05);
+
+                siguientePulso += duracionPulso;
+                indicePulso += 1;
+                if (pulsosCuenta > 0) {
+                    pulsosCuenta -= 1;
+                    if (pulsosCuenta === 0) {
+                        const demora = Math.max(0, (siguientePulso - contexto.currentTime) * 1000);
+                        metronomoCuentaRef.current = window.setTimeout(() => {
+                            metronomoCuentaRef.current = null;
+                            setCuentaPreviaActiva(false);
+                            alTerminar();
+                        }, demora);
+                    }
+                }
+            }
+        };
+
+        planificar();
+        metronomoIntervaloRef.current = window.setInterval(planificar, 25);
+    };
+
+    const registrarTapTempo = () => {
+        const ahora = performance.now();
+        const taps = tapsTempoRef.current;
+        if (taps.length && ahora - taps[taps.length - 1] > 2000) taps.length = 0;
+        taps.push(ahora);
+        if (taps.length > 5) taps.shift();
+        if (taps.length < 2) return;
+        const intervalos = taps.slice(1).map((tap, indice) => tap - taps[indice]);
+        const promedio = intervalos.reduce((suma, intervalo) => suma + intervalo, 0) / intervalos.length;
+        const nuevoBpm = Math.min(220, Math.max(40, Math.round(60000 / promedio)));
+        setBpm(nuevoBpm);
+        setBpmEntrada(String(nuevoBpm));
     };
 
     const calcularOnda = async (blob: Blob): Promise<{ duracion: number; picos: number[] }> => {
@@ -423,6 +709,7 @@ export default function Grabadora() {
         const solicitudToma = solicitudGrabacionRef.current;
         const trozos = trozosRef.current;
         trozosRef.current = [];
+        detenerMetronomo(montadoRef.current);
         cancelarBucle();
         liberarPistaEntrada();
         pintarNivel(0);
@@ -457,11 +744,7 @@ export default function Grabadora() {
         ]);
     };
 
-    const iniciarGrabacion = async () => {
-        if (grabando) return;
-        setError('');
-        audioRef.current?.pause();
-
+    const iniciarCaptura = async () => {
         if (!navigator.mediaDevices?.getUserMedia || typeof MediaRecorder === 'undefined') {
             setError('Tu navegador no soporta la grabación de audio. Prueba con Chrome, Edge o Firefox actualizados.');
             return;
@@ -476,12 +759,19 @@ export default function Grabadora() {
             : null;
 
         try {
-            const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+            const stream = await solicitarFlujoEntrada(entradaAudioId || undefined);
             if (!montadoRef.current) {
                 stream.getTracks().forEach((pista) => pista.stop());
                 return;
             }
             streamRef.current = stream;
+            const deviceIdReal = stream.getAudioTracks()[0]?.getSettings().deviceId ?? '';
+            if (deviceIdReal && deviceIdReal !== entradaAudioId) {
+                setEntradaAudioId(deviceIdReal);
+                if (!guardarDispositivo(deviceIdReal)) {
+                    setError('La entrada quedó seleccionada, pero no se pudo recordar en este navegador.');
+                }
+            }
 
             const contexto = obtenerAudioContext();
             if (contexto) {
@@ -518,18 +808,21 @@ export default function Grabadora() {
             setReproduciendo(false);
             setTomaActivaId(null);
             pendienteSeekRef.current = null;
+            setProbandoEntrada(false);
             setGrabando(true);
 
             if (analizadorRef.current) {
-                arrancarMonitor(analizadorRef.current);
+                arrancarMonitor(analizadorRef.current, true);
             }
         } catch (err) {
             liberarPistaEntrada();
             cancelarBucle();
             pintarNivel(0);
             limpiarOndaViva();
+            detenerMetronomo(montadoRef.current);
+            if (!montadoRef.current) return;
             setGrabando(false);
-            const nombre = err instanceof DOMException ? err.name : '';
+            const nombre = nombreError(err);
 
             if (nombre === 'NotAllowedError' || nombre === 'SecurityError') {
                 setError('No se pudo acceder al micrófono. Concede el permiso en tu navegador e inténtalo de nuevo.');
@@ -543,7 +836,38 @@ export default function Grabadora() {
         }
     };
 
+    const iniciarGrabacion = async () => {
+        if (grabando || cuentaPreviaActiva || preparandoCuentaRef.current) return;
+        setError('');
+        audioRef.current?.pause();
+        detenerPruebaEntrada();
+        setSelectorEntradaAbierto(false);
+
+        if (usarMetronomo) {
+            preparandoCuentaRef.current = true;
+            setCuentaPreviaActiva(true);
+            try {
+                await iniciarMetronomoConCuenta(() => {
+                    void iniciarCaptura();
+                });
+            } catch {
+                detenerMetronomo();
+                setError('No se pudo iniciar el metrónomo en este navegador.');
+            } finally {
+                preparandoCuentaRef.current = false;
+            }
+            return;
+        }
+        await iniciarCaptura();
+    };
+
     const detenerGrabacion = () => {
+        if (cuentaPreviaActiva) {
+            cuentaCanceladaRef.current = true;
+            detenerMetronomo();
+            return;
+        }
+        detenerMetronomo();
         const grabador = grabadorRef.current;
         if (!grabador || grabador.state === 'inactive') {
             setGrabando(false);
@@ -630,6 +954,8 @@ export default function Grabadora() {
         montadoRef.current = true;
         return () => {
             montadoRef.current = false;
+            cuentaCanceladaRef.current = true;
+            pruebaEntradaSolicitudRef.current += 1;
             cancelarBucle();
             const grabador = grabadorRef.current;
             if (grabador && grabador.state !== 'inactive') {
@@ -639,6 +965,7 @@ export default function Grabadora() {
                     /* el grabador ya estaba detenido */
                 }
             }
+            detenerMetronomo(false);
             liberarPistaEntrada();
             const audio = audioRef.current;
             if (audio) {
@@ -656,11 +983,11 @@ export default function Grabadora() {
 
     const duracionActiva = tomas.find((toma) => toma.id === tomaActivaId)?.duracion ?? 0;
     const lcd = grabando ? elapsed : progreso * duracionActiva;
-    const estado = grabando ? 'Grabando' : reproduciendo ? 'Reproduciendo' : 'Listo';
+    const estado = cuentaPreviaActiva ? 'Cuenta previa' : grabando ? 'Grabando' : reproduciendo ? 'Reproduciendo' : 'Listo';
     const chipEstado = grabando
-        ? 'border-accent-soft/40 bg-accent-soft/10 text-accent-soft'
+        ? 'border-accent-soft/40 bg-accent-soft/10 text-texto'
         : reproduciendo
-          ? 'border-accent/40 bg-accent/10 text-accent-soft'
+          ? 'border-accent/40 bg-accent/10 text-texto'
           : 'border-border bg-white/[0.03] text-sutil';
     const puntoEstado = grabando ? 'animate-pulse bg-accent-soft' : reproduciendo ? 'bg-accent' : 'bg-border';
 
@@ -700,9 +1027,9 @@ export default function Grabadora() {
                         onClick={() => {
                             void iniciarGrabacion();
                         }}
-                        disabled={grabando}
-                        aria-label="Grabar"
-                        title={grabando ? 'Grabación en curso' : 'Grabar'}
+                        disabled={grabando || cuentaPreviaActiva}
+                        aria-label={cuentaPreviaActiva ? 'Cuenta previa antes de grabar' : 'Grabar'}
+                        title={grabando ? 'Grabación en curso' : cuentaPreviaActiva ? 'Cuenta previa' : 'Grabar'}
                         className="relative grid h-28 w-28 shrink-0 place-items-center rounded-full border-2 border-white/25 bg-gradient-to-br from-[#ff5a6e] to-[#c81e4a] text-white shadow-[0_0_0_8px_rgba(143,188,230,0.08),0_24px_60px_-18px_rgba(200,30,74,0.9)] transition hover:scale-[1.02] hover:brightness-110 active:scale-95 disabled:cursor-not-allowed disabled:opacity-80 motion-reduce:transform-none sm:h-32 sm:w-32"
                     >
                         <Mic className="h-10 w-10 sm:h-11 sm:w-11" aria-hidden="true" />
@@ -738,7 +1065,7 @@ export default function Grabadora() {
                         <button
                             type="button"
                             onClick={() => setSelectorAbierto((abierto) => !abierto)}
-                            disabled={grabando}
+                            disabled={grabando || cuentaPreviaActiva}
                             title={
                                 solicitudSeleccionada ? etiquetaSolicitud(solicitudSeleccionada) : 'Sin solicitud'
                             }
@@ -754,7 +1081,7 @@ export default function Grabadora() {
                             }`}
                         >
                             <span className="flex min-w-0 items-center gap-3">
-                                <span className="grid h-10 w-10 shrink-0 place-items-center rounded-xl border border-accent/25 bg-accent/10 text-accent-soft">
+                                <span className="grid h-10 w-10 shrink-0 place-items-center rounded-xl border border-accent/25 bg-accent/10 text-texto">
                                     <Link2 className="h-4 w-4" aria-hidden="true" />
                                 </span>
                                 <span className="min-w-0">
@@ -772,7 +1099,7 @@ export default function Grabadora() {
                             <ChevronDown
                                 aria-hidden="true"
                                 className={`h-4 w-4 shrink-0 text-sutil transition-transform duration-300 ${
-                                    selectorAbierto ? 'rotate-180 text-accent-soft' : ''
+                                    selectorAbierto ? 'rotate-180 text-texto' : ''
                                 }`}
                             />
                         </button>
@@ -794,7 +1121,7 @@ export default function Grabadora() {
                                     }}
                                     className={`flex w-full items-center justify-between gap-3 rounded-xl px-3 py-2.5 text-left transition ${
                                         solicitudSeleccionadaId === null
-                                            ? 'bg-accent/[0.12] text-accent-soft'
+                                            ? 'bg-accent/[0.12] text-texto'
                                             : 'text-texto hover:bg-white/[0.06]'
                                     }`}
                                 >
@@ -807,7 +1134,7 @@ export default function Grabadora() {
                                         </span>
                                     </span>
                                     {solicitudSeleccionadaId === null && (
-                                        <Check className="h-4 w-4 shrink-0 text-accent-soft" aria-hidden="true" />
+                                        <Check className="h-4 w-4 shrink-0 text-texto" aria-hidden="true" />
                                     )}
                                 </button>
 
@@ -826,7 +1153,7 @@ export default function Grabadora() {
                                             }}
                                             className={`mt-1 flex w-full items-center justify-between gap-3 rounded-xl px-3 py-2.5 text-left transition ${
                                                 seleccionada
-                                                    ? 'bg-accent/[0.12] text-accent-soft'
+                                                    ? 'bg-accent/[0.12] text-texto'
                                                     : 'text-texto hover:bg-white/[0.06]'
                                             }`}
                                         >
@@ -840,7 +1167,7 @@ export default function Grabadora() {
                                             </span>
                                             {seleccionada && (
                                                 <Check
-                                                    className="h-4 w-4 shrink-0 text-accent-soft"
+                                                    className="h-4 w-4 shrink-0 text-texto"
                                                     aria-hidden="true"
                                                 />
                                             )}
@@ -861,7 +1188,7 @@ export default function Grabadora() {
                             aria-live="polite"
                             title={errorSolicitudes ?? undefined}
                             className={`mt-1.5 min-h-4 text-[10px] leading-4 ${
-                                errorSolicitudes ? 'text-accent-soft' : 'text-sutil'
+                                errorSolicitudes ? 'text-texto' : 'text-sutil'
                             }`}
                         >
                             {cargandoSolicitudes
@@ -874,11 +1201,139 @@ export default function Grabadora() {
                         </p>
                     </div>
 
+                    <div className="w-full max-w-md text-left">
+                        <span className="text-[10px] font-bold uppercase tracking-[0.25em] text-sutil">
+                            Entrada de audio
+                        </span>
+                        <button
+                            type="button"
+                            onClick={() => void abrirSelectorEntrada()}
+                            disabled={grabando || cuentaPreviaActiva}
+                            aria-expanded={selectorEntradaAbierto}
+                            aria-controls="entrada-audio-opciones"
+                            className="mt-2 flex w-full items-center justify-between gap-3 rounded-2xl border border-border bg-white/[0.03] px-3.5 py-3 text-left text-texto transition hover:border-accent/45 motion-reduce:transition-none disabled:cursor-not-allowed disabled:opacity-60"
+                        >
+                            <span className="truncate text-sm font-semibold">
+                                {entradaSeleccionada?.label || (entradaAudioId ? 'Entrada guardada' : 'Predeterminada')}
+                            </span>
+                            <ChevronDown
+                                aria-hidden="true"
+                                className={`h-4 w-4 shrink-0 text-sutil transition-transform duration-300 motion-reduce:transition-none ${
+                                    selectorEntradaAbierto ? 'rotate-180' : ''
+                                }`}
+                            />
+                        </button>
+                        {selectorEntradaAbierto && (
+                            <div
+                                id="entrada-audio-opciones"
+                                className="mt-2 space-y-3 rounded-2xl border border-border bg-surface p-3"
+                            >
+                                <label htmlFor="entrada-audio-select" className="block text-xs text-sutil">
+                                    Dispositivo de captura
+                                </label>
+                                <select
+                                    id="entrada-audio-select"
+                                    value={entradaAudioId}
+                                    onChange={(evento) => seleccionarEntrada(evento.currentTarget.value)}
+                                    className="w-full rounded-xl border border-border bg-bg px-3 py-2.5 text-sm text-texto"
+                                >
+                                    <option value="">Predeterminada</option>
+                                    {entradasAudio.map((entrada, indice) => (
+                                        <option key={entrada.deviceId || `entrada-${indice}`} value={entrada.deviceId}>
+                                            {entrada.label || `Entrada ${indice + 1}`}
+                                        </option>
+                                    ))}
+                                </select>
+                                <button
+                                    type="button"
+                                    onClick={() => void probarEntrada()}
+                                    disabled={grabando || cuentaPreviaActiva}
+                                    className="rounded-xl border border-border bg-white/[0.04] px-3 py-2 text-xs font-semibold text-texto transition hover:border-accent/50 motion-reduce:transition-none disabled:cursor-not-allowed disabled:opacity-60"
+                                >
+                                    {probandoEntrada ? 'Detener prueba' : 'Probar entrada'}
+                                </button>
+                            </div>
+                        )}
+                        <p className="mt-2 text-xs leading-5 text-sutil">
+                            Con instrumento por interfaz, usa audífonos para no oír el retorno.
+                        </p>
+                    </div>
+
+                    <div className="w-full max-w-md rounded-2xl border border-border bg-white/[0.03] p-4 text-left">
+                        <label className="flex items-center gap-2 text-sm font-semibold text-texto">
+                            <input
+                                type="checkbox"
+                                checked={usarMetronomo}
+                                disabled={grabando || cuentaPreviaActiva}
+                                onChange={(evento) => setUsarMetronomo(evento.currentTarget.checked)}
+                                className="accent-accent"
+                            />
+                            Usar metrónomo al grabar
+                        </label>
+                        <div className="mt-3 grid grid-cols-[1fr_auto_1fr] items-end gap-2">
+                            <label className="text-xs text-sutil">
+                                BPM
+                                <input
+                                    type="number"
+                                    min={40}
+                                    max={220}
+                                    step={1}
+                                    value={bpmEntrada}
+                                    disabled={grabando || cuentaPreviaActiva}
+                                    onChange={(evento) => {
+                                        const valorTexto = evento.currentTarget.value;
+                                        setBpmEntrada(valorTexto);
+                                        const valor = Number(valorTexto);
+                                        if (Number.isInteger(valor) && valor >= 40 && valor <= 220) setBpm(valor);
+                                    }}
+                                    onBlur={() => {
+                                        if (!Number.isInteger(Number(bpmEntrada)) || Number(bpmEntrada) < 40 || Number(bpmEntrada) > 220) {
+                                            setBpmEntrada(String(bpm));
+                                        }
+                                    }}
+                                    className="mt-1 w-full rounded-xl border border-border bg-bg px-3 py-2 text-sm text-texto disabled:opacity-60"
+                                />
+                            </label>
+                            <button
+                                type="button"
+                                onClick={registrarTapTempo}
+                                disabled={grabando || cuentaPreviaActiva}
+                                className="rounded-xl border border-border bg-white/[0.04] px-3 py-2 text-xs font-semibold text-texto transition hover:border-accent/50 motion-reduce:transition-none disabled:opacity-60"
+                            >
+                                Tap tempo
+                            </button>
+                            <label className="text-xs text-sutil">
+                                Compás
+                                <select
+                                    value={compas}
+                                    disabled={grabando || cuentaPreviaActiva}
+                                    onChange={(evento) => {
+                                        const valor = evento.currentTarget.value;
+                                        if (esCompasMetrónomo(valor)) setCompas(valor);
+                                    }}
+                                    className="mt-1 w-full rounded-xl border border-border bg-bg px-3 py-2 text-sm text-texto disabled:opacity-60"
+                                >
+                                    <option value="4/4">4/4</option>
+                                    <option value="3/4">3/4</option>
+                                    <option value="6/8">6/8</option>
+                                </select>
+                            </label>
+                        </div>
+                        <p className="mt-2 text-xs leading-5 text-sutil">
+                            Al grabar sonará una cuenta previa de un compás; en 6/8 el BPM marca la negra con puntillo. El click no se añade a la toma.
+                        </p>
+                        {cuentaPreviaActiva && (
+                            <p className="mt-2 text-xs font-semibold text-texto" role="status" aria-live="polite">
+                                Cuenta previa: un compás
+                            </p>
+                        )}
+                    </div>
+
                     <div className="w-full max-w-md">
                         <div className="flex items-center justify-between text-[10px] font-bold uppercase tracking-[0.25em] text-sutil">
                             <span>Nivel</span>
-                            <span className={grabando ? 'text-accent-soft' : 'text-sutil'}>
-                                {grabando ? 'En vivo' : 'En espera'}
+                            <span className={grabando || probandoEntrada ? 'text-texto' : 'text-sutil'}>
+                                {grabando ? 'En vivo' : probandoEntrada ? 'Probando entrada' : 'En espera'}
                             </span>
                         </div>
                         <div className="mt-2 h-1.5 overflow-hidden rounded-full bg-white/10" aria-hidden="true">
@@ -893,10 +1348,10 @@ export default function Grabadora() {
                         <button
                             type="button"
                             onClick={detenerGrabacion}
-                            disabled={!grabando}
-                            aria-label="Detener grabación"
-                            title={grabando ? 'Detener grabación' : 'Sin grabación activa'}
-                            className="grid h-12 w-12 shrink-0 place-items-center rounded-full border border-border bg-white/[0.04] text-texto shadow-inner transition hover:border-accent/60 hover:text-accent disabled:cursor-not-allowed disabled:opacity-40 motion-reduce:transition-none"
+                            disabled={!grabando && !cuentaPreviaActiva}
+                            aria-label={cuentaPreviaActiva ? 'Cancelar cuenta previa' : 'Detener grabación'}
+                            title={cuentaPreviaActiva ? 'Cancelar cuenta previa' : grabando ? 'Detener grabación' : 'Sin grabación activa'}
+                            className="grid h-12 w-12 shrink-0 place-items-center rounded-full border border-border bg-white/[0.04] text-texto shadow-inner transition hover:border-accent/60 hover:text-texto disabled:cursor-not-allowed disabled:opacity-40 motion-reduce:transition-none"
                         >
                             <Square className="h-4 w-4" aria-hidden="true" />
                         </button>
@@ -941,11 +1396,11 @@ export default function Grabadora() {
                     <span className="inline-flex items-center gap-2 text-[10px] font-bold uppercase tracking-[0.25em] text-sutil">
                         <span
                             className={`h-1.5 w-1.5 rounded-full ${
-                                grabando ? 'animate-pulse bg-accent-soft' : 'bg-border'
+                                grabando || probandoEntrada ? 'animate-pulse bg-accent-soft motion-reduce:animate-none' : 'bg-border'
                             }`}
                             aria-hidden="true"
                         />
-                        {grabando ? 'Señal activa' : 'Sin señal'}
+                        {grabando ? 'Señal activa' : probandoEntrada ? 'Prueba de entrada activa' : 'Sin señal'}
                     </span>
                 </div>
 
@@ -959,9 +1414,9 @@ export default function Grabadora() {
                         className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/20 to-transparent"
                     />
                     <canvas ref={vivoCanvasRef} className="absolute inset-0 h-full w-full" aria-hidden="true" />
-                    {!grabando && (
+                    {!grabando && !probandoEntrada && (
                         <div className="absolute inset-0 grid place-items-center px-4 text-center text-xs text-sutil">
-                            Pulsa grabar para ver la señal del micrófono en tiempo real.
+                            Pulsa «Probar entrada» o graba para ver la señal en tiempo real.
                         </div>
                     )}
                 </div>
@@ -989,7 +1444,7 @@ export default function Grabadora() {
                             className="pointer-events-none absolute -bottom-16 left-6 h-40 w-40 rounded-full bg-accent-soft/15 blur-3xl"
                         />
                         <div className="relative mx-auto grid max-w-md gap-4">
-                            <span className="mx-auto grid h-14 w-14 animate-float place-items-center rounded-full border border-accent/40 bg-accent/10 text-accent-soft motion-reduce:animate-none">
+                            <span className="mx-auto grid h-14 w-14 animate-float place-items-center rounded-full border border-accent/40 bg-accent/10 text-texto motion-reduce:animate-none">
                                 <Sparkles className="h-6 w-6" aria-hidden="true" />
                             </span>
                             <div>
@@ -1064,7 +1519,7 @@ export default function Grabadora() {
                                                     }
                                                     className={`inline-flex max-w-[16rem] items-center truncate rounded-full border px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-[0.14em] ${
                                                         toma.solicitud
-                                                            ? 'border-accent/30 bg-accent/10 text-accent-soft'
+                                                            ? 'border-accent/30 bg-accent/10 text-texto'
                                                             : 'border-border bg-white/[0.03] text-sutil'
                                                     }`}
                                                 >
@@ -1099,8 +1554,8 @@ export default function Grabadora() {
                                                     sonando
                                                         ? 'border-transparent bg-primario text-texto shadow-[0_12px_30px_-12px_rgba(11,41,223,0.9)]'
                                                         : activa
-                                                          ? 'border-accent/40 bg-accent/10 text-accent-soft hover:border-accent/60'
-                                                          : 'border-border bg-white/[0.04] text-texto hover:border-accent/60 hover:text-accent'
+                                                          ? 'border-accent/40 bg-accent/10 text-texto hover:border-accent/60'
+                                                          : 'border-border bg-white/[0.04] text-texto hover:border-accent/60 hover:text-texto'
                                                 }`}
                                             >
                                                 {sonando ? (
@@ -1115,7 +1570,7 @@ export default function Grabadora() {
                                                 download={nombreArchivo(toma)}
                                                 aria-label={`Descargar toma ${toma.numeroToma}`}
                                                 title={`Descargar ${nombreArchivo(toma)}`}
-                                                className="grid h-11 w-11 shrink-0 place-items-center rounded-full border border-border bg-white/[0.04] text-sutil transition duration-300 hover:border-accent/60 hover:text-accent motion-reduce:transition-none"
+                                                className="grid h-11 w-11 shrink-0 place-items-center rounded-full border border-border bg-white/[0.04] text-sutil transition duration-300 hover:border-accent/60 hover:text-texto motion-reduce:transition-none"
                                             >
                                                 <Download className="h-4 w-4" aria-hidden="true" />
                                             </a>
@@ -1125,7 +1580,7 @@ export default function Grabadora() {
                                                 onClick={() => borrarToma(toma)}
                                                 aria-label={`Borrar toma ${toma.numeroToma}`}
                                                 title="Borrar"
-                                                className="grid h-11 w-11 shrink-0 place-items-center rounded-full border border-border bg-white/[0.04] text-sutil transition duration-300 hover:border-accent-soft/50 hover:bg-accent-soft/10 hover:text-accent-soft motion-reduce:transition-none"
+                                                className="grid h-11 w-11 shrink-0 place-items-center rounded-full border border-border bg-white/[0.04] text-sutil transition duration-300 hover:border-accent-soft/50 hover:bg-accent-soft/10 hover:text-texto motion-reduce:transition-none"
                                             >
                                                 <Trash2 className="h-4 w-4" aria-hidden="true" />
                                             </button>
