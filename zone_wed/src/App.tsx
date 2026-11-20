@@ -25,6 +25,7 @@ import Sesiones from './pages/Sesiones.tsx';
 import Solicitudes from './pages/Solicitudes.tsx';
 import Pagos from './pages/Pagos.tsx';
 import Precios from './pages/Precios.tsx';
+import Salas from './pages/Salas.tsx';
 
 export default function App() {
     return (
@@ -58,6 +59,7 @@ export default function App() {
                         <Route path={RUTAS.SOLICITUDES} element={<Solicitudes />} />
                         <Route path={RUTAS.PAGOS} element={<Pagos />} />
                         <Route path={RUTAS.PRECIOS} element={<Precios />} />
+                    <Route path={RUTAS.SALAS} element={<Salas />} />
                     </Route>
 
                     <Route path="*" element={<Navigate to="/" replace />} />

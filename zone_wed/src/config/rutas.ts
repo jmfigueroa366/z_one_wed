@@ -22,6 +22,7 @@ export const RUTAS = Object.freeze({
     SOLICITUDES: '/solicitudes',
     PAGOS: '/pagos',
     PRECIOS: '/precios',
+    SALAS: '/salas',
 });
 
 export type Ruta = (typeof RUTAS)[keyof typeof RUTAS];
@@ -43,6 +44,7 @@ export const rutasPorRol: Record<string, readonly string[]> = Object.freeze({
         RUTAS.CHATBOT,
         RUTAS.PAGOS,
         RUTAS.PRECIOS,
+        RUTAS.SALAS,
         RUTAS.CONFIGURACION,
     ],
     [ROLES.COLABORADOR]: [
