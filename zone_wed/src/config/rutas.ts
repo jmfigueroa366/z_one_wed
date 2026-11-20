@@ -117,6 +117,7 @@ export const NAVEGACION: readonly NavegacionGrupo[] = Object.freeze([
             { ruta: RUTAS.ESTADISTICAS, etiqueta: 'Estadísticas', icono: 'BarChart3' },
             { ruta: RUTAS.CUANDO_SUENA, etiqueta: 'Cuándo suena', icono: 'Flame' },
             { ruta: RUTAS.PRECIOS, etiqueta: 'Precios', icono: 'Coins' },
+            { ruta: RUTAS.SALAS, etiqueta: 'Salas', icono: 'Building2' },
         ],
     },
     {

@@ -17,6 +17,7 @@ import {
     Bot,
     Settings,
     Coins,
+    Building2,
     LogOut,
     PanelLeftClose,
     PanelLeftOpen,
@@ -45,6 +46,7 @@ const ICONOS: Record<string, typeof Home> = {
     Bot,
     Settings,
     Coins,
+    Building2,
 };
 
 const ETIQUETA_POR_ROL = {
