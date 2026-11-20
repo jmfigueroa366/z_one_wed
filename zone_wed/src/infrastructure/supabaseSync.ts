@@ -2,7 +2,15 @@
 import { supabase, haySupabase } from '../lib/supabaseClient.ts';
 import { Storage, generarIdUnico } from './storage.ts';
 import { usuarioRepo } from '../repositories/usuarioRepo.ts';
-import { TIPOS_PROYECTO } from '../config/facturacion.ts';
+import { listarProyectos } from '../api/proyectosApi.ts';
+import type { ProyectoResumenDto } from '../api/proyectosApi.ts';
+import {
+    actualizarCancion as actualizarCancionApi,
+    crearCancion as crearCancionApi,
+    eliminarCancion as eliminarCancionApi,
+    listarCanciones,
+} from '../api/cancionesApi.ts';
+import { adaptarCancion, adaptarProyecto } from '../api/adapters.ts';
 import {
     idLocalDe,
     idRemotoDe,
@@ -55,6 +63,19 @@ export function idRemotoOPropio(entidad: { id_remoto?: unknown; id?: unknown } |
     const propio = entidad?.id;
     if (typeof propio === 'number' || typeof propio === 'string') {
         return propio;
+    }
+    return null;
+}
+
+// El id numerico que asigna la API. Las filas heredadas de Supabase usan uuid,
+// asi que solo los ids numericos se consideran proyectos o canciones de la API.
+export function idApiDe(entidad: { id_remoto?: unknown } | null | undefined): number | null {
+    const remoto = entidad?.id_remoto;
+    if (typeof remoto === 'number' && Number.isFinite(remoto)) {
+        return remoto;
+    }
+    if (typeof remoto === 'string' && /^\d+$/.test(remoto)) {
+        return Number(remoto);
     }
     return null;
 }
@@ -174,13 +195,6 @@ export function perfilEnBd(perfil: unknown, especialidad?: unknown): string {
 }
 
 // --- Lectura del esquema real ------------------------------------------------
-// Un valor de la base de datos. Si la columna todavia no existe, la clave no
-// viene en la fila y el valor es undefined: la app conserva lo que tenia en
-// local en vez de inventarse un dato vacio.
-function valorDe(fila: FilaSupabase, columna: string): unknown {
-    return columna in fila ? fila[columna] : undefined;
-}
-
 // Copia los campos que la base de datos si trae (los undefined se descartan).
 function sinIndefinidos(fila: FilaSupabase): FilaSupabase {
     const copia: FilaSupabase = {};
@@ -221,52 +235,22 @@ export function mapearColaborador(row: unknown): FilaSupabase {
     };
 }
 
-// Mapea un proyecto de Supabase al formato que espera la app.
+// Mapea un proyecto de la API al formato que espera la app.
 export function mapearProyecto(row: unknown): FilaSupabase {
     if (!row || typeof row !== 'object') {
         return row as FilaSupabase;
     }
-    const fila = row as FilaSupabase;
-    const cliente = (fila.clientes ?? null) as FilaSupabase | null;
-    const tipo = String(fila.tipo ?? '');
-    const tipoValido = (Object.values(TIPOS_PROYECTO) as string[]).includes(tipo);
-    return {
-        ...fila,
-        nombre: String(fila.nombre ?? ''),
-        // El tipo solo se conoce si la columna existe: si no, se conserva el local.
-        tipo: 'tipo' in fila ? (tipoValido ? tipo : TIPOS_PROYECTO.SENCILLO) : undefined,
-        estado: fila.estado ?? 'activo',
-        cliente_id: valorDe(fila, 'cliente_id') ?? null,
-        // El proyecto pertenece a un cliente: su usuario se saca del cliente.
-        usuario_id: valorDe(fila, 'usuario_id') ?? cliente?.usuario_id ?? null,
-        id_remoto: fila.id ?? null,
-    };
+    const dto = row as ProyectoResumenDto;
+    return adaptarProyecto(dto, dto.id) as unknown as FilaSupabase;
 }
 
-// Mapea una canción de Supabase al formato que espera la app.
-export function mapearCancion(row: unknown): FilaSupabase {
+// Mapea una canción de la API al formato que espera la app.
+export function mapearCancion(row: unknown, proyectoIdLocal?: number | string): FilaSupabase {
     if (!row || typeof row !== 'object') {
         return row as FilaSupabase;
     }
-    const fila = row as FilaSupabase;
-    const duracionSeg = valorDe(fila, 'duracion_seg');
-    const partes = valorDe(fila, 'partes');
-    const requiereEnsayo = valorDe(fila, 'requiere_ensayo');
-    const titulo = String(fila.titulo ?? fila.nombre ?? '');
-    return {
-        ...fila,
-        nombre: titulo,
-        titulo,
-        // La base de datos guarda segundos y la app trabaja con minutos.
-        duracion: duracionSeg === undefined
-            ? undefined
-            : (duracionSeg == null ? null : Number(duracionSeg) / 60),
-        duracion_seg: duracionSeg,
-        partes: Array.isArray(partes) ? partes : undefined,
-        requiere_ensayo: typeof requiereEnsayo === 'boolean' ? requiereEnsayo : undefined,
-        proyecto_id: valorDe(fila, 'proyecto_id') ?? null,
-        id_remoto: fila.id ?? null,
-    };
+    const dto = row as Parameters<typeof adaptarCancion>[0];
+    return adaptarCancion(dto, proyectoIdLocal) as unknown as FilaSupabase;
 }
 
 // Mapea una sala de Supabase al formato que espera la app.
@@ -426,13 +410,8 @@ export async function sincronizarColaboradores() {
 }
 
 export async function sincronizarProyectos() {
-    // El proyecto pertenece a un cliente: se trae su usuario para que la app
-    // pueda filtrar por propietario.
-    const { data, error } = await cliente.from('proyectos').select('*, clientes(usuario_id)');
-    if (error) {
-        throw new Error(error.message);
-    }
-    const remotos = (data ?? []).map(mapearProyecto);
+    const dtos = await listarProyectos();
+    const remotos = dtos.map((dto) => mapearProyecto(dto));
     const lista = fusionarLista({
         clave: 'proyectos',
         remotos,
@@ -445,22 +424,32 @@ export async function sincronizarProyectos() {
 }
 
 export async function sincronizarCanciones() {
-    const { data, error } = await cliente.from('canciones').select('*');
-    if (error) {
-        throw new Error(error.message);
+    const proyectos = Storage.obtenerValor<FilaSupabase[]>('proyectos', []) ?? [];
+    const reales = proyectos
+        .map((proyecto) => ({ proyecto, apiId: idApiDe(proyecto) }))
+        .filter((item): item is { proyecto: FilaSupabase; apiId: number } => item.apiId != null);
+
+    if (reales.length === 0) {
+        return Storage.obtenerValor<FilaSupabase[]>('canciones', []) ?? [];
     }
-    const remotos = (data ?? []).map(mapearCancion);
-    const lista = fusionarLista({
+
+    const resultados = await Promise.allSettled(
+        reales.map(async ({ proyecto, apiId }) => {
+            const dtos = await listarCanciones(apiId);
+            return dtos.map((dto) => mapearCancion(dto, proyecto.id as number | string));
+        })
+    );
+
+    const remotos = resultados.flatMap((resultado) =>
+        resultado.status === 'fulfilled' ? resultado.value : []
+    );
+
+    return fusionarLista({
         clave: 'canciones',
         remotos,
         aplicar: (_local, remoto) => sinIndefinidos(remoto),
         crear: (remoto, idLocal) => ({ ...remoto, id: idLocal, origen: 'usuario' }),
     });
-    const traducidas = lista.map((cancion) =>
-        traducirALocal(cancion, [{ campo: 'proyecto_id', tipo: 'proyectos' }])
-    );
-    Storage.guardarValor('canciones', traducidas);
-    return traducidas;
 }
 
 export async function sincronizarSalas() {
@@ -772,22 +761,15 @@ function listarLocales(tipo: TipoEntidad): FilaSupabase[] {
     return Array.isArray(valor) ? (valor as FilaSupabase[]) : [];
 }
 
-// Los campos de cada entidad en el formato de la base de datos. Se usan
-// igual en el alta y en la actualizacion para que no se desincronicen.
-export function cambiosDeProyecto(proyecto: FilaSupabase): FilaSupabase {
-    return {
-        nombre: String(proyecto.nombre ?? ''),
-        tipo: proyecto.tipo ?? null,
-    };
-}
-
+// Los campos de la cancion en el formato que espera la API. Se usan igual en
+// el alta y en la actualizacion para que no se desincronicen.
 export function cambiosDeCancion(cancion: FilaSupabase): FilaSupabase {
     const duracion = Number(cancion.duracion);
     return {
         titulo: String(cancion.nombre ?? cancion.titulo ?? ''),
-        duracion_seg: Number.isFinite(duracion) && duracion > 0 ? Math.round(duracion * 60) : null,
+        duracionSeg: Number.isFinite(duracion) && duracion > 0 ? Math.round(duracion * 60) : null,
         partes: Array.isArray(cancion.partes) ? cancion.partes : [],
-        requiere_ensayo: cancion.requiere_ensayo === true,
+        requiereEnsayo: cancion.requiere_ensayo === true,
     };
 }
 
@@ -808,39 +790,23 @@ export function cambiosDeSala(sala: FilaSupabase): FilaSupabase {
     };
 }
 
-export async function insertarProyecto(proyecto: FilaSupabase, clienteId: string): Promise<{ id: unknown }> {
-    const payload: FilaSupabase = {
-        cliente_id: clienteId,
-        ...cambiosDeProyecto(proyecto),
-        estado: 'activo',
-    };
-    const data = await ejecutarConColumnas('proyectos', payload, (datos) =>
-        cliente.from('proyectos').insert(datos).select('id').single()
-    );
-    return { id: (data as FilaSupabase | null)?.id ?? null };
-}
-
-export async function actualizarProyecto(idRemoto: number | string, cambios: FilaSupabase): Promise<void> {
-    await ejecutarConColumnas('proyectos', cambios, (datos) =>
-        cliente.from('proyectos').update(datos).eq('id', idRemoto)
-    );
-}
-
 export async function insertarCancion(cancion: FilaSupabase, proyectoIdRemoto: number | string): Promise<{ id: unknown }> {
-    const payload: FilaSupabase = {
-        proyecto_id: proyectoIdRemoto,
-        ...cambiosDeCancion(cancion),
-    };
-    const data = await ejecutarConColumnas('canciones', payload, (datos) =>
-        cliente.from('canciones').insert(datos).select('id').single()
+    const dto = await crearCancionApi(
+        Number(proyectoIdRemoto),
+        cambiosDeCancion(cancion) as Parameters<typeof crearCancionApi>[1],
     );
-    return { id: (data as FilaSupabase | null)?.id ?? null };
+    return { id: dto.id };
 }
 
 export async function actualizarCancion(idRemoto: number | string, cambios: FilaSupabase): Promise<void> {
-    await ejecutarConColumnas('canciones', cambios, (datos) =>
-        cliente.from('canciones').update(datos).eq('id', idRemoto)
+    await actualizarCancionApi(
+        Number(idRemoto),
+        cambios as Parameters<typeof actualizarCancionApi>[1],
     );
+}
+
+export async function eliminarCancion(idRemoto: number | string): Promise<void> {
+    await eliminarCancionApi(Number(idRemoto));
 }
 
 export async function insertarColaborador(colaborador: FilaSupabase): Promise<{ id: unknown }> {
