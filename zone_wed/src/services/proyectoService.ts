@@ -21,8 +21,20 @@ export const ProyectoService = {
     },
 
     propietarioDe(proyecto: Proyecto | null | undefined): Usuario | null {
-        if (!proyecto?.usuario_id) return null;
-        return usuarioRepo.obtenerPorId(proyecto.usuario_id);
+        if (!proyecto) return null;
+        const local = proyecto.usuario_id ? usuarioRepo.obtenerPorId(proyecto.usuario_id) : null;
+        if (local) return local;
+        if (proyecto.cliente_nombre) {
+            return {
+                id: proyecto.usuario_id ?? null,
+                nombre: String(proyecto.cliente_nombre),
+                email: '',
+                rol: 'cliente',
+                perfil: null,
+                activo: true,
+            };
+        }
+        return null;
     },
 
     async crear(data: EntradaProyecto = {}): Promise<Proyecto> {

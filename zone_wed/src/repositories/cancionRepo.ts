@@ -1,24 +1,16 @@
 // CAPA: Infraestructura
-import { Storage } from '../infrastructure/storage.ts';
+import { Storage, generarIdUnico } from '../infrastructure/storage.ts';
 import { SEED } from '../data/seed.ts';
 import { crearCancion } from '../models/Cancion.ts';
 import type { Cancion, EntradaCancion } from '../models/Cancion.ts';
 import {
     sincronizarCanciones,
-    eliminarFilaRemota,
-    idRemoto,
-    hayConexionSupabase,
-    claveCancion,
-    claveProyecto,
+    idApiDe,
     insertarCancion,
     actualizarCancion,
+    eliminarCancion,
     cambiosDeCancion,
-    esperarEscritura,
-    registrarIdRemoto,
-    recordarIdRemoto,
 } from '../infrastructure/supabaseSync.ts';
-import { idRemotoDe } from '../infrastructure/identificadores.ts';
-
 import { proyectoRepo } from './proyectoRepo.ts';
 
 const CLAVE = 'canciones';
@@ -35,7 +27,7 @@ function normalizarLista(canciones: EntradaCancion[]): Cancion[] {
     );
 }
 
-// Sincroniza canciones desde Supabase una vez al cargar el módulo.
+// Sincroniza las canciones de los proyectos reales una vez al cargar el módulo.
 let sincronizado = false;
 export async function sincronizar() {
     if (sincronizado) {
@@ -45,7 +37,7 @@ export async function sincronizar() {
         await sincronizarCanciones();
         sincronizado = true;
     } catch (error) {
-        console.warn('No se pudieron sincronizar las canciones con Supabase.', error);
+        console.warn('No se pudieron sincronizar las canciones con la API.', error);
     }
 }
 
@@ -53,6 +45,11 @@ sincronizar();
 
 function actualizarCache(canciones: Cancion[]): void {
     Storage.guardarValor(CLAVE, canciones);
+}
+
+function idRemotoNumerico(id: unknown): number | null {
+    const numero = typeof id === 'number' ? id : Number(id);
+    return Number.isFinite(numero) ? numero : null;
 }
 
 export const cancionRepo = {
@@ -87,10 +84,6 @@ export const cancionRepo = {
     },
 
     async crear(data: EntradaCancion): Promise<Cancion> {
-        if (!hayConexionSupabase()) {
-            throw new Error('No hay conexión con Supabase. No se puede guardar la canción.');
-        }
-
         const proyectoId = data?.proyecto_id;
         if (proyectoId == null) {
             throw new Error('Asigna la canción a un proyecto.');
@@ -101,38 +94,28 @@ export const cancionRepo = {
             throw new Error('El proyecto no existe.');
         }
 
-        await esperarEscritura(claveProyecto(proyecto.id)).catch(() => undefined);
-        const proyectoRemoto = idRemotoDe('proyectos', proyecto.id) ?? idRemoto(proyecto);
-        if (proyectoRemoto == null) {
-            throw new Error('La canción no se pudo guardar: su proyecto todavía no existe en Supabase.');
+        const cancionBase = crearCancion({ ...data, origen: 'usuario' });
+        const proyectoApiId = idApiDe(proyecto);
+        const canciones = this.listar();
+        const id = generarIdUnico(canciones);
+
+        let idRemoto: number | null = null;
+        if (proyectoApiId != null) {
+            const { id: remoto } = await insertarCancion(cancionBase, proyectoApiId);
+            idRemoto = idRemotoNumerico(remoto);
         }
 
-        const cancionBase = crearCancion({ ...data, origen: 'usuario' });
-        const { id: idRemotoCancion } = await insertarCancion(cancionBase, proyectoRemoto);
-
-        const canciones = this.listar();
-        const cancion = crearCancion({
-            ...cancionBase,
-            id: (idRemotoCancion as number | string | null) ?? cancionBase.id,
-            id_remoto: (idRemotoCancion as number | string | null) ?? null,
-        });
+        const cancion = crearCancion({ ...cancionBase, id, id_remoto: idRemoto });
         canciones.push(cancion);
         actualizarCache(canciones);
 
-        if (typeof idRemotoCancion === 'number' || typeof idRemotoCancion === 'string') {
-            recordarIdRemoto(claveCancion(cancion.id), idRemotoCancion);
-            registrarIdRemoto('canciones', cancion.id, idRemotoCancion);
+        if (proyectoApiId != null) {
+            await sincronizarCanciones().catch((error) => console.warn('No se pudo refrescar canciones tras guardar en la API.', error));
         }
-
-        await sincronizarCanciones().catch((error) => console.warn('No se pudo refrescar canciones tras guardar en Supabase.', error));
         return cancion;
     },
 
     async actualizar(id: number | string, data: EntradaCancion): Promise<Cancion | null> {
-        if (!hayConexionSupabase()) {
-            throw new Error('No hay conexión con Supabase. No se puede actualizar la canción.');
-        }
-
         const canciones = this.listar();
         const indice = canciones.findIndex((cancion) => String(cancion.id) === String(id));
         if (indice === -1) {
@@ -140,43 +123,44 @@ export const cancionRepo = {
         }
 
         const cancionActual = canciones[indice];
-        const cancionActualizada = crearCancion({ ...cancionActual, ...data, id: cancionActual.id, origen: cancionActual.origen ?? 'usuario' });
-        const idRemotoCancion = idRemoto(cancionActualizada) ?? idRemoto(cancionActual);
+        const cancionActualizada = crearCancion({
+            ...cancionActual,
+            ...data,
+            id: cancionActual.id,
+            id_remoto: cancionActual.id_remoto ?? null,
+            origen: cancionActual.origen ?? 'usuario',
+        });
+        const idApi = idApiDe(cancionActualizada);
 
-        if (idRemotoCancion == null) {
-            throw new Error('La canción no tiene id remoto en Supabase. Sincroniza los datos e inténtalo de nuevo.');
+        if (idApi != null) {
+            await actualizarCancion(idApi, cambiosDeCancion(cancionActualizada));
         }
 
-        const cambios = cambiosDeCancion(cancionActualizada);
-        await actualizarCancion(idRemotoCancion, cambios);
-
-        canciones[indice] = crearCancion({ ...cancionActualizada, id_remoto: idRemotoCancion as number | string | null });
+        canciones[indice] = cancionActualizada;
         actualizarCache(canciones);
 
-        await sincronizarCanciones().catch((error) => console.warn('No se pudo refrescar canciones tras actualizar en Supabase.', error));
-        return canciones[indice];
+        if (idApi != null) {
+            await sincronizarCanciones().catch((error) => console.warn('No se pudo refrescar canciones tras actualizar en la API.', error));
+            return this.obtenerPorId(id) ?? cancionActualizada;
+        }
+        return cancionActualizada;
     },
 
     async eliminar(id: number | string): Promise<Cancion[]> {
-        if (!hayConexionSupabase()) {
-            throw new Error('No hay conexión con Supabase. No se puede eliminar la canción.');
-        }
-
         const canciones = this.listar();
         const cancion = canciones.find((item) => String(item.id) === String(id)) ?? null;
-        const cancionesRestantes = canciones.filter((item) => String(item.id) !== String(id));
+        const idApi = idApiDe(cancion);
 
-        if (cancion) {
-            const idRemotoCancion = idRemoto(cancion);
-            if (idRemotoCancion != null) {
-                await eliminarFilaRemota('canciones', idRemotoCancion as number | string);
-            } else {
-                throw new Error('La canción no tiene id remoto en Supabase. No se puede eliminar desde la base de datos.');
-            }
+        if (idApi != null) {
+            await eliminarCancion(idApi);
         }
 
+        const cancionesRestantes = canciones.filter((item) => String(item.id) !== String(id));
         Storage.guardarValor(CLAVE, cancionesRestantes);
-        await sincronizarCanciones().catch((error) => console.warn('No se pudo refrescar canciones tras eliminar en Supabase.', error));
+
+        if (idApi != null) {
+            await sincronizarCanciones().catch((error) => console.warn('No se pudo refrescar canciones tras eliminar en la API.', error));
+        }
         return cancionesRestantes;
     },
 
@@ -186,43 +170,6 @@ export const cancionRepo = {
         Storage.guardarValor(CLAVE, canciones);
         return canciones;
     },
-
-    // Métodos de compatibilidad
-    subir(cancion: Cancion): void {
-        void (async () => {
-            try {
-                if (!hayConexionSupabase()) return;
-                await esperarEscritura(claveProyecto(cancion.proyecto_id)).catch(() => undefined);
-                const proyectoRemoto = idRemotoDe('proyectos', cancion.proyecto_id) ?? idRemoto(proyectoRepo.obtenerPorId(cancion.proyecto_id));
-                if (proyectoRemoto == null) return;
-                const { id: idRemotoCancion } = await insertarCancion(cancion, proyectoRemoto);
-                if (typeof idRemotoCancion === 'number' || typeof idRemotoCancion === 'string') {
-                    recordarIdRemoto(claveCancion(cancion.id), idRemotoCancion);
-                    registrarIdRemoto('canciones', cancion.id, idRemotoCancion);
-                }
-                await sincronizarCanciones();
-            } catch (error) {
-                console.warn('No se pudo guardar la canción en Supabase.', error);
-            }
-        })();
-    },
-
-    subirCambios(cancion: Cancion): void {
-        void (async () => {
-            try {
-                if (!hayConexionSupabase()) return;
-                const idRemotoCancion = idRemoto(cancion);
-                if (idRemotoCancion == null) return;
-                const cambios = cambiosDeCancion(cancion);
-                if (!cambios) return;
-                await actualizarCancion(idRemotoCancion as number | string, cambios);
-                await sincronizarCanciones();
-            } catch (error) {
-                console.warn('No se pudo actualizar la canción en Supabase.', error);
-            }
-        })();
-    },
 };
 
 export default cancionRepo;
-
