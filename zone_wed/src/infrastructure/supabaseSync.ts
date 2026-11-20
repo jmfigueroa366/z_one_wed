@@ -10,6 +10,8 @@ import {
     eliminarCancion as eliminarCancionApi,
     listarCanciones,
 } from '../api/cancionesApi.ts';
+import { listarSalasPublicas } from '../api/salasApi.ts';
+import type { SalaApi } from '../api/salasApi.ts';
 import { adaptarCancion, adaptarProyecto } from '../api/adapters.ts';
 import {
     idLocalDe,
@@ -137,10 +139,6 @@ export function claveColaborador(id: number | string | null | undefined): string
     return `colaborador:${String(id)}`;
 }
 
-export function claveSala(id: number | string | null | undefined): string {
-    return `sala:${String(id)}`;
-}
-
 // --- Perfiles ----------------------------------------------------------------
 // La base de datos usa el enum perfil_colaborador (artista, productor,
 // ingeniero_sonido...) y la app usa sus propios nombres (artista, produccion,
@@ -253,18 +251,19 @@ export function mapearCancion(row: unknown, proyectoIdLocal?: number | string): 
     return adaptarCancion(dto, proyectoIdLocal) as unknown as FilaSupabase;
 }
 
-// Mapea una sala de Supabase al formato que espera la app.
+// Mapea una sala de la API al formato que espera la app.
 export function mapearSala(row: unknown): FilaSupabase {
     if (!row || typeof row !== 'object') {
         return row as FilaSupabase;
     }
-    const fila = row as FilaSupabase;
+    const dto = row as SalaApi;
     return {
-        ...fila,
-        nombre: String(fila.nombre ?? ''),
-        precio_hora: Number(fila.precio_hora ?? 0),
-        activo: fila.activo !== false,
-        id_remoto: fila.id ?? null,
+        id: dto.id,
+        id_remoto: dto.id,
+        nombre: String(dto.nombre ?? ''),
+        precio_hora: Number(dto.precioHora ?? 0),
+        activo: dto.activo !== false,
+        origen: 'usuario',
     };
 }
 
@@ -453,14 +452,12 @@ export async function sincronizarCanciones() {
 }
 
 export async function sincronizarSalas() {
-    const { data, error } = await cliente.from('salas').select('*');
-    if (error) {
-        throw new Error(error.message);
-    }
-    const remotos = (data ?? []).map(mapearSala);
+    const data = await listarSalasPublicas();
+    const remotos = data.map(mapearSala);
     const lista = fusionarLista({
         clave: 'salas',
         remotos,
+        emparejar: (local, remoto) => String(local.id) === String(remoto.id),
         aplicar: (_local, remoto) => sinIndefinidos(remoto),
         crear: (remoto, idLocal) => ({ ...remoto, id: idLocal, origen: 'usuario' }),
     });
@@ -756,14 +753,6 @@ export function cambiosDeColaborador(colaborador: FilaSupabase): FilaSupabase {
     };
 }
 
-export function cambiosDeSala(sala: FilaSupabase): FilaSupabase {
-    return {
-        nombre: String(sala.nombre ?? ''),
-        precio_hora: Number(sala.precio_hora ?? 0),
-        activo: sala.activo !== false,
-    };
-}
-
 export async function insertarCancion(cancion: FilaSupabase, proyectoIdRemoto: number | string): Promise<{ id: unknown }> {
     const dto = await crearCancionApi(
         Number(proyectoIdRemoto),
@@ -800,19 +789,6 @@ export async function insertarColaborador(colaborador: FilaSupabase): Promise<{ 
 export async function actualizarColaborador(idRemoto: number | string, cambios: FilaSupabase): Promise<void> {
     await ejecutarConColumnas('colaboradores', cambios, (datos) =>
         cliente.from('colaboradores').update(datos).eq('id', idRemoto)
-    );
-}
-
-export async function insertarSala(sala: FilaSupabase): Promise<{ id: unknown }> {
-    const data = await ejecutarConColumnas('salas', cambiosDeSala(sala), (datos) =>
-        cliente.from('salas').insert(datos).select('id').single()
-    );
-    return { id: (data as FilaSupabase | null)?.id ?? null };
-}
-
-export async function actualizarSala(idRemoto: number | string, cambios: FilaSupabase): Promise<void> {
-    await ejecutarConColumnas('salas', cambios, (datos) =>
-        cliente.from('salas').update(datos).eq('id', idRemoto)
     );
 }
 

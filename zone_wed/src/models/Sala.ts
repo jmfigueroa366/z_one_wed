@@ -2,7 +2,7 @@
 
 export interface Sala {
     id: number | string | null;
-    // Id que la fila tiene en Supabase (null si la sala solo existe en local).
+    // Id que la sala tiene en la API (null si solo existe en local).
     id_remoto: number | string | null;
     nombre: string;
     precio_hora: number;
