@@ -504,19 +504,6 @@ export async function sincronizarClientes() {
     return lista;
 }
 
-// Trae una tabla de Supabase y la deja en el almacenamiento local
-// que la app ya usa (asi los hooks y componentes no cambian).
-export async function sincronizarTabla(tabla: string, clave: string) {
-    const { data, error } = await cliente.from(tabla).select('*');
-
-    if (error) {
-        throw new Error(error.message);
-    }
-
-    Storage.guardarValor(clave, data ?? []);
-    return data ?? [];
-}
-
 // Mapea una solicitud de Supabase al formato que espera la app.
 export function mapearSolicitud(row: unknown): FilaSupabase {
     if (!row || typeof row !== 'object') {
@@ -690,19 +677,6 @@ export async function resolverUsuarioUuid(usuarioId: unknown): Promise<string | 
         return null;
     }
     const { data, error } = await cliente.from('usuarios').select('id').eq('email', email).maybeSingle();
-    if (error) {
-        return null;
-    }
-    return ((data as FilaSupabase | null)?.id ?? null) as string | null;
-}
-
-// El id de la fila "clientes" del usuario indicado.
-export async function resolverClienteId(usuarioId: unknown): Promise<string | null> {
-    const uuid = await resolverUsuarioUuid(usuarioId);
-    if (!uuid) {
-        return null;
-    }
-    const { data, error } = await cliente.from('clientes').select('id').eq('usuario_id', uuid).maybeSingle();
     if (error) {
         return null;
     }
@@ -967,28 +941,6 @@ export async function eliminarFilaRemota(tabla: string, id: unknown): Promise<vo
         return;
     }
     const { error } = await cliente.from(tabla).delete().eq('id', id);
-    if (error) {
-        throw new Error(error.message);
-    }
-}
-
-// Actualiza los campos editables de una solicitud remota.
-export async function actualizarSolicitud(id: unknown, cambios: FilaSupabase): Promise<void> {
-    if (id == null) {
-        return;
-    }
-    const { error } = await cliente.from('solicitudes').update(cambios).eq('id', id);
-    if (error) {
-        throw new Error(error.message);
-    }
-}
-
-// Actualiza los campos editables de una sesión remota.
-export async function actualizarSesion(id: unknown, cambios: FilaSupabase): Promise<void> {
-    if (id == null) {
-        return;
-    }
-    const { error } = await cliente.from('sesiones').update(cambios).eq('id', id);
     if (error) {
         throw new Error(error.message);
     }
