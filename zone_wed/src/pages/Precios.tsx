@@ -11,7 +11,7 @@ import type { FormEvent, ReactNode } from 'react';
 import type { LucideIcon } from 'lucide-react';
 import type { FacturacionConfig } from '../config/facturacion.ts';
 import '../styles/tailwind.css';
-import SeccionSalas from '../components/SeccionSalas.tsx';
+
 
 const MENOS_MOVIMIENTO = () =>
     typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -260,7 +260,6 @@ export default function Precios() {
                     </div>
                 </div>
             </form>
-<div className="mt-5"><SeccionSalas /></div>
         </main>
     );
 }
