@@ -212,37 +212,44 @@ export default function SeccionSalas() {
             )}
 
             {!cargando && salas.length > 0 && (
-                <ul className="grid gap-3">
-                    {salas.map((sala) => {
-                        const activa = sala.activo !== false;
-                        return (
-                            <li
-                                key={sala.id}
-                                className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-white/10 bg-black/20 px-4 py-3"
-                            >
-                                <div className="min-w-0">
-                                    <p className="truncate font-bold text-texto-soft">
-                                        {sala.nombre}
-                                        {!activa && (
-                                            <span className="ml-2 rounded-full border border-peligro/30 bg-peligro/10 px-2 py-0.5 text-xs font-bold text-peligro-soft">
-                                                Inactiva
-                                            </span>
-                                        )}
-                                    </p>
-                                    <p className="text-sm text-sutil">{formatearMoneda(sala.precioHora)} por hora</p>
-                                </div>
-                                <div className="flex flex-wrap gap-2">
-                                    <button className={BOTON_SECUNDARIO} type="button" onClick={() => abrirEditar(sala)}>
-                                        <Pencil className="mr-2 h-4 w-4" aria-hidden="true" /> Editar
-                                    </button>
-                                    <button className={BOTON_SECUNDARIO} type="button" onClick={() => void alternarActiva(sala)}>
-                                        <Power className="mr-2 h-4 w-4" aria-hidden="true" /> {activa ? 'Desactivar' : 'Activar'}
-                                    </button>
-                                </div>
-                            </li>
-                        );
-                    })}
-                </ul>
+<ul className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+    {salas.map((sala) => {
+        const activa = sala.activo !== false;
+        return (
+            <li
+                key={sala.id}
+                className="flex flex-col justify-between gap-4 rounded-2xl border border-white/10 bg-black/20 p-5"
+            >
+                <div className="min-w-0">
+                    <div className="flex items-start justify-between gap-2">
+                        <p className="truncate text-lg font-bold text-texto-soft">{sala.nombre}</p>
+                        <span
+                            className={
+                                activa
+                                    ? 'shrink-0 rounded-full border border-exito/30 bg-exito/10 px-2 py-0.5 text-xs font-bold text-exito-soft'
+                                    : 'shrink-0 rounded-full border border-peligro/30 bg-peligro/10 px-2 py-0.5 text-xs font-bold text-peligro-soft'
+                            }
+                        >
+                            {activa ? 'Activa' : 'Inactiva'}
+                        </span>
+                    </div>
+                    <p className="mt-3 text-2xl font-extrabold tracking-tight text-texto">
+                        {formatearMoneda(sala.precioHora)}
+                        <span className="ml-1 text-sm font-medium text-sutil">por hora</span>
+                    </p>
+                </div>
+                <div className="flex flex-wrap gap-2">
+                    <button className={BOTON_SECUNDARIO} type="button" onClick={() => abrirEditar(sala)}>
+                        <Pencil className="mr-2 h-4 w-4" aria-hidden="true" /> Editar
+                    </button>
+                    <button className={BOTON_SECUNDARIO} type="button" onClick={() => void alternarActiva(sala)}>
+                        <Power className="mr-2 h-4 w-4" aria-hidden="true" /> {activa ? 'Desactivar' : 'Activar'}
+                    </button>
+                </div>
+            </li>
+        );
+    })}
+</ul>
             )}
         </section>
     );
