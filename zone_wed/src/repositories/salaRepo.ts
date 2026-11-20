@@ -37,7 +37,7 @@ export async function sincronizarSalas() {
         console.warn('No se pudieron sincronizar las salas con la API.', error);
     }
 }
-
+export async function refrescarSalas() { sincronizado = false; await sincronizarSalas(); }
 // Se ejecuta al cargar el módulo.
 sincronizarSalas();
 
